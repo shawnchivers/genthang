@@ -1,0 +1,10 @@
+db9_pin,function,nano_gpio_or_rail,nano_contact,nano_header_hole,jumper_hole
+1,D0 / UP,31,J6.14,b19,a19
+2,D1 / DOWN,41,J5.6,h11,j11
+3,D2 / LEFT,27,J6.8,b13,a13
+4,D3 / RIGHT,28,J6.9,b14,a14
+5,3.3V ONLY,3V3,J6.19,b24,a24
+6,"TL / B,A",29,J6.12,b17,a17
+7,TH SELECT,42,J5.5,h10,j10
+8,GROUND,GND,J6.20,b25,a25
+9,"TR / C,START",30,J6.13,b18,a18

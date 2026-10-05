@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""Upload a ROM to a Gen Thang SD card over the Tang Nano 20K USB serial port."""
+
+import argparse
+import binascii
+import os
+import select
+import struct
+import sys
+import termios
+import time
+
+
+MAGIC = b"GTHG"
+VERSION = 1
+BLOCK_SIZE = 512
+ROM_LIMIT = 4 * 1024 * 1024
+FLASH_LIMIT = 8 * 1024 * 1024
+UPLOAD_CORE = 1
+ACK = 0x06
+NAK = 0x15
+ERRORS = {
+    1: "transfer timed out",
+    2: "invalid upload header",
+    3: "invalid filename",
+    4: "could not create temporary file",
+    5: "SD card write failed",
+    6: "CRC mismatch",
+    7: "could not install uploaded file",
+}
+
+
+class UploadError(Exception):
+    pass
+
+
+class SerialPort:
+    def __init__(self, path, baud):
+        speed = getattr(termios, f"B{baud}", None)
+        if speed is None:
+            raise UploadError(f"unsupported baud rate: {baud}")
+        self.fd = os.open(path, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+        attrs = termios.tcgetattr(self.fd)
+        attrs[0] = 0
+        attrs[1] = 0
+        attrs[2] = termios.CS8 | termios.CREAD | termios.CLOCAL
+        attrs[3] = 0
+        attrs[4] = speed
+        attrs[5] = speed
+        attrs[6][termios.VMIN] = 0
+        attrs[6][termios.VTIME] = 0
+        termios.tcsetattr(self.fd, termios.TCSANOW, attrs)
+        termios.tcflush(self.fd, termios.TCIOFLUSH)
+
+    def close(self):
+        os.close(self.fd)
+
+    def write(self, data):
+        view = memoryview(data)
+        while view:
+            _, writable, _ = select.select([], [self.fd], [], 5)
+            if not writable:
+                raise UploadError("serial write timed out")
+            view = view[os.write(self.fd, view):]
+        termios.tcdrain(self.fd)
+
+    def read_byte(self, timeout):
+        readable, _, _ = select.select([self.fd], [], [], timeout)
+        if not readable:
+            raise UploadError("device did not respond")
+        return os.read(self.fd, 1)[0]
+
+    def expect_ack(self, timeout=10):
+        deadline = time.monotonic() + timeout
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise UploadError("device did not acknowledge the transfer")
+            value = self.read_byte(remaining)
+            if value == ACK:
+                return
+            if value == NAK:
+                code = self.read_byte(1)
+                raise UploadError(ERRORS.get(code, f"device error {code}"))
+
+
+def card_filename(source, requested):
+    name = requested or os.path.basename(source)
+    try:
+        encoded = name.encode("ascii")
+    except UnicodeEncodeError as error:
+        raise UploadError("card filename must contain ASCII characters only") from error
+    if not encoded or len(encoded) > 255:
+        raise UploadError("card filename must be between 1 and 255 characters")
+    if any(byte < 0x20 or byte > 0x7E for byte in encoded) or any(c in name for c in "/\\:*?\"<>|"):
+        raise UploadError("card filename contains characters that FAT does not allow")
+    return encoded
+
+
+def upload(port, source, name, baud, core_image=False):
+    size = os.path.getsize(source)
+    limit = FLASH_LIMIT if core_image else ROM_LIMIT
+    if size > limit:
+        raise UploadError(f"file exceeds the {limit // (1024 * 1024)} MB limit")
+
+    crc = 0
+    with open(source, "rb") as rom:
+        while chunk := rom.read(64 * 1024):
+            crc = binascii.crc32(chunk, crc)
+
+    print(f"Connecting to Gen Thang on {port}...")
+    serial = SerialPort(port, baud)
+    try:
+        serial.write(MAGIC)
+        serial.expect_ack()
+        header = struct.pack("<BBHII", VERSION, UPLOAD_CORE if core_image else 0, len(name), size, crc)
+        serial.write(header + name)
+        serial.expect_ack()
+
+        sent = 0
+        with open(source, "rb") as rom:
+            while chunk := rom.read(BLOCK_SIZE):
+                serial.write(chunk)
+                serial.expect_ack(15)
+                sent += len(chunk)
+                percent = 100 if size == 0 else sent * 100 // size
+                print(f"\rUploading: {sent}/{size} bytes ({percent}%)", end="", flush=True)
+        serial.expect_ack(15)
+        print("\nUpload complete.")
+    finally:
+        serial.close()
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="genthang-upload",
+        description="Upload a ROM or complete core flash image to Gen Thang's SD card.",
+    )
+    parser.add_argument("port", help="USB serial device, for example /dev/ttyUSB0")
+    parser.add_argument("file", help="ROM or complete core flash image to upload")
+    parser.add_argument("--name", help="filename to create on the card")
+    parser.add_argument("--core", action="store_true",
+                        help="store a complete flash .bin in /cores (created automatically)")
+    parser.add_argument("--baud", type=int, default=460800,
+                        help="host serial baud rate (default: 460800 for the Nano 20K debugger)")
+    args = parser.parse_args()
+
+    try:
+        name = card_filename(args.file, args.name)
+        if args.core and not name.lower().endswith(b".bin"):
+            raise UploadError("core image filename must end in .bin")
+        upload(args.port, args.file, name, args.baud, args.core)
+    except (OSError, UploadError) as error:
+        print(f"genthang-upload: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

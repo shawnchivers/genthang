@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1120 1040" style="height:auto;max-width:1120px">
+<rect width="1120" height="1040" fill="#f6f8fc"/>
+<style>text{font-family:Arial,sans-serif;fill:#162638}.title{font-size:26px;font-weight:bold}.sub{font-size:16px}.small{font-size:13px}.label{font-size:17px;font-weight:bold}.pin{font-size:16px;text-anchor:middle}</style>
+<text x="30" y="40" class="title">Single Genesis DB9 → Tang Nano 20K: nine-wire prototype</text>
+<text x="30" y="68" class="sub">3.3V ONLY · No external resistors/ICs · db9_breadboard bitstream required</text>
+<text x="30" y="94" class="sub" style="fill:#aa2424">Unprotected bench test. USB OFF before connecting. Never connect5V or externally powered pads.</text>
+<text x="45" y="128" class="small" >MALE mating face: looking at pins</text>
+<path d="M45,145 h260 l-20,92 h-220 Z" fill="#e0e8f2" stroke="#52647a" stroke-width="2"/>
+<circle cx="79" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="79" y="178" class="pin" >1</text>
+<circle cx="127" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="127" y="178" class="pin" >2</text>
+<circle cx="175" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="175" y="178" class="pin" >3</text>
+<circle cx="223" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="223" y="178" class="pin" >4</text>
+<circle cx="271" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="271" y="178" class="pin" >5</text>
+<circle cx="103" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="103" y="216" class="pin" >6</text>
+<circle cx="151" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="151" y="216" class="pin" >7</text>
+<circle cx="199" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="199" y="216" class="pin" >8</text>
+<circle cx="247" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="247" y="216" class="pin" >9</text>
+<text x="390" y="128" class="small" >MALE rear / solder side (mirrored)</text>
+<path d="M390,145 h260 l-20,92 h-220 Z" fill="#e0e8f2" stroke="#52647a" stroke-width="2"/>
+<circle cx="424" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="424" y="178" class="pin" >5</text>
+<circle cx="472" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="472" y="178" class="pin" >4</text>
+<circle cx="520" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="520" y="178" class="pin" >3</text>
+<circle cx="568" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="568" y="178" class="pin" >2</text>
+<circle cx="616" cy="173" r="13" fill="white" stroke="#52647a"/>
+<text x="616" y="178" class="pin" >1</text>
+<circle cx="448" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="448" y="216" class="pin" >9</text>
+<circle cx="496" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="496" y="216" class="pin" >8</text>
+<circle cx="544" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="544" y="216" class="pin" >7</text>
+<circle cx="592" cy="211" r="13" fill="white" stroke="#52647a"/>
+<text x="592" y="216" class="pin" >6</text>
+<text x="45" y="260" class="small" >Wide 5-pin row at top in both views. Use actual molded pin numbers; terminal layout varies.</text>
+<text x="45" y="307" class="label" >PASSIVE MALE DB9 BREAKOUT</text>
+<text x="450" y="307" class="label" >NANO CONTACT (not FPGA package number)</text>
+<text x="48" y="343" class="label" >1   D0 / UP</text>
+<path d="M230,338 H433" stroke="#6354ba" stroke-width="3"/>
+<text x="450" y="343" class="label" >J6.14  —  GPIO31</text>
+<text x="48" y="387" class="label" >2   D1 / DOWN</text>
+<path d="M230,382 H433" stroke="#087a8c" stroke-width="3"/>
+<text x="450" y="387" class="label" >J5.6  —  GPIO41</text>
+<text x="48" y="431" class="label" >3   D2 / LEFT</text>
+<path d="M230,426 H433" stroke="#9b6514" stroke-width="3"/>
+<text x="450" y="431" class="label" >J6.8  —  GPIO27</text>
+<text x="48" y="475" class="label" >4   D3 / RIGHT</text>
+<path d="M230,470 H433" stroke="#537525" stroke-width="3"/>
+<text x="450" y="475" class="label" >J6.9  —  GPIO28</text>
+<text x="48" y="519" class="label" >5   3.3V ONLY</text>
+<path d="M230,514 H433" stroke="#c12c2c" stroke-width="3"/>
+<text x="450" y="519" class="label" >J6.19  —  3.3V ONLY</text>
+<text x="48" y="563" class="label" >6   TL / B,A</text>
+<path d="M230,558 H433" stroke="#925687" stroke-width="3"/>
+<text x="450" y="563" class="label" >J6.12  —  GPIO29</text>
+<text x="48" y="607" class="label" >7   TH SELECT</text>
+<path d="M230,602 H433" stroke="#cb6600" stroke-width="3"/>
+<path d="M250,596 l-10,6 l10,6" fill="none" stroke="#cb6600" stroke-width="2"/>
+<text x="450" y="607" class="label" >J5.5  —  GPIO42</text>
+<text x="48" y="651" class="label" >8   GROUND</text>
+<path d="M230,646 H433" stroke="#18242d" stroke-width="3"/>
+<text x="450" y="651" class="label" >J6.20  —  GROUND</text>
+<text x="48" y="695" class="label" >9   TR / C,START</text>
+<path d="M230,690 H433" stroke="#2466a5" stroke-width="3"/>
+<text x="450" y="695" class="label" >J6.13  —  GPIO30</text>
+<rect x="798" y="333" width="210" height="450" rx="12" fill="#e0e8f2" stroke="#52647a" stroke-width="2"/>
+<text x="903" y="309" class="label" text-anchor="middle">NANO TOP VIEW</text>
+<text x="903" y="355" class="label" text-anchor="middle">USB-C</text>
+<text x="800" y="331" class="small" >J6 left</text>
+<text x="964" y="331" class="small" >J5 right</text>
+<circle cx="810" cy="377" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="381" class="small" text-anchor="end">1</text>
+<circle cx="810" cy="396" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="400" class="small" text-anchor="end">2</text>
+<circle cx="810" cy="415" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="419" class="small" text-anchor="end">3</text>
+<circle cx="810" cy="434" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="438" class="small" text-anchor="end">4</text>
+<circle cx="810" cy="453" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="457" class="small" text-anchor="end">5</text>
+<circle cx="810" cy="472" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="476" class="small" text-anchor="end">6</text>
+<circle cx="810" cy="491" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="495" class="small" text-anchor="end">7</text>
+<circle cx="810" cy="510" r="5" fill="#9b6514" stroke="#52647a"/>
+<text x="797" y="514" class="small" text-anchor="end">8</text>
+<text x="823" y="514" class="small" text-anchor="start">DB9.3</text>
+<circle cx="810" cy="529" r="5" fill="#537525" stroke="#52647a"/>
+<text x="797" y="533" class="small" text-anchor="end">9</text>
+<text x="823" y="533" class="small" text-anchor="start">DB9.4</text>
+<circle cx="810" cy="548" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="552" class="small" text-anchor="end">10</text>
+<circle cx="810" cy="567" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="571" class="small" text-anchor="end">11</text>
+<circle cx="810" cy="586" r="5" fill="#925687" stroke="#52647a"/>
+<text x="797" y="590" class="small" text-anchor="end">12</text>
+<text x="823" y="590" class="small" text-anchor="start">DB9.6</text>
+<circle cx="810" cy="605" r="5" fill="#2466a5" stroke="#52647a"/>
+<text x="797" y="609" class="small" text-anchor="end">13</text>
+<text x="823" y="609" class="small" text-anchor="start">DB9.9</text>
+<circle cx="810" cy="624" r="5" fill="#6354ba" stroke="#52647a"/>
+<text x="797" y="628" class="small" text-anchor="end">14</text>
+<text x="823" y="628" class="small" text-anchor="start">DB9.1</text>
+<circle cx="810" cy="643" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="647" class="small" text-anchor="end">15</text>
+<circle cx="810" cy="662" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="666" class="small" text-anchor="end">16</text>
+<circle cx="810" cy="681" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="685" class="small" text-anchor="end">17</text>
+<circle cx="810" cy="700" r="5" fill="white" stroke="#52647a"/>
+<text x="797" y="704" class="small" text-anchor="end">18</text>
+<circle cx="810" cy="719" r="5" fill="#c12c2c" stroke="#52647a"/>
+<text x="797" y="723" class="small" text-anchor="end">19</text>
+<text x="823" y="723" class="small" text-anchor="start">DB9.5</text>
+<circle cx="810" cy="738" r="5" fill="#18242d" stroke="#52647a"/>
+<text x="797" y="742" class="small" text-anchor="end">20</text>
+<text x="823" y="742" class="small" text-anchor="start">DB9.8</text>
+<circle cx="996" cy="377" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="381" class="small" text-anchor="start">1</text>
+<circle cx="996" cy="396" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="400" class="small" text-anchor="start">2</text>
+<circle cx="996" cy="415" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="419" class="small" text-anchor="start">3</text>
+<circle cx="996" cy="434" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="438" class="small" text-anchor="start">4</text>
+<circle cx="996" cy="453" r="5" fill="#cb6600" stroke="#52647a"/>
+<text x="1009" y="457" class="small" text-anchor="start">5</text>
+<text x="983" y="457" class="small" text-anchor="end">DB9.7</text>
+<circle cx="996" cy="472" r="5" fill="#087a8c" stroke="#52647a"/>
+<text x="1009" y="476" class="small" text-anchor="start">6</text>
+<text x="983" y="476" class="small" text-anchor="end">DB9.2</text>
+<circle cx="996" cy="491" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="495" class="small" text-anchor="start">7</text>
+<circle cx="996" cy="510" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="514" class="small" text-anchor="start">8</text>
+<circle cx="996" cy="529" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="533" class="small" text-anchor="start">9</text>
+<circle cx="996" cy="548" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="552" class="small" text-anchor="start">10</text>
+<circle cx="996" cy="567" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="571" class="small" text-anchor="start">11</text>
+<circle cx="996" cy="586" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="590" class="small" text-anchor="start">12</text>
+<circle cx="996" cy="605" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="609" class="small" text-anchor="start">13</text>
+<circle cx="996" cy="624" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="628" class="small" text-anchor="start">14</text>
+<circle cx="996" cy="643" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="647" class="small" text-anchor="start">15</text>
+<circle cx="996" cy="662" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="666" class="small" text-anchor="start">16</text>
+<circle cx="996" cy="681" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="685" class="small" text-anchor="start">17</text>
+<circle cx="996" cy="700" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="704" class="small" text-anchor="start">18</text>
+<circle cx="996" cy="719" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="723" class="small" text-anchor="start">19</text>
+<circle cx="996" cy="738" r="5" fill="white" stroke="#52647a"/>
+<text x="1009" y="742" class="small" text-anchor="start">20</text>
+<text x="903" y="772" class="label" text-anchor="middle">HDMI</text>
+<text x="45" y="782" class="sub" >Optional100nF ceramic: directly between DB9.5 (3.3V) and DB9.8 (GND).</text>
+<text x="45" y="824" class="sub" >Six data inputs use FPGA internal pull-ups. TH/select is an FPGA OUTPUT.</text>
+<text x="45" y="852" class="sub" >Player2 stays unwired. These player1 GPIOs avoid onboard LEDs and HDMI sideband pins.</text>
+<text x="45" y="890" class="sub" >Minimum parts: Nano + passive male DB9 breakout + nine jumpers. No RS-232/USB-serial adapter.</text>
+<text x="45" y="919" class="sub" >Not all Sega pads work at3.3V. Check pad current and Nano3.3V headroom. No hot-plug protection.</text>
+<text x="45" y="948" class="small" >Nano orientation/header mapping: Sipeed v3921 schematic. Confirm the actual module revision.</text>
+<text x="45" y="974" class="small" >Wire colours are illustration choices, NOT Sega cable colour codes. Drawing not to mechanical scale.</text>
+<text x="45" y="1005" class="small" >See the Gen Thang README for matched-bitstream requirements and power-off connection procedure.</text>
+</svg>

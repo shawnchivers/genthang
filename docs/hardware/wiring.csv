@@ -1,0 +1,10 @@
+db9_pin,function,nano_gpio_or_rail,nano_header,contact_from_usb,rtl_signal
+1,D0 / UP,31,J6,14,db9_d[0]
+2,D1 / DOWN,41,J5,6,db9_d[1]
+3,D2 / LEFT,27,J6,8,db9_d[2]
+4,D3 / RIGHT,28,J6,9,db9_d[3]
+5,3.3V ONLY,3V3,J6,19,
+6,"TL / B,A",29,J6,12,db9_d[4]
+7,TH SELECT,42,J5,5,db9_th
+8,GROUND,GND,J6,20,
+9,"TR / C,START",30,J6,13,db9_d[5]
