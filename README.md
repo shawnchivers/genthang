@@ -267,7 +267,7 @@ The essentials:
 
 - The pad runs from the Nano's 3.3 V rail. Not every Sega or clone pad works at
   3.3 V, and the regulator headroom is unmeasured. Use one ordinary wired pad: no
-  rumble, wireless receivers, powered adapters or multitaps.
+  wireless receivers, powered adapters or multitaps.
 - This is unprotected: there are no series resistors, TVS diodes or fuse.
   **Never connect the pad to the Nano's 5 V pin.** Do not plug or unplug the pad
   while powered.
