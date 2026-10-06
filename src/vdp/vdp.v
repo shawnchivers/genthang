@@ -1955,13 +1955,13 @@ module vdp(
                   OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS;
                   SP3C <= SP3C_PRE1;
                end
-            
+
             SP3C_PRE1 :
                begin
                   OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS + 1;
                   SP3C <= SP3C_PLOT;
                end
-            
+
             // loop over all sprite pixels on the current line
             SP3C_PLOT :
                begin
@@ -3345,4 +3345,3 @@ module vdp(
       end 
                                     
 endmodule
-
