@@ -12,6 +12,7 @@
 #include "picorv32.h"
 #include "fatfs/ff.h"
 #include "ss_stub.h"
+#include "version.h"
 
 // joystick bits (R L X A RT LT DN UP START SELECT Y B)
 #define J_B      0x001      // Cross
@@ -106,7 +107,7 @@ static void draw_frame() {
     for (int r = 0; r < 28; r++)
         fill(0, r, 32);
     text(4, TITLE_ROW, "GEN THANG");
-    centered(SUB_ROW, 32, "\x06 Truly Truly Outrageous \x06");
+    centered(SUB_ROW, 32, "\x06 v" GENTHANG_VERSION " Outrageous \x06");
 }
 
 static void help(const char *s) {
@@ -861,12 +862,10 @@ static void menu() {
                     break;
                 case OPT_RESET:
                     if (!(k & J_OK)) break;
-                    td_reg(2, SS_ZFREEZE);             // finish the current Z80 instruction first
-                    delay(2);
-                    td_reg(2, SS_RESET | SS_ZFREEZE);  // console reset; external SDRAM stays intact
-                    delay(1);
-                    td_reg(2, 0);
+                    td_reg(2, SS_RESET);                // short console reset; SDRAM stays intact
+                    delay(100);
                     wait_release(J_ALL);
+                    td_reg(2, 0);
                     return;
                 case OPT_GAMES:
                     if (!(k & J_OK)) break;

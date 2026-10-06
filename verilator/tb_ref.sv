@@ -39,7 +39,7 @@ wire [15:1] vram32_a;
 wire [31:0] vram32_q;
 
 system megadrive (
-    .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on),
+    .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on), .SOFT_RESET(1'b0),
     .LPF_MODE(2'b11), .ENABLE_FM(1'b1), .ENABLE_PSG(1'b1), .DAC_LDATA(audio_left), .DAC_RDATA(audio_right),
     .LOADING(~md_on), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
     .EEPROM_QUIRK(1'b0), .NORAM_QUIRK(1'b0), .PIER_QUIRK(1'b0), .SVP_QUIRK(1'b0), .FMBUSY_QUIRK(1'b0),

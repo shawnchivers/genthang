@@ -53,6 +53,7 @@ module system #(
 )
 (
 	input         RESET_N,
+	input         SOFT_RESET,
 	input         MCLK,			// 53.69Mhz
 	input         CLK_Z80,		// 1/2 MCLK as Z80 core has low Fmax
 
@@ -218,8 +219,14 @@ reg        BANK_ROM;
 reg        BANK_SRAM;
 
 
+reg soft_reset = 1'b0;
+always @(posedge MCLK) begin
+	if (~RESET_N) soft_reset <= 1'b0;
+	else soft_reset <= SOFT_RESET;
+end
+
 wire reset, hard_reset;
-assign reset = ~RESET_N;
+assign reset = ~RESET_N | soft_reset;
 assign hard_reset = ~RESET_N;
 
 // reg reset;

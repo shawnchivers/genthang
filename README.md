@@ -320,6 +320,8 @@ The Options page opens first when you call up the menu during a game:
 - **Scanlines**: off, 25 %, 50 %
 - **Composite blend**: off, on, adaptive
 
+The running firmware version is shown below the **GEN THANG** title on every menu page.
+
 Opening the menu pauses the game and mutes HDMI audio. **Reset game** pulses the
 console reset input without clearing work RAM, like the physical Genesis reset
 button (this is the reset X-Men's Mojo level expects). Display settings are saved

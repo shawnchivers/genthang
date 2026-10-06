@@ -217,8 +217,9 @@ always @(posedge clk_sys) begin
     end
 end
 
-// Menu Reset Game drives the console reset input. SDRAM remains live, matching the
-// physical reset button behavior required by games such as X-Men.
+// Menu Reset Game resets the CPUs without applying the power-on reset used while no
+// game is loaded. SDRAM and the rest of the console state remain live, matching the
+// short physical reset-button press required by games such as X-Men.
 wire reset_btn = ss_ctrl[3];
 
 // Genesis ------------------------------------------------------------------------------
@@ -239,7 +240,7 @@ assign audio_left  = overlay_s[1] ? 16'd0 : core_audio_left;
 assign audio_right = overlay_s[1] ? 16'd0 : core_audio_right;
 
 system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
-    .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on & ~reset_btn),
+    .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on), .SOFT_RESET(reset_btn),
     .LPF_MODE(2'b11), .ENABLE_FM(1'b1), .ENABLE_PSG(1'b1), .DAC_LDATA(core_audio_left), .DAC_RDATA(core_audio_right),
     .LOADING(loading), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
     .EEPROM_QUIRK(1'b0), .NORAM_QUIRK(1'b0), .PIER_QUIRK(1'b0), .SVP_QUIRK(1'b0), .FMBUSY_QUIRK(1'b0),
