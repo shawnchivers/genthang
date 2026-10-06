@@ -2,6 +2,14 @@
 
 ## 1.4.0-alpha - unreleased
 
+- VDP accuracy, found with genthangverify against BlastEm: the sprite line buffer RAM is
+  clocked on `CLK` here (Genesis_MiSTer uses `~CLK`), which made the "is this pixel already
+  taken" read lag one pixel, so overlapping sprites lost or replaced pixels and the sprite
+  collision flag was wrong. Sprite part three now issues the read two pixels ahead and
+  primes the first two pixels of every tile (two extra cycles per sprite tile). Sonic 2 and
+  Streets of Rage 2 scenes that differed on every frame now match BlastEm.
+- `VSCROLL_BUG` is now 1 (hardware behaviour of the partial left column with per-column
+  vertical scroll) instead of the MiSTer "nicer" option 0.
 - Consolidated the project into the standalone `genthang` repository with a clean
   root commit while retaining the earlier development record below.
 - Clarified the project's lineage: Gen Thang adapts MDTang, bringing its spirit to

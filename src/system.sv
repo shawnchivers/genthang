@@ -481,7 +481,7 @@ vdp vdp
 	.BGACK_N(VBUS_BGACK_N),
 
 	.VRAM_SPEED(~(FAST_FIFO|TURBO!=0)),
-	.VSCROLL_BUG(0),
+	.VSCROLL_BUG(1),		// 1: hardware-accurate left-column vscroll bug (0 is the "nicer" MiSTer option)
 	.BORDER_EN(BORDER),
 	.CRAM_DOTS(CRAM_DOTS),
 	.SVP_QUIRK(SVP_QUIRK),

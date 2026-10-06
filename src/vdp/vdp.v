@@ -633,7 +633,9 @@ module vdp(
                     SP3C_TILE_RD = 2,
                     SP3C_LOOP = 3,
                     SP3C_PLOT = 4,
-                    SP3C_DONE = 5;
+                    SP3C_DONE = 5,
+                    SP3C_PRE0 = 6,
+                    SP3C_PRE1 = 7;
    reg [2:0]        SP3C;
    
    reg [15:1]       SP3_VRAM_ADDR;
@@ -1942,8 +1944,23 @@ module vdp(
             SP3C_TILE_RD :
                if (SP3_VRAM32_ACK) begin
                   SP3_SEL <= 1'b0;
-                  SP3C <= SP3C_PLOT;
+                  SP3C <= SP3C_PRE0;
                end 
+            
+            // The line buffer RAM is clocked on CLK here (Genesis_MiSTer uses ~CLK), so a read
+            // returns data two cycles after the address is issued. Issue the addresses of the first
+            // two pixels of the tile ahead of PLOT, and PLOT keeps the read pointer two pixels ahead.
+            SP3C_PRE0 :
+               begin
+                  OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS;
+                  SP3C <= SP3C_PRE1;
+               end
+            
+            SP3C_PRE1 :
+               begin
+                  OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS + 1;
+                  SP3C <= SP3C_PLOT;
+               end
             
             // loop over all sprite pixels on the current line
             SP3C_PLOT :
@@ -1984,7 +2001,7 @@ module vdp(
                   
                   OBJ_POS <= OBJ_POS + 1;
                   OBJ_PIX <= OBJ_PIX + 1;
-                  OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS + 1;
+                  OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS + 2;
                   if (OBJ_HF) begin
                      if (OBJ_X_OFS == 5'b00000)
                         SP3C <= SP3C_NEXT;
