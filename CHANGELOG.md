@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.1 - 2026-10-08
+
+- Corrected per-line sprite-cell overflow handling for partially budgeted
+  horizontally flipped sprites; the rendered cell selection now matches
+  BlastEm in the covered Verilator comparisons. Physical hardware overflow
+  ordering is not independently confirmed.
+- Enabled timing-priority placement and timing-directed routing for the DS,
+  raw, and DB9 breadboard release builds.
+
 ## 1.4.0 - 2026-10-08
 
 - VDP accuracy, found with genthangverify against BlastEm: the sprite line buffer RAM is

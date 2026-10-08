@@ -75,6 +75,8 @@ proc add_file {args} {
 }
 proc set_option {name value} {
     if {$name eq "-output_base_name"} {puts "OUTPUT=$value"}
+    if {$name eq "-place_option"} {puts "PLACE=$value"}
+    if {$name eq "-route_option"} {puts "ROUTE=$value"}
 }
 proc run {args} {puts "RUN=$args"}
 if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
@@ -86,6 +88,12 @@ if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
                 self.assertIn(f'CST=src/boards/nano20k_{pad}{suffix}.cst',result.stdout)
                 output='genthang_nano20k_db9_breadboard' if suffix else 'genthang_nano20k'
                 self.assertIn(f'OUTPUT={output}',result.stdout)
+                if pad != 'db9' or pinout == 'breadboard':
+                    self.assertIn('PLACE=2',result.stdout)
+                    self.assertIn('ROUTE=1',result.stdout)
+                else:
+                    self.assertNotIn('PLACE=',result.stdout)
+                    self.assertNotIn('ROUTE=',result.stdout)
                 self.assertIn('RUN=all',result.stdout)
                 self.assertEqual((root/'src/pad_config.vh').read_text().strip(),f'`define GT_PAD_{pad.upper()}')
 

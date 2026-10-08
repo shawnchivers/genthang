@@ -377,6 +377,7 @@ module vdp(
    wire [8:0]       H_DISP_START;
    wire [8:0]       H_DISP_WIDTH;
    wire [8:0]       H_TOTAL_WIDTH;
+   wire [8:0]       OBJ_PIXEL_LIMIT;
    wire [8:0]       H_SPENGINE_ON;
    wire [8:0]       H_INT_POS;
    wire [8:0]       HSYNC_START;
@@ -1785,6 +1786,7 @@ module vdp(
       reg [5:0]        obj_y_ofs_var;
       reg [10:0]       obj_pat_var;
       reg [3:0]        obj_color;
+      reg [1:0]        obj_hs_skip;
       
       if (RST_N == 1'b0) begin
          SP3_SEL <= 1'b0;
@@ -1838,6 +1840,22 @@ module vdp(
                   obj_vf_var = OBJ_SPINFO_Q[31];
                   OBJ_PAL <= OBJ_SPINFO_Q[33:32];
                   OBJ_PRI <= OBJ_SPINFO_Q[34];
+
+                  obj_hs_skip = 2'b00;
+                  if (obj_hf_var & (OBJ_LIMIT_HIGH_EN == 1'b0) &
+                      (OBJ_PIX[8:6] == {H40, ~H40, ~H40}))
+                     case (obj_hs_var)
+                        2'b01 :
+                           if (&OBJ_PIX[5:3])
+                              obj_hs_skip = 2'd1;
+                        2'b10 :
+                           if (&OBJ_PIX[5:4])
+                              obj_hs_skip = {1'b0, OBJ_PIX[3]} + 2'd1;
+                        2'b11 :
+                           if (OBJ_PIX[5])
+                              obj_hs_skip = OBJ_PIX[4:3];
+                        default : ;
+                     endcase
                   
                   OBJ_SPINFO_ADDR_RD <= OBJ_NO + 1;
                   OBJ_NO <= OBJ_NO + 1;
@@ -1850,17 +1868,10 @@ module vdp(
                      OBJ_VALID_X <= 1'b1;
                   
                   OBJ_X_OFS <= 5'b00000;
-                  if (obj_hf_var)
-                     case (obj_hs_var)
-                        2'b00 :		// 8 pixels
-                           OBJ_X_OFS <= 5'b00111;
-                        2'b01 :		// 16 pixels
-                           OBJ_X_OFS <= 5'b01111;
-                        2'b11 :		// 32 pixels
-                           OBJ_X_OFS <= 5'b11111;
-                        default :		// 24 pixels
-                           OBJ_X_OFS <= 5'b10111;
-                     endcase
+                  if (obj_hf_var) begin
+                     OBJ_X_OFS[4:3] <= obj_hs_var - obj_hs_skip;
+                     OBJ_X_OFS[2:0] <= {1'b0, obj_hs_skip};
+                  end
                   
                   if (LSM == 2'b11 & obj_vf_var)
                      case (obj_vs_var)
@@ -1886,7 +1897,8 @@ module vdp(
                            obj_y_ofs_var = 6'b010111 - obj_y_ofs_var[4:0];
                      endcase
                   
-                  OBJ_POS <= obj_x_var - 9'b010000000;
+                  OBJ_POS[8:3] <= obj_x_var[8:3] + 6'b110000;
+                  OBJ_POS[2:0] <= obj_x_var[2:0];
                   OBJ_TILEBASE <= ({obj_pat_var, 4'b0000}) + ({3'b000, obj_y_ofs_var, 1'b0});
                end
             
@@ -1895,6 +1907,11 @@ module vdp(
                begin
                   OBJ_COLINFO_WE_SP3 <= 1'b0;
                   OBJ_COLINFO_ADDR_RD_SP3 <= OBJ_POS;
+                  if (OBJ_HF & (OBJ_X_OFS[2:0] != 3'b111)) begin
+                     if (OBJ_X_OFS[1:0] != 2'b00)
+                        OBJ_POS[8:3] <= OBJ_POS[8:3] + OBJ_X_OFS[1:0];
+                     OBJ_X_OFS[2:0] <= 3'b111;
+                  end
                   
                   if (LSM == 2'b11)
                      case (OBJ_VS)
@@ -1987,7 +2004,7 @@ module vdp(
                   endcase
                   
                   OBJ_COLINFO_WE_SP3 <= 1'b0;
-                  if (OBJ_POS < 320) begin
+                  if ((OBJ_POS < 320) & (OBJ_PIX != OBJ_PIXEL_LIMIT)) begin
                      if (OBJ_COLINFO_Q_A[3:0] == 4'b0000) begin
                         if (OBJ_MASKED == 1'b0) begin
                            OBJ_COLINFO_WE_SP3 <= 1'b1;
@@ -2024,7 +2041,7 @@ module vdp(
                      end
                   
                   // limit total sprite pixels per line
-                  if ((OBJ_PIX == H_DISP_WIDTH & OBJ_LIMIT_HIGH_EN == 1'b0) | (OBJ_PIX == H_TOTAL_WIDTH & OBJ_LIMIT_HIGH_EN)) begin
+                  if (OBJ_PIX == OBJ_PIXEL_LIMIT) begin
                      OBJ_DOT_OVERFLOW <= 1'b1;
                      SP3C <= SP3C_DONE;
                      SOVR_SET <= 1'b1;
@@ -2054,6 +2071,7 @@ module vdp(
    assign H_DISP_START  = (H40) ? H_DISP_START_H40  : H_DISP_START_H32;
    assign H_DISP_WIDTH  = (H40) ? H_DISP_WIDTH_H40  : H_DISP_WIDTH_H32;
    assign H_TOTAL_WIDTH = (H40) ? H_TOTAL_WIDTH_H40 : H_TOTAL_WIDTH_H32;
+   assign OBJ_PIXEL_LIMIT = OBJ_LIMIT_HIGH_EN ? H_TOTAL_WIDTH : H_DISP_WIDTH;
    assign H_INT_POS     = (H40) ? H_INT_H40         : H_INT_H32;
    assign HSYNC_START   = (H40) ? HSYNC_START_H40   : HSYNC_START_H32;
    assign HSYNC_END     = (H40) ? HSYNC_END_H40     : HSYNC_END_H32;
@@ -2449,8 +2467,8 @@ module vdp(
                   else if (DBG[8:7] != 2'b00)
                      col = col & cold;
                   
-                  if (x >= H_DISP_WIDTH | V_ACTIVE_DISP == 1'b0) begin
-                     // border area
+                  if (x >= H_DISP_WIDTH | V_ACTIVE_DISP == 1'b0 | (REG[0][5] & x < 8)) begin
+                     // border area and left-column blanking
                      col = BGCOL;
                      PIX_MODE <= PIX_NORMAL;
                   end 

@@ -93,8 +93,13 @@ set_option -use_ready_as_gpio 1
 set_option -use_done_as_gpio 1
 set_option -use_i2c_as_gpio 1
 set_option -use_cpu_as_gpio 1
-if {$pad ne "db9"} {
+if {$pad eq "ds"} {
     set_option -place_option 2       ;# timing priority
+} elseif {$pad ne "db9" || $pinout eq "breadboard"} {
+    set_option -place_option 2       ;# timing priority
+}
+if {$pad ne "db9" || $pinout eq "breadboard"} {
+    set_option -route_option 1       ;# timing-directed routing
 }
 set_option -output_base_name $output_base
 
