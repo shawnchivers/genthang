@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.4.0-alpha - unreleased
+## 1.4.0 - 2026-10-08
 
 - VDP accuracy, found with genthangverify against BlastEm: the sprite line buffer RAM is
   clocked on `CLK` here (Genesis_MiSTer uses `~CLK`), which made the "is this pixel already
