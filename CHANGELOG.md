@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.2 - 2026-10-09
+
+- Fixed the Genesis six-button controller phase counter so the extended response
+  occurs once per handshake instead of repeating every fourth rapid poll.
+- Added a runtime **CRAM dots** option to the menu. It defaults to off, persists
+  in `GENTHANG.CFG`, and preserves settings files written by earlier releases.
+- Built and timing-checked the DualShock, raw-button, and DB9 breadboard images;
+  the controller, smoke, and VDP accuracy regressions all pass.
+
 ## 1.4.1 - 2026-10-08
 
 - Corrected per-line sprite-cell overflow handling for partially budgeted

@@ -533,16 +533,16 @@ module pad_io
 );
 
 reg TH;
-reg [1:0] JCNT;
+reg [2:0] JCNT;
 
 always @(*) begin
 	DO[7:6] = {1'b0,TH};
-	if(TH)
-		if (JCNT != 3)   DO[5:0] = {P_C,P_B,P_RIGHT,P_LEFT,P_DOWN,P_UP};
-		else             DO[5:0] = {P_C,P_B,P_MODE,P_X,P_Y,P_Z};
-	else if (JCNT < 2)  DO[5:0] = {P_START,P_A,2'b00,P_DOWN,P_UP};
-	else if (JCNT == 2) DO[5:0] = {P_START,P_A,4'b0000};
-	else                DO[5:0] = {P_START,P_A,4'b1111};
+	if(TH && JCNT == 3)        DO[5:0] = {P_C,P_B,P_MODE,P_X,P_Y,P_Z};
+	else if(TH)                DO[5:0] = {P_C,P_B,P_RIGHT,P_LEFT,P_DOWN,P_UP};
+	else if (JCNT < 2)         DO[5:0] = {P_START,P_A,2'b00,P_DOWN,P_UP};
+	else if (JCNT == 2)        DO[5:0] = {P_START,P_A,4'b0000};
+	else if (JCNT == 3)        DO[5:0] = {P_START,P_A,4'b1111};
+	else                       DO[5:0] = {P_START,P_A,2'b00,P_DOWN,P_UP};
 end
 
 always @(posedge RESET or posedge CLK) begin
@@ -555,7 +555,7 @@ always @(posedge RESET or posedge CLK) begin
 	if(RESET) begin
 		DTACK_N <= 1;
 		TH   <= 1;
-		JCNT <= 3;
+		JCNT <= 0;
 		JTMR <= 0;
 		FLTMR <= 0;
 		THd <= 1;
@@ -572,7 +572,7 @@ always @(posedge RESET or posedge CLK) begin
 	
 		THd <= TH;
 		if(JTMR > 11600 || J3BUT) JCNT <= 0;
-		if(~THd & TH) JCNT <= JCNT + 1'd1;
+		if(~THd & TH && JCNT < 4) JCNT <= JCNT + 1'd1;
 
 		if(~&JTMR) JTMR <= JTMR + 1'd1;
 		if(THd & ~TH) JTMR <= 0;

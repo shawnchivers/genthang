@@ -319,6 +319,7 @@ The Options page opens first when you call up the menu during a game:
 - **Switch core**: choose a complete `.bin` image from `/cores` (see below)
 - **Scanlines**: off, 25 %, 50 %
 - **Composite blend**: off, on, adaptive
+- **CRAM dots**: off (default), on
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
 
@@ -339,6 +340,9 @@ post-processing options are applied by the HDMI scaler:
   dither patterns many games use for transparency and shading the way a composite
   cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
   dither, leaving the rest of the picture sharp.
+- **CRAM dots** exposes palette writes made during active display immediately in
+  the pixel stream. It is off by default and can be enabled for games or tests that
+  depend on this VDP behavior.
 
 <table>
   <tr>
