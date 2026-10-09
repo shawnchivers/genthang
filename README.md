@@ -145,6 +145,7 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 |---|---|---|
 | `genthang_nano20k_ds_flash.bin` | Two DualShock 2 pads (default) | Plugs into the Sipeed DS2 PMOD adapters; see [DualShock 2](#dualshock-2-ds-build) |
 | `genthang_nano20k_db9_breadboard_flash.bin` | One Genesis pad on a DB9 breakout | Nine wires, 3.3 V only; see [single-DB9 breadboard](#single-genesis-pad-on-a-breadboard-db9_breadboard-build). Bench-tested with a wired six-button pad |
+| `genthang_nano20k_db9_breadboard_rev1_flash.bin` | Two Genesis pads on DB9 breakouts | Dual-port perfboard wiring, 3.3 V only; see [dual Genesis pads](#dual-genesis-pads-db9_breadboard_rev1-build) |
 | `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | For handhelds; see [direct buttons](#direct-buttons-raw-build) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
@@ -279,6 +280,32 @@ The essentials:
   has been built, timing-checked and bench-tested by the author with a wired
   six-button Genesis pad (photo above). Other pads and clones have not been tried.
 
+#### Dual Genesis pads (`db9_breadboard_rev1` build)
+
+For two wired 3- or 6-button Genesis pads, use
+`genthang_nano20k_db9_breadboard_rev1_flash.bin`. Its pin assignment is different
+from the single-DB9 image: player 1 is entirely on J6 and player 2 entirely on J5.
+Leave the Nano LCD connector and speaker header empty. Both ports use 3.3 V with
+internal pull-ups; never connect either controller to 5 V or hot-plug it.
+
+| DB9 pin (male) | Signal | Player 1 FPGA pin (contact) | Player 2 FPGA pin (contact) |
+|---|---|---|---|
+| 1 | Up / D0 | 73 (J6.1) | 42 (J5.5) |
+| 2 | Down / D1 | 74 (J6.2) | 41 (J5.6) |
+| 3 | Left / D2 | 77 (J6.5) | 51 (J5.9) |
+| 4 | Right / D3 | 27 (J6.8) | 48 (J5.10) |
+| 5 | Pad supply | **3.3 V, not 5 V** (J6.19) | **3.3 V, not 5 V** (J5.16) |
+| 6 | TL (B / A) | 28 (J6.9) | 49 (J5.12) |
+| 7 | TH select (output) | 29 (J6.12) | 72 (J5.17) |
+| 8 | Ground | GND (J6.20) | GND (J5.15) |
+| 9 | TR (C / Start) | 30 (J6.13) | 71 (J5.18) |
+
+Build it with:
+
+```sh
+GT_PAD=db9 GT_PINOUT=breadboard-rev1 ./build.sh
+```
+
 #### Direct buttons (`raw` build)
 
 For handheld builds: twelve buttons, each switching an FPGA pin to GND (the
@@ -319,7 +346,6 @@ The Options page opens first when you call up the menu during a game:
 - **Switch core**: choose a complete `.bin` image from `/cores` (see below)
 - **Scanlines**: off, 25 %, 50 %
 - **Composite blend**: off, on, adaptive
-- **CRAM dots**: off (default), on
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
 
@@ -340,10 +366,6 @@ post-processing options are applied by the HDMI scaler:
   dither patterns many games use for transparency and shading the way a composite
   cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
   dither, leaving the rest of the picture sharp.
-- **CRAM dots** exposes palette writes made during active display immediately in
-  the pixel stream. It is off by default and can be enabled for games or tests that
-  depend on this VDP behavior.
-
 <table>
   <tr>
     <td align="center"><img src="docs/images/display-off.png" width="300"><br><sub>Off</sub></td>

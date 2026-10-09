@@ -3,7 +3,7 @@
 #   genthang_nano20k_<variant>.fs          bitstream only (SRAM load with Gowin Programmer)
 #   genthang_nano20k_<variant>_flash.bin   bitstream + menu firmware for SPI flash address 0
 #   SHA256SUMS, genthang-v<VERSION>.tar.gz
-# Variants: ds (default), raw, db9-breadboard (GT_PAD=db9 GT_PINOUT=breadboard).
+# Variants: ds (default), raw, db9-breadboard, db9-breadboard-rev1 (dual DB9).
 # usage: ./release.sh [outdir]      VARIANTS="ds db9" ./release.sh   for a subset
 #        PACKAGE_ONLY=1 ./release.sh   re-pack the tarball from the images already in outdir
 # A variant that misses its clock targets or leaves negative slack fails the release.
@@ -15,10 +15,13 @@ mkdir -p "$OUT"
 if [ -z "${PACKAGE_ONLY:-}" ]; then
 rm -f "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin "$OUT"/SHA256SUMS
 
-for variant in ${VARIANTS:-ds raw db9-breadboard}; do
+for variant in ${VARIANTS:-ds raw db9-breadboard db9-breadboard-rev1}; do
     case $variant in
         ds|raw)         pad=$variant; pinout=stock;      name=$variant;       base=genthang_nano20k ;;
         db9-breadboard) pad=db9;      pinout=breadboard; name=db9_breadboard; base=genthang_nano20k_db9_breadboard ;;
+        db9-breadboard-rev1)
+                        pad=db9;      pinout=breadboard-rev1; name=db9_breadboard_rev1
+                        base=genthang_nano20k_db9_breadboard_rev1 ;;
         *) echo "unknown variant: $variant" >&2; exit 2 ;;
     esac
     echo "== $variant (GT_PAD=$pad GT_PINOUT=$pinout)"

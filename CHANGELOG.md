@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 - 2026-10-09
+
+- Removed the nonfunctional CRAM-dots menu option and forced the VDP option off.
+  Settings files written by v1.4.2 remain readable.
+- Added a dual-DB9 `breadboard-rev1` build matching the two-controller perfboard
+  pinout in the Genthang hardware repository.
+
 ## 1.4.2 - 2026-10-09
 
 - Fixed the Genesis six-button controller phase counter so the extended response

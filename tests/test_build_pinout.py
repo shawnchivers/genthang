@@ -33,7 +33,12 @@ class PinoutTests(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual(result.stdout.strip(),
             'db9|breadboard|src/boards/nano20k_db9_breadboard.cst|genthang_nano20k_db9_breadboard')
+        result=select('db9','breadboard-rev1')
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(result.stdout.strip(),
+            'db9|breadboard-rev1|src/boards/nano20k_db9_breadboard_rev1.cst|genthang_nano20k_db9_breadboard_rev1')
         for pad,pinout in [('ds','breadboard'),('raw','breadboard'),(None,'breadboard'),
+                           ('ds','breadboard-rev1'),('raw','breadboard-rev1'),(None,'breadboard-rev1'),
                            ('db9','typo'),('invalid','stock')]:
             self.assertNotEqual(select(pad,pinout).returncode,0)
 
@@ -59,10 +64,28 @@ class PinoutTests(unittest.TestCase):
             for i in range(6):
                 self.assertIn('PULL_MODE=UP',dict(re.findall(ports,new))[f'{bus}[{i}]'])
 
+    def test_dual_db9_rev1_pins_match_hardware(self):
+        cst=(ROOT/'src/boards/nano20k_db9_breadboard_rev1.cst').read_text()
+        pattern=r'IO_LOC\s+"([^"]+)"\s+([^;]+);'
+        pins=dict(re.findall(pattern,cst))
+        expected={'db9_d[0]':73,'db9_d[1]':74,'db9_d[2]':77,'db9_d[3]':27,
+                  'db9_d[4]':28,'db9_d[5]':30,'db9_th':29,
+                  'db9b_d[0]':42,'db9b_d[1]':41,'db9b_d[2]':51,'db9b_d[3]':48,
+                  'db9b_d[4]':49,'db9b_d[5]':71,'db9b_th':72}
+        for signal,pin in expected.items():
+            self.assertEqual(int(pins[signal]),pin)
+        assigned=[int(v) for value in pins.values() for v in value.replace(',',' ').split()]
+        self.assertEqual(len(assigned),len(set(assigned)))
+        ports=dict(re.findall(r'IO_PORT\s+"([^"]+)"\s+([^;]+);',cst))
+        for bus in ['db9_d','db9b_d']:
+            for i in range(6):
+                self.assertIn('PULL_MODE=UP',ports[f'{bus}[{i}]'])
+
     def test_full_build_script_uses_selected_profile(self):
         # Run the actual build.tcl with Gowin commands stubbed; real file/glob
         # operations occur in a disposable source tree, never the live checkout.
-        for pad,pinout in [('ds','stock'),('db9','stock'),('raw','stock'),('db9','breadboard')]:
+        for pad,pinout in [('ds','stock'),('db9','stock'),('raw','stock'),('db9','breadboard'),
+                           ('db9','breadboard-rev1')]:
             with tempfile.TemporaryDirectory() as temp:
                 root=Path(temp)
                 shutil.copytree(ROOT/'src',root/'src')
@@ -84,11 +107,12 @@ if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
                 result=subprocess.run(['tclsh'],cwd=root,text=True,input=script,capture_output=True,
                                       env={**os.environ,'GT_PAD':pad,'GT_PINOUT':pinout})
                 self.assertEqual(result.returncode,0,result.stderr)
-                suffix='_breadboard' if pinout=='breadboard' else ''
+                suffix={'stock':'','breadboard':'_breadboard',
+                        'breadboard-rev1':'_breadboard_rev1'}[pinout]
                 self.assertIn(f'CST=src/boards/nano20k_{pad}{suffix}.cst',result.stdout)
-                output='genthang_nano20k_db9_breadboard' if suffix else 'genthang_nano20k'
+                output=f'genthang_nano20k_db9{suffix}' if suffix else 'genthang_nano20k'
                 self.assertIn(f'OUTPUT={output}',result.stdout)
-                if pad != 'db9' or pinout == 'breadboard':
+                if pad != 'db9' or pinout != 'stock':
                     self.assertIn('PLACE=2',result.stdout)
                     self.assertIn('ROUTE=1',result.stdout)
                 else:

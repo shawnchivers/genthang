@@ -248,7 +248,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
     .GG_RESET(1'b0), .GG_EN(1'b0), .GG_CODE(129'd0), .GG_AVAILABLE(),
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),
-    .BORDER(1'b0), .CRAM_DOTS(ss_ctrl[3]), .INTERLACE(interlace), .FIELD(), .RESOLUTION(resolution),
+    .BORDER(1'b0), .CRAM_DOTS(1'b0), .INTERLACE(interlace), .FIELD(), .RESOLUTION(resolution),
     .J3BUT(1'b0), .JOY_1(joy1), .JOY_2(joy2), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
     .MOUSE(25'd0), .MOUSE_OPT(3'd0), .GUN_OPT(1'b0), .GUN_TYPE(1'b0), .GUN_SENSOR(1'b0), .GUN_A(1'b0),
     .GUN_B(1'b0), .GUN_C(1'b0), .GUN_START(1'b0),

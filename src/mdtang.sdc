@@ -13,6 +13,11 @@ set_clock_groups -asynchronous -group [get_clocks {clk_sys clk_z80}] -group [get
 set_multicycle_path 4 -end -setup -from [get_clocks {clk_z80}] -to [get_clocks {clk_sys}]
 set_multicycle_path 3 -end -hold -from [get_clocks {clk_z80}] -to [get_clocks {clk_sys}]
 
+// JT12's phase increment register captures only on FM_CLKEN-derived clk_en. FM_CLKEN
+// is asserted once every seven clk_sys cycles, so this endpoint has seven cycles.
+set_multicycle_path 7 -setup -to [get_cells {core/megadrive/fm/u_jt12/u_pg/phinc_II*}]
+set_multicycle_path 6 -hold  -to [get_cells {core/megadrive/fm/u_jt12/u_pg/phinc_II*}]
+
 // From fx68k.txt
 // micro-code fetch is needed in 2 cycles
 //set_multicycle_path 4 -start -setup -from [get_pins {megadrive/M68K/Ir*/*}] -to [get_pins {megadrive/M68K/microAddr_*/*}]
@@ -25,4 +30,3 @@ set_multicycle_path 3 -end -hold -from [get_clocks {clk_z80}] -to [get_clocks {c
 //set_multicycle_path 3 -start -hold -from [get_pins {megadrive/M68K/nanoLatch*/*}] -to [get_pins {megadrive/M68K/excUnit/alu/pswCcr*/*}]
 //set_multicycle_path 4 -start -setup -from [get_pins {megadrive/M68K/excUnit/alu/oper*/*}] -to [get_pins {megadrive/M68K/excUnit/alu/pswCcr*/*}]
 //set_multicycle_path 3 -start -hold -from [get_pins {megadrive/M68K/excUnit/alu/oper*/*}] -to [get_pins {megadrive/M68K/excUnit/alu/pswCcr*/*}]
-

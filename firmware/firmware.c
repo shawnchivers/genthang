@@ -66,7 +66,6 @@ static bool game_loaded;
 static char cur_rom[1024 + NAME_LEN + 2];
 static int scanlines;               // 0 off, 1 25%, 2 50%
 static int blend;                   // composite blend 0 off, 1 on, 2 adaptive
-static int cram_dots;               // 0 off, 1 on
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -78,7 +77,7 @@ static void td_reg(int idx, int val) {
 }
 
 static void ss_reg(int val) {
-    td_reg(2, val | cram_dots << 3);
+    td_reg(2, val);
 }
 
 static void text(int col, int row, const char *s) {
@@ -135,9 +134,7 @@ static void load_options() {
             unsigned prefix = 0;
             if (c[0] >= '0' && c[0] <= '2') scanlines = c[0] - '0';
             if (c[1] >= '0' && c[1] <= '2') blend = c[1] - '0';
-            if (br >= 4 && (c[2] == '0' || c[2] == '1') && c[3] == '\n')
-                cram_dots = c[2] - '0';
-            else if (br >= 3 && c[2] == '\n' && br == sizeof c)
+            if (br >= 3 && c[2] == '\n' && br == sizeof c)
                 cur_rom[prefix++] = c[3];
             if ((br >= 4 && c[3] == '\n') || (br >= 3 && c[2] == '\n')) {
                 if (f_read(&f, cur_rom + prefix, sizeof cur_rom - 1 - prefix, &br) == FR_OK) {
@@ -154,7 +151,7 @@ static void load_options() {
 
 static void save_options() {
     FIL f;
-    char c[4] = {'0' + scanlines, '0' + blend, '0' + cram_dots, '\n'};
+    char c[3] = {'0' + scanlines, '0' + blend, '\n'};
     unsigned bw;
     if (sd_init() != 0 || f_open(&f, CFG_PATH, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK) {
         status("Cannot save settings");
@@ -764,7 +761,7 @@ static int receive_upload() {
 }
 
 // ---- menu --------------------------------------------------------------------------
-enum { OPT_RESTORE, OPT_RESUME, OPT_SAVE, OPT_LOAD, OPT_RESET, OPT_GAMES, OPT_CORES, OPT_SCAN, OPT_BLEND, OPT_CRAM_DOTS };
+enum { OPT_RESTORE, OPT_RESUME, OPT_SAVE, OPT_LOAD, OPT_RESET, OPT_GAMES, OPT_CORES, OPT_SCAN, OPT_BLEND };
 static int opt_items[10], nopt;
 
 static void draw_options(int active) {
@@ -784,7 +781,6 @@ static void draw_options(int active) {
     opt_items[nopt++] = OPT_CORES;
     opt_items[nopt++] = OPT_SCAN;
     opt_items[nopt++] = OPT_BLEND;
-    opt_items[nopt++] = OPT_CRAM_DOTS;
     for (int i = 0; i < PAGESIZE; i++) {
         int row = LIST_ROW + i;
         fill(0, row, 32);
@@ -799,7 +795,6 @@ static void draw_options(int active) {
         case OPT_CORES:  strcpy(buf, "Switch core"); break;
         case OPT_SCAN:   strcpy(buf, "Scanlines: "); strcat(buf, sl[scanlines]); break;
         case OPT_BLEND:  strcpy(buf, "Composite blend: "); strcat(buf, bl[blend]); break;
-        case OPT_CRAM_DOTS: strcpy(buf, cram_dots ? "CRAM dots: ON" : "CRAM dots: OFF"); break;
         }
         text(3, row, buf);
     }
@@ -898,12 +893,6 @@ static void menu() {
                     break;
                 case OPT_BLEND:
                     blend = (blend + ((k & J_LEFT) ? 2 : 1)) % 3;
-                    apply_options();
-                    save_options();
-                    redraw = true;
-                    break;
-                case OPT_CRAM_DOTS:
-                    cram_dots ^= 1;
                     apply_options();
                     save_options();
                     redraw = true;
