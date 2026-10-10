@@ -241,14 +241,13 @@ passive **male DB9 screw-terminal or solder-cup breakout** with nine jumpers:
 | 8 | Ground | terminal 8 to `a24` | `b24` | J6.20, GND |
 | 9 | TR / C, Start | terminal 9 to `a17` | `b17` | J6.13, GPIO30 |
 
-![Canonical P1 DB9 breadboard wiring](https://raw.githubusercontent.com/shawnchivers/genthang-hw/main/single-db9-breadboard-canonical/p1-breadboard.svg)
-
-See the
-[full breadboard guide](https://github.com/shawnchivers/genthang-hw/tree/main/single-db9-breadboard-canonical)
-for the machine-readable hole list and safety notes. A bare DB9 does not fit a
-2.54 mm breadboard. DB9 pin 5 is **3.3 V only, never 5 V**; power off before
+A bare DB9 does not fit a 2.54 mm breadboard. Check the numbered terminals and
+your breadboard's internal row connections with a continuity meter before
+connecting the Nano. DB9 pin 5 is **3.3 V only, never 5 V**; power off before
 wiring or connecting a controller, and do not hot-plug this unprotected setup.
-Use the normal `genthang_nano20k_db9_flash.bin`; P2 may remain disconnected.
+An optional 100 nF ceramic capacitor may be fitted directly across DB9 pins 5
+and 8. Use the normal `genthang_nano20k_db9_flash.bin`; P2 may remain
+disconnected.
 
 Build it with:
 
