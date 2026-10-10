@@ -1,1 +1,1 @@
-`define GT_PAD_DS
+`define GT_PAD_DB9

@@ -25,10 +25,9 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 
 > **Alpha software.** Gen Thang is under active development and is published as an
 > early alpha. Expect bugs, game-compatibility gaps, missing features and breaking
-> changes between releases. Hardware testing so far is limited to the author's own
-> board and the default DualShock build; the other controller variants are built and
-> timing-checked but have had less (or no) testing on real hardware. The
-> single-DB9 breadboard image has been tested by the author with a wired Genesis
+> changes between releases. The default dual-DB9 build and raw-button variant are
+> built and timing-checked but have not yet been tested on the new canonical wiring. The
+> legacy single-DB9 breadboard image was tested by the author with a wired Genesis
 > pad on the breadboard wiring below, but only that one setup. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
 > no warranty; you build, wire and flash at your own risk, and wiring mistakes can
@@ -51,8 +50,8 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 - 720p HDMI with audio. The picture is scaled to a centred 4:3 window.
 - ROM browser on the TF card (`.md`, `.bin`, `.gen`, up to 4 MB) with an options
   page for resume, reset, save/load state and display settings.
-- Controller options: two DualShock 2 pads (default), one Genesis 3/6-button pad
-  on a DB9 breakout, or twelve directly wired buttons for handhelds.
+- Controller options: two Genesis 3/6-button pads on DB9 breakouts (default), or
+  twelve directly wired buttons for handhelds on the same physical GPIO layout.
 - One save-state slot per game, with "Resume saved game" after a power cycle.
 - Scanline and composite-blend display options.
 - Optional ROM and core-image upload over the board's USB serial port.
@@ -143,10 +142,8 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 
 | Image | Controllers | Notes |
 |---|---|---|
-| `genthang_nano20k_ds_flash.bin` | Two DualShock 2 pads (default) | Plugs into the Sipeed DS2 PMOD adapters; see [DualShock 2](#dualshock-2-ds-build) |
-| `genthang_nano20k_db9_breadboard_flash.bin` | One Genesis pad on a DB9 breakout | Nine wires, 3.3 V only; see [single-DB9 breadboard](#single-genesis-pad-on-a-breadboard-db9_breadboard-build). Bench-tested with a wired six-button pad |
-| `genthang_nano20k_db9_breadboard_rev1_flash.bin` | Two Genesis pads on DB9 breakouts | Dual-port perfboard wiring, 3.3 V only; see [dual Genesis pads](#dual-genesis-pads-db9_breadboard_rev1-build) |
-| `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | For handhelds; see [direct buttons](#direct-buttons-raw-build) |
+| `genthang_nano20k_db9_flash.bin` | Two Genesis pads on DB9 breakouts (default) | Canonical J6/J5 wiring, 3.3 V only; see [dual Genesis pads](#dual-genesis-pads-db9-build) |
+| `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Uses exactly the same 12 data GPIOs as the DB9 build; see [direct buttons](#direct-buttons-raw-build) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
 
@@ -174,7 +171,7 @@ testing openFPGALoader did not work with this board's debugger.
 echo -n 1-2:1.0 | sudo tee /sys/bus/usb/drivers/ftdi_sio/unbind   # adjust 1-2 to your USB port
 cd "$GOWIN_HOME/Programmer/bin"      # your Gowin EDA install directory
 QT_QPA_PLATFORM=minimal ./programmer_cli --device GW2AR-18C --run 39 \
-    --mcuFile /path/to/genthang_nano20k_ds_flash.bin --spiaddr 0x000000
+    --mcuFile /path/to/genthang_nano20k_db9_flash.bin --spiaddr 0x000000
 ```
 
 A `.fs` file can be loaded into SRAM for a quick test, but it does not include the
@@ -203,88 +200,14 @@ number used in the constraints file; the "Nano contact" is the header position,
 counted 1-20 from the USB-C end with the board viewed from above (USB at the top):
 **J6** is the left header and **J5** the right header.
 
-#### DualShock 2 (`ds` build)
+Deprecated DualShock and original single-DB9 layouts are documented separately in
+[deprecated controller pinouts](docs/deprecated-pinouts.md). They are not included
+in current releases.
 
-The default image reads two DualShock 2 pads. Player 1 uses J6 contacts 15-20 and
-player 2 uses J5 contacts 15-20, which is where Sipeed's **PMOD DS2 / DS2x2**
-adapter plugs into the Nano 20K (the same arrangement SNESTang uses). If you wire
-a pad's connector yourself, use this table:
-
-| DualShock 2 connector pin | Signal | Player 1 FPGA pin (contact) | Player 2 FPGA pin (contact) |
-|---|---|---|---|
-| 1 | DATA (pad to console) | 19 (J6.17) | 71 (J5.18) |
-| 2 | COMMAND (console to pad) | 20 (J6.16) | 53 (J5.19) |
-| 3 | 7.5 V motor supply | not connected | not connected |
-| 4 | GND | GND (J6.20) | GND (J5.15) |
-| 5 | VCC | 3.3 V (J6.19) | 3.3 V (J5.16) |
-| 6 | ATT (chip select) | 18 (J6.18) | 72 (J5.17) |
-| 7 | CLK | 17 (J6.15) | 52 (J5.20) |
-| 8 | not connected | - | - |
-| 9 | ACK | not connected | not connected |
-
-The connector numbering is the commonly published PlayStation pad pinout
-([protocol notes](https://store.curiousinventor.com/guides/PS2/)); confirm it
-against your adapter. DATA relies on the FPGA's internal pull-up, so add an
-external 1-10 kohm pull-up to 3.3 V if a pad is unreliable. The pad is powered from
-3.3 V, which most DualShock 2 pads accept; some clones need more. Rumble and the
-analog sticks are not used (D-pad and buttons only). Per the Nano's schematic,
-GPIO 52 and 53 are shared with the board's HDMI DDC level shifter; this is how
-SNESTang wires its second pad, but it is one more reason to try player 1 first.
-
-Buttons: Square / Cross / Circle are Genesis A / B / C, L1 / Triangle / R1 are
-X / Y / Z, Select is Mode.
-
-#### Single Genesis pad on a breadboard (`db9_breadboard` build)
-
-For one wired 3- or 6-button Genesis pad, flash
-`genthang_nano20k_db9_breadboard_flash.bin` and wire a **male DB9 passive breakout**
-to the Nano with nine jumpers. No resistors or ICs are needed for this 3.3 V bench
-setup; the FPGA's internal pull-ups bias the inputs.
-
-![Nano 20K on a breadboard wired to a male DB9 breakout](docs/hardware/breadboard.svg)
-
-<p align="center">
-  <img src="docs/images/db9-breadboard-photo.jpg" width="520" alt="Tang Nano 20K on a breadboard wired to a DB9 screw-terminal breakout and a six-button Genesis pad">
-</p>
-<p align="center"><sub>The single-DB9 wiring on a real bench: Nano 20K, DB9 screw-terminal breakout and a six-button Genesis pad.</sub></p>
-
-| DB9 pin (male) | Signal | FPGA pin | Nano contact |
-|---|---|---:|---|
-| 1 | Up / D0 | 31 | J6.14 |
-| 2 | Down / D1 | 41 | J5.6 |
-| 3 | Left / D2 | 27 | J6.8 |
-| 4 | Right / D3 | 28 | J6.9 |
-| 5 | Pad supply | **3.3 V, not 5 V** | J6.19 |
-| 6 | TL (B / A) | 29 | J6.12 |
-| 7 | TH select (output) | 42 | J5.5 |
-| 8 | Ground | GND | J6.20 |
-| 9 | TR (C / Start) | 30 | J6.13 |
-
-The full guide ([docs/single-db9-breadboard.md](docs/single-db9-breadboard.md)) has
-the parts list, the mating-face and solder-side connector drawings
-([wiring.svg](docs/hardware/wiring.svg)), the exact breadboard holes
-([breadboard-holes.csv](docs/hardware/breadboard-holes.csv)) and a bench procedure.
-The essentials:
-
-- The pad runs from the Nano's 3.3 V rail. Not every Sega or clone pad works at
-  3.3 V, and the regulator headroom is unmeasured. Use one ordinary wired pad: no
-  wireless receivers, powered adapters or multitaps.
-- This is unprotected: there are no series resistors, TVS diodes or fuse.
-  **Never connect the pad to the Nano's 5 V pin.** Do not plug or unplug the pad
-  while powered.
-- A 100 nF capacitor between DB9 pins 5 and 8 is recommended.
-- The player 1 pins avoid the GPIOs shared with the HDMI sideband circuitry
-  (25, 26, 52, 53) and the LED-loaded GPIO 17-20. Keep the Nano's LCD connector
-  empty. Leave player 2 unwired.
-- Build it yourself with `GT_PAD=db9 GT_PINOUT=breadboard ./build.sh`. This variant
-  has been built, timing-checked and bench-tested by the author with a wired
-  six-button Genesis pad (photo above). Other pads and clones have not been tried.
-
-#### Dual Genesis pads (`db9_breadboard_rev1` build)
+#### Dual Genesis pads (`db9` build)
 
 For two wired 3- or 6-button Genesis pads, use
-`genthang_nano20k_db9_breadboard_rev1_flash.bin`. Its pin assignment is different
-from the single-DB9 image: player 1 is entirely on J6 and player 2 entirely on J5.
+`genthang_nano20k_db9_flash.bin`. Player 1 is entirely on J6 and player 2 entirely on J5.
 Leave the Nano LCD connector and speaker header empty. Both ports use 3.3 V with
 internal pull-ups; never connect either controller to 5 V or hot-plug it.
 
@@ -303,7 +226,7 @@ internal pull-ups; never connect either controller to 5 V or hot-plug it.
 Build it with:
 
 ```sh
-GT_PAD=db9 GT_PINOUT=breadboard-rev1 ./build.sh
+GT_PAD=db9 ./build.sh
 ```
 
 #### Direct buttons (`raw` build)
@@ -313,10 +236,14 @@ internal pull-ups are enabled).
 
 | Button | Pin | Button | Pin | Button | Pin |
 |---|---|---|---|---|---|
-| Up | 17 | B (Genesis B) | 52 | X (Genesis Y) | 27 |
-| Down | 19 | Y (Genesis A) | 71 | L (Genesis X) | 25 |
-| Left | 20 | A (Genesis C) | 28 | R (Genesis Z) | 29 |
-| Right | 18 | Start | 72 | Select (Mode) | 53 |
+| B (Genesis B) | 73 (J6.1) | Y (Genesis A) | 74 (J6.2) | Select (Mode) | 77 (J6.5) |
+| L (Genesis X) | 49 (J5.12) | A (Genesis C) | 51 (J5.9) | Start | 27 (J6.8) |
+| X (Genesis Y) | 48 (J5.10) | Right | 28 (J6.9) | Up | 41 (J5.6) |
+| R (Genesis Z) | 71 (J5.18) | Left | 30 (J6.13) | Down | 42 (J5.5) |
+
+In vector order, `btn_n[0..11]` uses the same pins as
+`db9_d[0..5], db9b_d[0..5]`: `73, 74, 77, 27, 28, 30, 42, 41, 51, 48, 49, 71`.
+The DB9 TH outputs on GPIO29 and GPIO72 are unused by the raw build.
 
 ## Using Gen Thang
 
@@ -329,7 +256,7 @@ exFAT). Picking a ROM streams it into SDRAM (about 7 s for 2 MB) and starts the 
 Everything in the menus needs only the D-pad, A/B/C and Start, so a 3-button pad
 is enough. Player 1 drives the menu; player 2 only plays.
 
-| Genesis | DualShock / raw | Games page | Options page | In game |
+| Genesis | Raw buttons | Games page | Options page | In game |
 |---|---|---|---|---|
 | D-pad | D-pad | move; Left/Right = page | move; Left/Right = change value | D-pad |
 | A | Square / Y | parent folder | back to games (no game loaded) | A |
@@ -435,8 +362,7 @@ recovery with Gowin Programmer over USB.
   `GOWIN_HOME` to its install directory (or `GW_SH` to the `gw_sh` binary, or put
   `gw_sh` on `PATH`); `build.sh` then sets the software rendering and FreeType
   environment the tools need on Linux. No install location is assumed. The IDE
-  project `genthang_nano20k.gprj` is the DualShock layout, with SystemVerilog 2017
-  preset.
+  project uses SystemVerilog 2017.
 - Only to change the menu: a RISC-V GCC (`riscv64-unknown-elf`, with picolibc) and
   m68k binutils. `firmware/firmware.bin` and `firmware/ss_stub.h` are committed and
   were checked to rebuild bit-for-bit with GCC 13.2 / binutils 2.42.
@@ -445,18 +371,19 @@ recovery with Gowin Programmer over USB.
 ```sh
 git clone https://github.com/shawnchivers/genthang.git
 cd genthang
-./build.sh                        # impl/pnr/genthang_nano20k.fs, DualShock build
-GT_PAD=raw ./build.sh             # twelve direct buttons
-GT_PAD=db9 GT_PINOUT=breadboard ./build.sh   # single-DB9 breadboard wiring
-./release.sh                      # all variants + flash images + tarball in release/
+./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
+GT_PAD=raw ./build.sh             # twelve direct buttons on canonical data GPIOs
+./release.sh                      # supported variants + flash images + tarball in release/
 ```
 
-`GT_PAD` (`ds`, `db9`, `raw`) selects the pad ports in `src/mdtang_top.sv`, through
+`GT_PAD` (`db9`, `raw`) selects the supported pad ports in `src/mdtang_top.sv`, through
 `src/pad_config.vh` (written by `build.tcl`) and `src/boards/nano20k_<pad>.cst`.
-`GT_PINOUT=breadboard` is only valid with `GT_PAD=db9`; it swaps in
-`nano20k_db9_breadboard.cst` and writes `genthang_nano20k_db9_breadboard.*`. Gowin
-runs share intermediate files in `impl/`, so do not run two builds concurrently in
-one checkout.
+DB9 and raw share one physical 12-data-GPIO contract; DB9 additionally uses two TH
+outputs. The old `GT_PINOUT=breadboard` and `breadboard-rev1` values are deprecated
+aliases for canonical DB9 and print a warning. The archival `GT_PAD=ds` option is
+also deprecated; see [deprecated controller pinouts](docs/deprecated-pinouts.md).
+Gowin runs share intermediate files
+in `impl/`, so do not run two builds concurrently in one checkout.
 
 Gowin writes `impl/pnr/genthang_nano20k.bin` (bitstream) and `.fs`. Combine the
 bitstream with the menu firmware into a flash image yourself with:
@@ -480,21 +407,17 @@ the project's MDTang lineage and are intentionally not renamed.
 
 ### Resource use
 
-The design nearly fills the Nano 20K's FPGA. From the post-route reports of the
-`ds` build: 20,118 of 20,736 logic cells (98 %), 10,279 of 10,368 CLS (100 %),
-9,363 of 15,915 registers (59 %) and 44 of 46 BSRAM blocks (96 %); the
-`db9_breadboard` build uses 20,181 logic cells and 10,281 CLS. Post-route timing for
-this release (every variant has zero negative setup and hold slack):
+The design nearly fills the Nano 20K's FPGA. Release builds use timing-priority
+placement and timing-directed routing. Post-route timing for this release has zero
+negative setup and hold slack:
 
 | Variant | `clk_sys` Fmax (needs 54.0 MHz) | `clk_z80` Fmax (needs 27.0 MHz) | `hclk` Fmax (needs 74.25 MHz) |
 |---|---|---|---|
-| `ds` | 54.625 MHz | 43.828 MHz | 74.370 MHz |
-| `raw` | 55.081 MHz | 44.096 MHz | 74.667 MHz |
-| `db9_breadboard` | 54.086 MHz | 43.472 MHz | 77.460 MHz |
+| `db9` | 62.323 MHz | 48.030 MHz | 75.319 MHz |
+| `raw` | 59.156 MHz | 48.048 MHz | 82.109 MHz |
 
-The `clk_sys` margin is only 0.1-1 MHz, which is why small RTL changes can fail
-timing. Every release build is rejected if a clock misses its target or the timing
-report contains negative setup or hold slack.
+Every release build is rejected if a clock misses its target or the timing report
+contains negative setup or hold slack.
 
 ## Simulation and screenshots
 

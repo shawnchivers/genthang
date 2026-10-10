@@ -17,6 +17,17 @@ export QT_QPA_PLATFORM=${QT_QPA_PLATFORM:-minimal}
 export QT_OPENGL=${QT_OPENGL:-software}
 export QT_QUICK_BACKEND=${QT_QUICK_BACKEND:-software}
 export LIBGL_ALWAYS_SOFTWARE=${LIBGL_ALWAYS_SOFTWARE:-1}
+gowin_ide=$(cd "$(dirname "$GW_SH")/.." && pwd)
+if [ -d "$gowin_ide/plugins/qt/platforms" ]; then
+    export QT_PLUGIN_PATH=${QT_PLUGIN_PATH:-$gowin_ide/plugins/qt}
+    export QT_QPA_PLATFORM_PLUGIN_PATH=${QT_QPA_PLATFORM_PLUGIN_PATH:-$gowin_ide/plugins/qt/platforms}
+fi
+export QT_ACCESSIBILITY=0
+export QT_QPA_PLATFORMTHEME=${QT_QPA_PLATFORMTHEME:-none}
+for name in ${!SNAP@}; do
+    unset "$name"
+done
+unset XDG_CURRENT_DESKTOP
 export LD_PRELOAD=${LD_PRELOAD:-/lib/x86_64-linux-gnu/libfreetype.so.6}
 
 cd "$(dirname "$0")"

@@ -1,4 +1,5 @@
-// Tang Nano 20K (GW2AR-18C) pins for Gen Thang with the TF card menu.
+// Canonical Gen Thang DB9 pinout. Player 1 is entirely on J6 and player 2
+// entirely on J5. The 12 data GPIOs are also the canonical raw-button pins.
 //
 // The embedded SDRAM is bonded internally and connected through the "magic"
 // top-level names (O_sdram_*, IO_sdram_dq); it must not appear here.
@@ -57,33 +58,32 @@ IO_PORT "led[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
 IO_LOC "led[1]" 16;
 IO_PORT "led[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
 
-// DualShock (PSX) controller 1 on PMOD
-
-// GT_PAD=db9: Genesis pads, powered from 3.3V. db9_d = {pin 9, pin 6, pins 4..1}, th = pin 7
-// port 1: pins 25-30 + 52; port 2: pins 17-20, 53, 71 + 72
-IO_LOC "db9_d[0]" 25;
+// Player 1: J6
+IO_LOC "db9_d[0]" 73;
 IO_PORT "db9_d[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9_d[1]" 26;
+IO_LOC "db9_d[1]" 74;
 IO_PORT "db9_d[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9_d[2]" 27;
+IO_LOC "db9_d[2]" 77;
 IO_PORT "db9_d[2]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9_d[3]" 28;
+IO_LOC "db9_d[3]" 27;
 IO_PORT "db9_d[3]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9_d[4]" 29;
+IO_LOC "db9_d[4]" 28;
 IO_PORT "db9_d[4]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
 IO_LOC "db9_d[5]" 30;
 IO_PORT "db9_d[5]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9_th" 52;
+IO_LOC "db9_th" 29;
 IO_PORT "db9_th" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
-IO_LOC "db9b_d[0]" 17;
+
+// Player 2: J5
+IO_LOC "db9b_d[0]" 42;
 IO_PORT "db9b_d[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9b_d[1]" 18;
+IO_LOC "db9b_d[1]" 41;
 IO_PORT "db9b_d[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9b_d[2]" 19;
+IO_LOC "db9b_d[2]" 51;
 IO_PORT "db9b_d[2]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9b_d[3]" 20;
+IO_LOC "db9b_d[3]" 48;
 IO_PORT "db9b_d[3]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "db9b_d[4]" 53;
+IO_LOC "db9b_d[4]" 49;
 IO_PORT "db9b_d[4]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
 IO_LOC "db9b_d[5]" 71;
 IO_PORT "db9b_d[5]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;

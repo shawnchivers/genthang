@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.1 - 2026-10-10
+
+- Made the canonical dual-DB9 J6/J5 controller mapping the default and deprecated
+  the separate DualShock layout. DualShock source remains available for archival
+  builds but is no longer included in releases.
+- Consolidated all non-DualShock controller wiring on the dual-DB9 J6/J5 pinout.
+  The raw build now uses the same 12 data GPIOs as DB9 and omits only the two TH
+  outputs. The DualShock constraints are unchanged.
+- Replaced the separate DB9 breadboard release variants with one `db9` image.
+  `GT_PINOUT=breadboard` and `breadboard-rev1` remain warning-producing aliases
+  for canonical DB9; the duplicate constraint files were removed.
+
 ## 1.5.0 - 2026-10-09
 
 - Removed the nonfunctional CRAM-dots menu option and forced the VDP option off.

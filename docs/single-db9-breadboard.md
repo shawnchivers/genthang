@@ -1,11 +1,16 @@
-# Single Genesis controller: nine-wire breadboard setup
+# Legacy single Genesis controller breadboard setup
 
-Wiring for one wired Genesis controller on a Tang Nano 20K, using the
-`db9_breadboard` release image (`GT_PAD=db9 GT_PINOUT=breadboard`). No external
+Historical wiring for one wired Genesis controller on a Tang Nano 20K. The retired
+`db9_breadboard` release image used `GT_PAD=db9 GT_PINOUT=breadboard`. No external
 resistors or logic ICs are needed for this 3.3 V bench setup: the FPGA's internal
 pull-ups bias the six data inputs. It is unprotected, intended for experiments,
 and has been bench-tested by the author with one wired six-button Genesis pad;
 other pads have not been tried.
+
+This mixed-header pinout is deprecated and is not emitted by current releases.
+For new wiring use the canonical P1-on-J6 table in the main README and build with
+`GT_PAD=db9`. The old `GT_PINOUT` value now selects that canonical mapping, so it
+does not match the wiring below.
 
 ![Nano 20K on a breadboard with the nine DB9 jumpers](hardware/breadboard.svg)
 
@@ -68,8 +73,9 @@ build; leave them unwired for a single controller.
 1. With USB unplugged and the controller disconnected, wire the breakout and check
    all nine connections with a meter. Make sure supply and ground are not swapped or
    shorted. Never connect the controller to the Nano's 5 V pin.
-2. Flash `genthang_nano20k_db9_breadboard_flash.bin`, still without the controller,
-   and check about 3.3 V between DB9 pins 5 and 8.
+2. If reproducing the historical test, flash the archived
+   `genthang_nano20k_db9_breadboard_flash.bin`, still without the controller, and
+   check about 3.3 V between DB9 pins 5 and 8. Current releases do not contain it.
 3. Unplug USB, connect the controller, then power the board from USB only. Keep the
    jumpers short (about 10 cm or less) and insulated.
 4. Test the directions, diagonals and A/B/C/Start, then X/Y/Z/Mode on a 6-button

@@ -59,29 +59,30 @@ IO_PORT "led[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
 
 // DualShock (PSX) controller 1 on PMOD
 
-// GT_PAD=raw: 12 direct buttons to GND (handheld20k harness), one player
+// GT_PAD=raw: 12 direct buttons to GND. These are exactly the canonical DB9
+// data GPIOs in db9_d[0..5], db9b_d[0..5] order; only the two TH pins are omitted.
 // btn_n = {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B} (SNES names; Genesis A/B/C = Y/B/A)
-IO_LOC "btn_n[0]" 52;
+IO_LOC "btn_n[0]" 73;
 IO_PORT "btn_n[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[1]" 71;
+IO_LOC "btn_n[1]" 74;
 IO_PORT "btn_n[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[2]" 53;
+IO_LOC "btn_n[2]" 77;
 IO_PORT "btn_n[2]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[3]" 72;
+IO_LOC "btn_n[3]" 27;
 IO_PORT "btn_n[3]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[4]" 17;
+IO_LOC "btn_n[4]" 28;
 IO_PORT "btn_n[4]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[5]" 19;
+IO_LOC "btn_n[5]" 30;
 IO_PORT "btn_n[5]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[6]" 20;
+IO_LOC "btn_n[6]" 42;
 IO_PORT "btn_n[6]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[7]" 18;
+IO_LOC "btn_n[7]" 41;
 IO_PORT "btn_n[7]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[8]" 28;
+IO_LOC "btn_n[8]" 51;
 IO_PORT "btn_n[8]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[9]" 27;
+IO_LOC "btn_n[9]" 48;
 IO_PORT "btn_n[9]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[10]" 25;
+IO_LOC "btn_n[10]" 49;
 IO_PORT "btn_n[10]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "btn_n[11]" 29;
+IO_LOC "btn_n[11]" 71;
 IO_PORT "btn_n[11]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;

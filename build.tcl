@@ -1,15 +1,13 @@
 # Gowin build for Gen Thang on the Tang Nano 20K (GW2AR-18C)
-#   ./build.sh                -> impl/pnr/genthang_nano20k.fs, DualShock pads
-#   GT_PAD=db9 ./build.sh     -> Genesis pads on DB9 (stock pin table; not released)
-#   GT_PAD=raw ./build.sh     -> 12 direct buttons (handheld)
-#   GT_PAD=db9 GT_PINOUT=breadboard ./build.sh -> single-DB9 breadboard wiring,
-#                                impl/pnr/genthang_nano20k_db9_breadboard.fs
+#   ./build.sh                -> impl/pnr/genthang_nano20k_db9.fs, two Genesis pads
+#   GT_PAD=ds ./build.sh      -> impl/pnr/genthang_nano20k.fs, DualShock pads
+#   GT_PAD=raw ./build.sh     -> 12 direct buttons on the same 12 data GPIOs
 
 set_device GW2AR-LV18QN88C8/I7 -device_version C
 
 source build_config.tcl
 puts "GT_PAD=$pad GT_PINOUT=$pinout CST=$pad_cst OUTPUT=$output_base"
-# selects the pad ports in mdtang_top.sv (the checked-in default is GT_PAD_DS)
+# selects the pad ports in mdtang_top.sv (the checked-in default is GT_PAD_DB9)
 set f [open src/pad_config.vh w]
 puts $f "`define GT_PAD_[string toupper $pad]"
 close $f
@@ -93,14 +91,8 @@ set_option -use_ready_as_gpio 1
 set_option -use_done_as_gpio 1
 set_option -use_i2c_as_gpio 1
 set_option -use_cpu_as_gpio 1
-if {$pad eq "ds"} {
-    set_option -place_option 2       ;# timing priority
-} elseif {$pad ne "db9" || $pinout ne "stock"} {
-    set_option -place_option 2       ;# timing priority
-}
-if {$pad ne "db9" || $pinout ne "stock"} {
-    set_option -route_option 1       ;# timing-directed routing
-}
+set_option -place_option 2           ;# timing priority
+set_option -route_option 1           ;# timing-directed routing
 set_option -output_base_name $output_base
 
 run all
