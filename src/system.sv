@@ -820,9 +820,9 @@ localparam 	MBUS_IDLE         = 0,
 always @(posedge MCLK) begin
 	reg [15:0] data;
 	reg  [3:0] pier_count;
-	reg [8:0] refresh_timer;
+	reg [6:0] refresh_timer;
 	reg rfs_pend;
-	reg [1:0] rfs_wait;
+	reg rfs_wait;
 	reg [1:0] cycle_cnt;
 	reg wr_posted;
 
@@ -831,6 +831,9 @@ always @(posedge MCLK) begin
 		Z80_MBUS_DTACK_N  <= 1;
 		VDP_MBUS_DTACK_N  <= 1;
 		wr_posted <= 0;
+		refresh_timer <= 7'h7F;
+		rfs_pend <= 0;
+		rfs_wait <= 0;
 		VDP_SEL <= 0;
 		IO_SEL <= 0;
 		SVP_SEL <= 0; 
@@ -844,13 +847,6 @@ always @(posedge MCLK) begin
 		BANK_REG <= '{0,1,2,3,4,5,6,7};
 	end
 	else begin
-	/*
-		refresh_timer <= refresh_timer + 1'd1;
-		if (refresh_timer == 'h17F) begin
-			refresh_timer <= 0;
-			rfs_pend <= 1;
-		end
-	*/	
 		if (M68K_CLKENp) begin
 			if (cycle_cnt) cycle_cnt <= cycle_cnt - 1'd1;
 		end
@@ -874,7 +870,7 @@ always @(posedge MCLK) begin
 					rfs_pend <= 0;
 					mstate <= MBUS_REFRESH;
 				end
-				else*/ if (!M68K_AS_N && M68K_MBUS_DTACK_N) begin
+				else*/ if (!M68K_AS_N && M68K_MBUS_DTACK_N && !rfs_pend) begin		// refresh holds the 68K
 					msrc <= MSRC_M68K;
 					MBUS_A <= M68K_A[23:1];
 					data <= NO_DATA;
@@ -905,8 +901,6 @@ always @(posedge MCLK) begin
 					data <= NO_DATA;
 					MBUS_DO <= 0;
 					mstate <=  MBUS_SELECT;
-					//rfs_pend <= 0;
-					//refresh_timer <= 0;
 				end
 				else if (Z80_IO && !Z80_ZBUS && Z80_MBUS_DTACK_N && !Z80_BGACK_N && Z80_BR_N) begin
 					msrc <= MSRC_Z80;
@@ -1207,6 +1201,9 @@ always @(posedge MCLK) begin
 				data <= VDP_DO;
 				if(MBUS_A[4:2] == 1) data[15:10] <= NO_DATA[15:10]; //unused status bits
 				else if(MBUS_A[4]) data <= NO_DATA; // PSG/debug registers
+				// a 68K write completes as soon as the VDP accepts it (no extra wait state);
+				// a full FIFO still stalls by delaying VDP_DTACK_N
+				if (msrc == MSRC_M68K && ~MBUS_RNW) M68K_MBUS_DTACK_N <= 0;
 				mstate <= MBUS_FINISH;
 			end
 
@@ -1283,6 +1280,18 @@ always @(posedge MCLK) begin
 				endcase
 			end
 		endcase
+
+		// 68K DRAM refresh: about every 128 CPU cycles the next 68K bus cycle waits 2 CPU cycles (BlastEm
+		// REFRESH_INTERVAL/REFRESH_DELAY). A 7-bit LFSR (period 127) instead of a counter, and the hold is
+		// counted here rather than in the bus state machine, because the device is full.
+		if (M68K_CLKENp) begin
+			refresh_timer <= {refresh_timer[5:0], refresh_timer[6] ^ refresh_timer[5]};
+			if (&refresh_timer) rfs_pend <= 1;
+			else if (rfs_pend && mstate == MBUS_IDLE && !M68K_AS_N && M68K_MBUS_DTACK_N) begin
+				rfs_wait <= ~rfs_wait;
+				if (rfs_wait) rfs_pend <= 0;
+			end
+		end
 	end
 end
 

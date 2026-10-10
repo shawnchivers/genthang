@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Restored 68K DRAM refresh timing: every 128 CPU cycles the next 68K bus cycle
+  waits 2 cycles, as on the console. CPU-bound code no longer runs ~1.6% fast.
+- 68K writes to the VDP no longer take an extra wait state when the VDP FIFO has
+  room. Together these match BlastEm's bus timing in the genthangverify probes
+  and fix Flicky running two frames ahead of the reference.
+
 ## 1.5.2 - 2026-10-10
 
 - Fixed X/Y/Z/Mode on wired 6-button DB9 pads repeatedly triggering while held.
