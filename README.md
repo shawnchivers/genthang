@@ -241,6 +241,8 @@ passive **male DB9 screw-terminal or solder-cup breakout** with nine jumpers:
 | 8 | Ground | terminal 8 to `a24` | `b24` | J6.20, GND |
 | 9 | TR / C, Start | terminal 9 to `a17` | `b17` | J6.13, GPIO30 |
 
+![Canonical P1 DB9 breadboard wiring](docs/images/p1-breadboard.svg)
+
 A bare DB9 does not fit a 2.54 mm breadboard. Check the numbered terminals and
 your breadboard's internal row connections with a continuity meter before
 connecting the Nano. DB9 pin 5 is **3.3 V only, never 5 V**; power off before
