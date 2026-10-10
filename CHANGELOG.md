@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.2 - 2026-10-10
+
+- Fixed X/Y/Z/Mode on wired 6-button DB9 pads repeatedly triggering while held.
+  The pad reader restarted its handshake every ~2 ms, before some pads' TH
+  counters had reset, so those scans read the extra buttons as released. A
+  missed 6-button reply now keeps the previous X/Y/Z/Mode state and doubles the
+  pause between scans (from about 2.4 ms up to 19 ms, longer than a console
+  polling once per frame); pads that reset quickly keep the short poll. Button
+  changes are also reported right after each scan instead of one pause later.
+- The `genesis-pad` Verilator test now models 6-button pads with 1-12 ms reset
+  times and fails on any change of a held button. Bench-tested on the DB9 build
+  with a wired six-button pad on P1.
+
 ## 1.5.1 - 2026-10-10
 
 - Made the canonical dual-DB9 J6/J5 controller mapping the default and deprecated
