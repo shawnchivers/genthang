@@ -7,7 +7,7 @@ module tb_dut #(
     input         clk_sys,
     input         clk_z80,
     input   [7:0] btn_n,            // {start, c, b, a, up, down, left, right}, active low
-    input   [3:0] btn_x_n,          // {triangle, R1, L1, select}, active low
+    input   [3:0] btn_x_n,          // {Y, Z, X, Mode}, active low
     input   [7:0] overlay_x,
     input   [7:0] overlay_y,
     output [14:0] overlay_color,
@@ -33,9 +33,8 @@ wire [3:0]  dqm;
 wire [31:0] dq_out, dq_in;
 wire        dq_oe;
 
-// DualShock layout {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}:
-// Genesis A = Square (Y), B = Cross (B), C = Circle (A). The Genesis buttons go
-// through the same debouncer as tb_ref so game input timing matches.
+// Convert the testbench's Genesis button inputs to the core's internal pad vector.
+// The Genesis buttons go through the same debouncer as tb_ref so game input timing matches.
 wire [11:0] joy;
 wire [3:0]  bx = ~btn_x_n;
 gpio_buttons #(.FREQ(54_000_000)) buttons (.clk(clk_sys), .btn_n(btn_n), .joy(joy));

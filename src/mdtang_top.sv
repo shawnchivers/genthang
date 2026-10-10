@@ -3,7 +3,7 @@
 // ROMs are picked from the TF card with the on-screen menu (iosys + PicoRV32
 // firmware at SPI flash 0x500000). Video and audio over HDMI (720p). Controllers by
 // build variant (GT_PAD, see build.tcl): two DualShocks, two Genesis pads on DB9,
-// or 12 direct buttons. Select+Start, Mode+Start or Start+A+B+C = menu.
+// or 12 direct buttons. Mode+Start or Start+A+B+C = menu.
 // Game and menu logic live in md20k_core; this file holds clocks, pads and HDMI.
 `include "pad_config.vh"
 
@@ -37,7 +37,7 @@ module mdtang_top (
     input  [5:0] db9b_d,
     output       db9b_th,
 `elsif GT_PAD_RAW
-    // buttons to GND: {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
+    // btn_n[0..11] buttons to GND: B, A, Mode, Start, Up, Down, Left, Right, C, Y, X, Z
     input [11:0] btn_n,
 `else
     // DualShock 1 on PMOD, DualShock 2 on the header

@@ -30,7 +30,7 @@ static void usage() {
            "          [-t ms:len_ms:mask]... [-T max_ms] [-s sd.img] [-O ms,...]   (last four: tb_dut only)\n"
            "  -p frames count from md_on, -t is absolute simulated time, -P ms:len_ms:mask from md_on\n"
            "  -O dumps the menu overlay (overlay_<ms>.ppm) after each time\n"
-           "  mask bits: 0 right 1 left 2 down 3 up 4 A 5 B 6 C 7 Start, dut: 8 Select 9 L1 10 R1 11 Triangle\n");
+           "  mask bits: 0 Right 1 Left 2 Down 3 Up 4 A 5 B 6 C 7 Start, dut: 8 Mode 9 X 10 Z 11 Y\n");
 }
 
 int main(int argc, char **argv) {

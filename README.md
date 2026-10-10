@@ -28,7 +28,7 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 > changes between releases. The default dual-DB9 build and raw-button variant are
 > built and timing-checked but have not yet been tested on the new canonical wiring. The
 > legacy single-DB9 breadboard image was tested by the author with a wired Genesis
-> pad on the breadboard wiring below, but only that one setup. Save
+> pad on its now-deprecated wiring, but only that one setup. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
 > no warranty; you build, wire and flash at your own risk, and wiring mistakes can
 > damage the board or a controller. See [Disclaimer](#disclaimer).
@@ -223,6 +223,33 @@ internal pull-ups; never connect either controller to 5 V or hot-plug it.
 | 8 | Ground | GND (J6.20) | GND (J5.15) |
 | 9 | TR (C / Start) | 30 (J6.13) | 71 (J5.18) |
 
+##### P1 breadboard wiring
+
+P1 can be built on a 30-row breadboard using only J6. Seat the Nano
+component-side up with USB-C at the top, put J6.1 in hole `b5`, and connect a
+passive **male DB9 screw-terminal or solder-cup breakout** with nine jumpers:
+
+| DB9 pin | Function | Breakout jumper | Nano hole | Nano contact |
+|---:|---|---|---|---|
+| 1 | Up / D0 | terminal 1 to `a5` | `b5` | J6.1, GPIO73 |
+| 2 | Down / D1 | terminal 2 to `a6` | `b6` | J6.2, GPIO74 |
+| 3 | Left / D2 | terminal 3 to `a9` | `b9` | J6.5, GPIO77 |
+| 4 | Right / D3 | terminal 4 to `a12` | `b12` | J6.8, GPIO27 |
+| 5 | Controller supply | terminal 5 to `a23` | `b23` | J6.19, **3.3 V only** |
+| 6 | TL / B, A | terminal 6 to `a13` | `b13` | J6.9, GPIO28 |
+| 7 | TH select | terminal 7 to `a16` | `b16` | J6.12, GPIO29 |
+| 8 | Ground | terminal 8 to `a24` | `b24` | J6.20, GND |
+| 9 | TR / C, Start | terminal 9 to `a17` | `b17` | J6.13, GPIO30 |
+
+![Canonical P1 DB9 breadboard wiring](https://raw.githubusercontent.com/shawnchivers/genthang-hw/main/single-db9-breadboard-canonical/p1-breadboard.svg)
+
+See the
+[full breadboard guide](https://github.com/shawnchivers/genthang-hw/tree/main/single-db9-breadboard-canonical)
+for the machine-readable hole list and safety notes. A bare DB9 does not fit a
+2.54 mm breadboard. DB9 pin 5 is **3.3 V only, never 5 V**; power off before
+wiring or connecting a controller, and do not hot-plug this unprotected setup.
+Use the normal `genthang_nano20k_db9_flash.bin`; P2 may remain disconnected.
+
 Build it with:
 
 ```sh
@@ -236,13 +263,14 @@ internal pull-ups are enabled).
 
 | Button | Pin | Button | Pin | Button | Pin |
 |---|---|---|---|---|---|
-| B (Genesis B) | 73 (J6.1) | Y (Genesis A) | 74 (J6.2) | Select (Mode) | 77 (J6.5) |
-| L (Genesis X) | 49 (J5.12) | A (Genesis C) | 51 (J5.9) | Start | 27 (J6.8) |
-| X (Genesis Y) | 48 (J5.10) | Right | 28 (J6.9) | Up | 41 (J5.6) |
-| R (Genesis Z) | 71 (J5.18) | Left | 30 (J6.13) | Down | 42 (J5.5) |
+| A | 74 (J6.2) | B | 73 (J6.1) | C | 51 (J5.9) |
+| X | 49 (J5.12) | Y | 48 (J5.10) | Z | 71 (J5.18) |
+| Mode | 77 (J6.5) | Start | 27 (J6.8) | Up | 41 (J5.6) |
+| Down | 42 (J5.5) | Left | 30 (J6.13) | Right | 28 (J6.9) |
 
 In vector order, `btn_n[0..11]` uses the same pins as
 `db9_d[0..5], db9b_d[0..5]`: `73, 74, 77, 27, 28, 30, 42, 41, 51, 48, 49, 71`.
+Their Genesis functions are `B, A, Mode, Start, Up, Down, Left, Right, C, Y, X, Z`.
 The DB9 TH outputs on GPIO29 and GPIO72 are unused by the raw build.
 
 ## Using Gen Thang
@@ -256,14 +284,14 @@ exFAT). Picking a ROM streams it into SDRAM (about 7 s for 2 MB) and starts the 
 Everything in the menus needs only the D-pad, A/B/C and Start, so a 3-button pad
 is enough. Player 1 drives the menu; player 2 only plays.
 
-| Genesis | Raw buttons | Games page | Options page | In game |
-|---|---|---|---|---|
-| D-pad | D-pad | move; Left/Right = page | move; Left/Right = change value | D-pad |
-| A | Square / Y | parent folder | back to games (no game loaded) | A |
-| B / C | Cross / Circle, B / A | open folder / load ROM | select | B / C |
-| X / Y / Z | L1 / Triangle / R1, L / X / R | - | - | X / Y / Z |
-| Start | Start | open Options | resume the game | Start |
-| Start+A+B+C, Mode+Start | Select+Start | resume the game | resume the game | open the menu (the game pauses) |
+| Genesis control | Games page | Options page | In game |
+|---|---|---|---|
+| D-pad | move; Left/Right = page | move; Left/Right = change value | D-pad |
+| A | parent folder | back to games (no game loaded) | A |
+| B / C | open folder / load ROM | select | B / C |
+| X / Y / Z | - | - | X / Y / Z |
+| Start | open Options | resume the game | Start |
+| Start+A+B+C or Mode+Start | resume the game | resume the game | open the menu (the game pauses) |
 
 ### Options menu
 
@@ -441,7 +469,7 @@ make ref ROM=/path/to/game.md && make run-ref ARGS="-n 300 -d 100,200"   # golde
 `make` needs `mcopy` and `mkfs.vfat`; set `MTOOLS=/dir/containing/mtools/` if `mcopy`
 is not on `PATH`. `-t ms:len:mask` presses buttons at an absolute time and
 `-p frame:len:mask` relative to the game start (mask bits 0-7: Right, Left, Down,
-Up, A, B, C, Start; 8 Select, 9 L1, 10 R1; Select+Start is `0x180`). `-d` dumps
+Up, A, B, C, Start; 8 Mode, 9 X, 10 Z, 11 Y; Mode+Start is `0x180`). `-d` dumps
 frames as PPM, `-O` dumps the menu overlay. The simulation is slow (the whole board
 runs at roughly 0.4 simulated seconds per minute), so a full ROM load takes tens of
 minutes.
@@ -456,7 +484,7 @@ Results for this release: the full-board testbench booted the real menu firmware
 the SPI-flash model, initialised and mounted a FAT32 card model, loaded a 2.2 MB ROM
 (560,691 ROM words written to SDRAM and checked against the file, none wrong; 4,422
 card blocks read), started the game after 7.3 simulated seconds, and opened the menu
-with Select+Start during play, with zero SDRAM, flash and TF-card protocol errors.
+with Mode+Start during play, with zero SDRAM, flash and TF-card protocol errors.
 The DB9 pad reader and the two-port I/O block unit tests pass, as do the four build
 and pin-selection tests. The testbench does not exercise the HDMI frame lock, and
 frame-by-frame equivalence of the whole board against the reference configuration

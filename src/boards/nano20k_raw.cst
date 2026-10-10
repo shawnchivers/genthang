@@ -57,11 +57,9 @@ IO_PORT "led[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
 IO_LOC "led[1]" 16;
 IO_PORT "led[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
 
-// DualShock (PSX) controller 1 on PMOD
-
 // GT_PAD=raw: 12 direct buttons to GND. These are exactly the canonical DB9
 // data GPIOs in db9_d[0..5], db9b_d[0..5] order; only the two TH pins are omitted.
-// btn_n = {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B} (SNES names; Genesis A/B/C = Y/B/A)
+// btn_n[0..11] Genesis functions: B, A, Mode, Start, Up, Down, Left, Right, C, Y, X, Z.
 IO_LOC "btn_n[0]" 73;
 IO_PORT "btn_n[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
 IO_LOC "btn_n[1]" 74;
