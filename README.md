@@ -450,8 +450,8 @@ negative setup and hold slack:
 
 | Variant | `clk_sys` Fmax (needs 54.0 MHz) | `clk_z80` Fmax (needs 27.0 MHz) | `hclk` Fmax (needs 74.25 MHz) |
 |---|---|---|---|
-| `db9` | 62.323 MHz | 48.030 MHz | 75.319 MHz |
-| `raw` | 59.156 MHz | 48.048 MHz | 82.109 MHz |
+| `db9` | 55.790 MHz | 45.589 MHz | 77.659 MHz |
+| `raw` | 59.789 MHz | 47.656 MHz | 81.496 MHz |
 
 Every release build is rejected if a clock misses its target or the timing report
 contains negative setup or hold slack.
