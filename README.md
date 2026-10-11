@@ -544,6 +544,11 @@ the speaker while the board is powered gave trouble. Power the board off first, 
 the 1 kΩ / 10 nF / 10 µF filter, which isolates the pins. Pin 56 also reaches the Nano's on-board
 speaker amplifier input, so leave that amplifier's speaker connector empty.
 
+On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to
+**j11**, sleeve to **j19**.
+
+![Line-out jack on the P1 DB9 breadboard](docs/images/line-out-breadboard.svg)
+
 ## Credits and tooling
 
 Gen Thang is an adaptation of [MDTang](https://github.com/nand2mario/mdtang) by
