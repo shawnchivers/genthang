@@ -330,20 +330,15 @@ post-processing options are applied by the HDMI scaler:
 [line-out jack](#line-out-jack-db9-and-raw-builds) for sound. Use it if a
 display pulses or flickers on mid and dark tones: on an LG 50PN6500 plasma, any HDMI
 data island made the picture pulse regardless of its contents, and DVI was stable.
-<table>
-  <tr>
-    <td align="center"><img src="docs/images/display-off.png" width="300"><br><sub>Off</sub></td>
-    <td align="center"><img src="docs/images/display-scanlines.png" width="300"><br><sub>Scanlines 50 %</sub></td>
-    <td align="center"><img src="docs/images/display-blend.png" width="300"><br><sub>Composite blend: on</sub></td>
-  </tr>
-</table>
 
-<sub>Crops of a frame produced by Gen Thang's Verilator reference testbench. The
-testbenches stop before the HDMI scaler, so [verilator/hdmi_preview.py](verilator/hdmi_preview.py)
-applies the scaler arithmetic from `src/framebuffer_sync.sv`; these are simulated
-Gen Thang output rather than physical HDMI captures. Adaptive mode depends on a
-per-pixel VDP flag that a frame dump does not contain and cannot be previewed this
-way.</sub>
+<p align="center">
+  <img src="docs/images/composite-blending-options.jpg" width="820"
+       alt="Gen Thang composite blending off, on and adaptive comparison">
+</p>
+
+<p align="center"><sub>The same spotlight scene with composite blending off, on
+and adaptive, cropped to show how each mode affects the light, character and floor
+dither.</sub></p>
 
 ### Save states
 
