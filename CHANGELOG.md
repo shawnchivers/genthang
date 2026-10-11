@@ -7,6 +7,8 @@
 - 68K writes to the VDP no longer take an extra wait state when the VDP FIFO has
   room. Together these match BlastEm's bus timing in the genthangverify probes
   and fix Flicky running two frames ahead of the reference.
+- The menu's serial port baud divider is now fixed at 115200 baud (the only
+  rate the firmware uses) to free logic for the timing fix.
 
 ## 1.5.2 - 2026-10-10
 

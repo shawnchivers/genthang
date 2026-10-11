@@ -252,8 +252,9 @@ always @(posedge clk) begin
     end
 end
 
-// uart @ 0x0200_0010
-simpleuart simpleuart (
+// uart @ 0x0200_0010: 115200 baud from the 27 MHz iosys clock. The firmware only ever writes this
+// divider (234), so it is fixed in hardware to save logic.
+simpleuart #(.FIXED_DIV(234)) simpleuart (
     .clk         (clk         ),
     .resetn      (resetn       ),
 
