@@ -2117,17 +2117,19 @@ module vdp(
          FIELD <= 1'b0;
          
          HV_PIXDIV <= {4{1'b0}};
-         HV_HCNT <= {9{1'b0}};
-         // Start the VCounter after VSYNC,
-         // thus various latches can be activated in VDPsim for the 1st frame
-         HV_VCNT <= 9'b111100101;		// 485
+         // Start on the last blanking line, one pixel before the V counter ticks to line 0 (H32
+         // after reset), with the per-line state the frame has at that point. BlastEm starts at
+         // line 0; the old start, line -27, ran the 68K 27 lines ahead of the reference. Starting
+         // inside vblank keeps the first frame complete for the HDMI and testbench frame sync.
+         HV_HCNT <= H_INT_H32 - 1;
+         HV_VCNT <= 9'h1FF;
          
-         PRE_V_ACTIVE <= 1'b0;
+         PRE_V_ACTIVE <= 1'b1;
          V_ACTIVE <= 1'b0;
          V_ACTIVE_DISP <= 1'b0;
          
          EXINT_PENDING_SET <= 1'b0;
-         HINT_EN <= 1'b0;
+         HINT_EN <= 1'b1;
          HINT_PENDING_SET <= 1'b0;
          VINT_TG68_PENDING_SET <= 1'b0;
          VINT_T80_SET <= 1'b0;
@@ -2135,8 +2137,8 @@ module vdp(
          
          M_HBL <= 1'b0;
          IN_HBL <= 1'b0;
-         IN_VBL <= 1'b1;
-         VBL_AREA <= 1'b1;
+         IN_VBL <= 1'b0;
+         VBL_AREA <= 1'b0;
          
          FIFO_EN <= 1'b0;
          SLOT_EN <= 1'b0;
