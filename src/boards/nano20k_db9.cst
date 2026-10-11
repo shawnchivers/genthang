@@ -89,3 +89,9 @@ IO_LOC "db9b_d[5]" 71;
 IO_PORT "db9b_d[5]" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
 IO_LOC "db9b_th" 72;
 IO_PORT "db9b_th" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+
+// 3.5 mm line-out jack (1-bit audio; RC filter off board): L on J6 row 14, R on J5 row 7
+IO_LOC "audio_jack_l" 31;
+IO_PORT "audio_jack_l" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "audio_jack_r" 56;
+IO_PORT "audio_jack_r" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;

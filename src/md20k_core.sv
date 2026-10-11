@@ -69,7 +69,7 @@ module md20k_core #(
     input       [7:0] overlay_x,
     input       [7:0] overlay_y,
     output     [14:0] overlay_color,
-    output      [3:0] video_opt,        // clk_z80 domain, quasi-static
+    output      [4:0] video_opt,        // clk_z80 domain, quasi-static
 
     output reg        md_on,
     output            loading,

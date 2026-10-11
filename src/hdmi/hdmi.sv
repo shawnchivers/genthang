@@ -70,6 +70,7 @@ module hdmi
     input logic reset,
     input logic [23:0] rgb,
     input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
+    input logic dvi_mode, // runtime DVI: no guard bands, preambles or data islands, so no audio
 
     // These outputs go to your HDMI port
     output logic [2:0] tmds,
@@ -329,9 +330,17 @@ generate
             end
             else
             begin
-                mode <= data_island_guard ? 3'd4 : data_island_period ? 3'd3 : video_guard ? 3'd2 : video_data_period ? 3'd1 : 3'd0;
+                if (dvi_mode)
+                begin
+                    mode <= video_data_period ? 3'd1 : 3'd0;
+                    control_data <= {4'b0000, {vsync, hsync}};
+                end
+                else
+                begin
+                    mode <= data_island_guard ? 3'd4 : data_island_period ? 3'd3 : video_guard ? 3'd2 : video_data_period ? 3'd1 : 3'd0;
+                    control_data <= {{1'b0, data_island_preamble}, {1'b0, video_preamble || data_island_preamble}, {vsync, hsync}}; // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
+                end
                 video_data <= rgb;
-                control_data <= {{1'b0, data_island_preamble}, {1'b0, video_preamble || data_island_preamble}, {vsync, hsync}}; // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
                 data_island_data[11:4] <= packet_data[8:1];
                 data_island_data[3] <= cx != 0;
                 data_island_data[2] <= packet_data[0];

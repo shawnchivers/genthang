@@ -41,7 +41,7 @@ module framebuffer #(
     output [7:0] overlay_x,
     output [7:0] overlay_y,
     input [14:0] overlay_color,     // BGR5
-    input [3:0] video_opt,          // [1:0] scanlines off/25%/50%, [3:2] composite blend off/on/adaptive
+    input [4:0] video_opt,          // [1:0] scanlines off/25%/50%, [3:2] composite blend off/on/adaptive, [4] DVI output
 
     input [15:0] audio_left,        // audio sample
     input [15:0] audio_right,
@@ -190,7 +190,7 @@ end
 // Game pixels go through MiSTer's measured Genesis DAC table. Blend averages each pixel
 // with the one to its left (composite dither blending; adaptive = only where the VDP
 // flags transparency dither). Scanlines dim the lower half of each Genesis line.
-reg [3:0] opt_s1, opt_s2;
+reg [4:0] opt_s1, opt_s2;
 reg il_s1, il_s2;
 reg [$clog2(WIDTH)-1:0] xx_r, xx_px;
 reg [COLOR_WIDTH-1:0] rdata_r, prev_px;
@@ -257,6 +257,14 @@ localparam VIDEOID = 4;
 localparam VIDEO_REFRESH = 60.0;
 localparam COLLEN = 80;
 localparam AUDIO_BIT_WIDTH = 16;
+
+// DVI output sends no HDMI data islands (so no audio). Some plasma TVs pulse the picture
+// whenever data islands are present. Switch only at a frame start.
+reg dvi = 1'b0;
+always @(posedge clk_pixel)
+    if (cx == 0 && cy == 0)
+        dvi <= opt_s2[4];
+
 hdmi #( .VIDEO_ID_CODE(VIDEOID), 
         .DVI_OUTPUT(0),
         .VIDEO_REFRESH_RATE(VIDEO_REFRESH),
@@ -272,6 +280,7 @@ hdmi( .clk_pixel_x5(clk_5x_pixel),
         .rgb(rgb), 
         .reset( /* ~resetn */ ),
         .audio_sample_word(audio_sample_word),
+        .dvi_mode(dvi),
         .tmds(tmds), 
         .tmds_clock(tmdsClk), 
         .cx(cx), 

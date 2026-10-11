@@ -34,6 +34,7 @@ add_file -type verilog "src/iosys/spi_master.v"
 
 # HDMI
 add_file -type verilog "src/framebuffer_sync.sv"
+add_file -type verilog "src/audio_dac.v"
 add_file -type verilog "src/frame_sync.sv"
 add_file -type verilog "src/hdmi/audio_clock_regeneration_packet.sv"
 add_file -type verilog "src/hdmi/audio_info_frame.sv"

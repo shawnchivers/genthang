@@ -302,13 +302,15 @@ The Options page opens first when you call up the menu during a game:
 - **Switch core**: choose a complete `.bin` image from `/cores` (see below)
 - **Scanlines**: off, 25 %, 50 %
 - **Composite blend**: off, on, adaptive
+- **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
 
 Opening the menu pauses the game and mutes HDMI audio. **Reset game** pulses the
 console reset input without clearing work RAM, like the physical Genesis reset
 button (this is the reset X-Men's Mojo level expects). Display settings are saved
-to `GENTHANG.CFG` on the card and never affect the menu itself.
+to `GENTHANG.CFG` on the card. Scanlines and composite blend never affect the menu
+itself; the video output setting applies to the menu too.
 
 ### Display options
 
@@ -322,6 +324,12 @@ post-processing options are applied by the HDMI scaler:
   dither patterns many games use for transparency and shading the way a composite
   cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
   dither, leaving the rest of the picture sharp.
+
+**Video output** chooses HDMI (default, with audio) or DVI. DVI sends the same
+720p60 picture without HDMI data islands, so the display gets no audio; use the
+[line-out jack](#line-out-jack-db9-and-raw-builds) for sound. Use it if a
+display pulses or flickers on mid and dark tones: on an LG 50PN6500 plasma, any HDMI
+data island made the picture pulse regardless of its contents, and DVI was stable.
 <table>
   <tr>
     <td align="center"><img src="docs/images/display-off.png" width="300"><br><sub>Off</sub></td>
@@ -510,6 +518,31 @@ core output, not captures from the physical board's HDMI port. Hardware performa
   wiring does not provide; the FPGA inputs are not 5 V tolerant.
 - No picture or menu: check the HDMI cable and display (the output is 720p60), that
   the flash image matches your hardware, and that the TF card is fully inserted.
+- Picture pulses or flickers on a plasma TV (black and full white stay steady): set
+  **Video output** to DVI in the options menu. The TV then gets no audio; use the
+  line-out jack below for sound.
+
+### Line-out jack (DB9 and raw builds)
+
+A stereo 3.5 mm line-out is available on two otherwise unused header pins, in both HDMI
+and DVI modes: left on FPGA pin 31 (J6 row 14), right on pin 56 (J5 row 7), ground on
+J6 row 20 or J5 row 15. The pins carry 1-bit (sigma-delta) audio, so each needs a small
+filter:
+
+```
+pin ──1 kΩ──┬──10 µF (+ toward the resistor)──► jack tip (L) / ring (R)
+          10 nF
+GND ────────┴─────────────────────────────────► jack sleeve
+```
+
+The output is roughly 1 V peak to peak, for powered speakers, a soundbar or an amplifier;
+it is not meant to drive headphones directly.
+
+**Not hot-pluggable without the filter.** Wired straight to the pins (no resistor or
+capacitors) the line-out works for a quick test, but plugging or unplugging the jack or
+the speaker while the board is powered gave trouble. Power the board off first, or fit
+the 1 kΩ / 10 nF / 10 µF filter, which isolates the pins. Pin 56 also reaches the Nano's on-board
+speaker amplifier input, so leave that amplifier's speaker connector empty.
 
 ## Credits and tooling
 

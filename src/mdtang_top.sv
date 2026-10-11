@@ -51,6 +51,12 @@ module mdtang_top (
     input        ds2_miso,
 `endif
 
+`ifndef GT_PAD_DS
+    // 3.5 mm line-out jack: 1-bit audio, RC-filtered off board (see README)
+    output       audio_jack_l,
+    output       audio_jack_r,
+`endif
+
     // embedded SDRAM (fixed connections, not in the .cst)
     output       O_sdram_clk,
     output       O_sdram_cke,
@@ -94,7 +100,7 @@ wire [3:0]  red, green, blue;
 wire        hsync, hblank, vblank, ce_pix, pause_core, md_on, loading, overlay;
 wire [7:0]  overlay_x, overlay_y;
 wire [14:0] overlay_color;
-wire [3:0]  video_opt;
+wire [4:0]  video_opt;
 wire [1:0]  resolution;
 wire        transp, interlace;
 wire [15:0] audio_left, audio_right;
@@ -153,6 +159,13 @@ md20k_core #(.FREQ(FREQ),
 );
 
 assign led = ~{loading, md_on};
+
+`ifndef GT_PAD_DS
+audio_dac jack (
+    .clk(clk_sys), .left(audio_left), .right(audio_right),
+    .out_l(audio_jack_l), .out_r(audio_jack_r)
+);
+`endif
 
 // HDMI ----------------------------------------------------------------------------------
 // there are 15 dummy pixels after VBLANK before the first HBLANK

@@ -1,7 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.6.0 - 2026-10-11
 
+- Added a **Video output** menu option: HDMI (default) or DVI. DVI sends the picture
+  without HDMI data islands and therefore without audio. An LG 50PN6500 plasma pulsed
+  on mid and dark tones whenever any data island was present, whatever it carried;
+  standalone HDMI tests showed DVI and island-free output were stable. The setting is
+  saved in `GENTHANG.CFG` (third character), which older firmware ignores.
+- Added a stereo 3.5 mm line-out on DB9 and raw builds: 1-bit sigma-delta audio on
+  FPGA pins 31 (left, J6 row 14) and 56 (right, J5 row 7), filtered off board with
+  1 kOhm, 10 nF and 10 uF per channel. It works in HDMI and DVI modes. The menu shows the DVI setting as
+  "Video output: DVI+LINE OUT". Without the filter the jack is not hot-pluggable.
 - Restored 68K DRAM refresh timing: every 128 CPU cycles the next 68K bus cycle
   waits 2 cycles, as on the console. CPU-bound code no longer runs ~1.6% fast.
 - 68K writes to the VDP no longer take an extra wait state when the VDP FIFO has
