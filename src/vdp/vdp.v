@@ -713,10 +713,8 @@ module vdp(
    // dot left of the SOR2 trash can (docs/sor2-trashcan-glitch.md) appears on exactly the
    // lines where the value left on this BSRAM write port by the previous line's last sprite
    // pixel has bit 0 set; with the port data at 0 while idle that cannot happen.
-`ifdef GT_VPAD
-   wire FIX_SP3_DATA = ~HWDBG[5];
-`elsif SIM_OLD_LINEBUF
-   wire FIX_SP3_DATA = 1'b0;
+`ifdef SIM_OLD_LINEBUF
+   wire FIX_SP3_DATA = 1'b0;            // simulation: the behaviour before the fix
 `else
    wire FIX_SP3_DATA = 1'b1;
 `endif
@@ -2373,11 +2371,8 @@ module vdp(
    // Line-buffer BSRAMs must not read and write one address on the two ports in the same
    // cycle (GOWIN UG285, dual and semi-dual port mode). The sprite buffer clear trails the
    // copy by one pixel, and the plane buffers are read at an address the plane renderers
-   // never write while the output is blanked. Debug builds can select the old behaviour.
-`ifdef GT_VPAD
-   wire FIX_REND_CLEAR = ~HWDBG[6];
-   wire FIX_HBL_ADDR   = ~HWDBG[7];
-`elsif SIM_OLD_LINEBUF
+   // never write while the output is blanked (SIM_OLD_LINEBUF: the old behaviour, simulation).
+`ifdef SIM_OLD_LINEBUF
    wire FIX_REND_CLEAR = 1'b0;          // simulation: the behaviour before the fix
    wire FIX_HBL_ADDR   = 1'b0;
 `else
