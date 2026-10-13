@@ -679,20 +679,16 @@ module vdp(
    reg              FF_HS;
    
    
-   dpram_block #(9, 8) bgb_ci(
-      .addr_a(BGB_COLINFO_ADDR_A), .addr_b(BGB_COLINFO_ADDR_B), 
-      .clka(CLK), .clkb(CLK), .datain_a(BGB_COLINFO_D_A), .datain_b(1'b0), 
-      .we_a(BGB_COLINFO_WE_A), .we_b(BGB_COLINFO_WE_B), 
-      .dataout_a(), .dataout_b(BGB_COLINFO_Q_B)
+   sdpram_block #(9, 8) bgb_ci(
+      .clkw(CLK), .addr_w(BGB_COLINFO_ADDR_A), .din(BGB_COLINFO_D_A), .we(BGB_COLINFO_WE_A),
+      .clkr(CLK), .addr_r(BGB_COLINFO_ADDR_B), .dout(BGB_COLINFO_Q_B)
    );
    assign BGB_COLINFO_WE_B = 1'b0;
    
    
-   dpram_block #(9, 8) bga_ci(
-      .addr_a(BGA_COLINFO_ADDR_A), .addr_b(BGA_COLINFO_ADDR_B), 
-      .clka(CLK), .clkb(CLK), .datain_a(BGA_COLINFO_D_A), .datain_b(1'b0), 
-      .we_a(BGA_COLINFO_WE_A), .we_b(BGA_COLINFO_WE_B), 
-      .dataout_a(), .dataout_b(BGA_COLINFO_Q_B)
+   sdpram_block #(9, 8) bga_ci(
+      .clkw(CLK), .addr_w(BGA_COLINFO_ADDR_A), .din(BGA_COLINFO_D_A), .we(BGA_COLINFO_WE_A),
+      .clkr(CLK), .addr_r(BGA_COLINFO_ADDR_B), .dout(BGA_COLINFO_Q_B)
    );
    assign BGA_COLINFO_WE_B = 1'b0;
    
@@ -711,12 +707,12 @@ module vdp(
       OBJ_COLINFO_D_B_Q <= OBJ_COLINFO_D_B;
       OBJ_COLINFO_WE_B_Q <= OBJ_COLINFO_WE_B;
    end
-   dpram_block #(9, /*7*/8) obj_ci(
-      .addr_a(OBJ_COLINFO_ADDR_A), .addr_b(OBJ_COLINFO_ADDR_B_Q), 
-      .clka(CLK), .clkb(OBJ_COLINFO_CLK), .datain_a(1'b0), .datain_b(OBJ_COLINFO_D_B_Q), 
-      .we_a(OBJ_COLINFO_WE_A), .we_b(OBJ_COLINFO_WE_B_Q), 
-      .dataout_a(OBJ_COLINFO_Q_A), .dataout_b()
+   wire [7:0] obj_ci_q;
+   sdpram_block #(9, 8) obj_ci(
+      .clkw(OBJ_COLINFO_CLK), .addr_w(OBJ_COLINFO_ADDR_B_Q), .din({1'b0, OBJ_COLINFO_D_B_Q}), .we(OBJ_COLINFO_WE_B_Q),
+      .clkr(CLK), .addr_r(OBJ_COLINFO_ADDR_A), .dout(obj_ci_q)
    );
+   assign OBJ_COLINFO_Q_A = obj_ci_q[6:0];
    
    assign OBJ_COLINFO_CLK = (~CLK);
    assign OBJ_COLINFO_ADDR_A = (SP3C != SP3C_DONE) ? OBJ_COLINFO_ADDR_RD_SP3 : OBJ_COLINFO_ADDR_RD_REND;
@@ -763,12 +759,12 @@ module vdp(
    end
 `endif
 
-   dpram_block #(9, /*7*/8) obj_ci2(
-      .addr_a(OBJ_COLINFO2_ADDR_RD), .addr_b(OBJ_COLINFO2_ADDR_WR), 
-      .clka(CLK), .clkb(CLK), .datain_a({7{1'b0}}), .datain_b(OBJ_COLINFO2_D), 
-      .we_a(1'b0), .we_b(OBJ_COLINFO2_WE), 
-      .dataout_a(OBJ_COLINFO2_Q), .dataout_b()
+   wire [7:0] obj_ci2_q;
+   sdpram_block #(9, 8) obj_ci2(
+      .clkw(CLK), .addr_w(OBJ_COLINFO2_ADDR_WR), .din({1'b0, OBJ_COLINFO2_D}), .we(OBJ_COLINFO2_WE),
+      .clkr(CLK), .addr_r(OBJ_COLINFO2_ADDR_RD), .dout(obj_ci2_q)
    );
+   assign OBJ_COLINFO2_Q = obj_ci2_q[6:0];
    
    // byte-eanbled 128x32-bit RAM
    // obj_cache obj_cache(
