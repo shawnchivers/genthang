@@ -709,7 +709,19 @@ module vdp(
    assign OBJ_COLINFO_ADDR_B = (SP3C != SP3C_DONE) ? OBJ_COLINFO_ADDR_WR_SP3 : OBJ_COLINFO_ADDR_WR_REND;
    assign OBJ_COLINFO_WE_A = 1'b0;
    assign OBJ_COLINFO_WE_B = (SP3C != SP3C_DONE) ? OBJ_COLINFO_WE_SP3 : OBJ_COLINFO_WE_REND;
-   assign OBJ_COLINFO_D_B = (SP3C != SP3C_DONE) ? OBJ_COLINFO_D_SP3 : OBJ_COLINFO_D_REND;
+   // The sprite line-buffer write data is 0 except in a write cycle. On the board, the white
+   // dot left of the SOR2 trash can (docs/sor2-trashcan-glitch.md) appears on exactly the
+   // lines where the value left on this BSRAM write port by the previous line's last sprite
+   // pixel has bit 0 set; with the port data at 0 while idle that cannot happen.
+`ifdef GT_VPAD
+   wire FIX_SP3_DATA = ~HWDBG[5];
+`elsif SIM_OLD_LINEBUF
+   wire FIX_SP3_DATA = 1'b0;
+`else
+   wire FIX_SP3_DATA = 1'b1;
+`endif
+   assign OBJ_COLINFO_D_B = (SP3C != SP3C_DONE) ? ((FIX_SP3_DATA & ~OBJ_COLINFO_WE_SP3) ? 7'd0 : OBJ_COLINFO_D_SP3) :
+                            OBJ_COLINFO_D_REND;
    
    
 `ifdef DPB_COLLISION_LOG
