@@ -697,13 +697,24 @@ module vdp(
    assign BGA_COLINFO_WE_B = 1'b0;
    
    
-   // The write port is clocked on the falling edge: its address, data and write enable come
-   // from CLK registers and are sampled half a period later, so they have half a period of
-   // hold margin (0.06 ns on CLK). A write lands half a period earlier, which no read depends on.
+   // The write port is clocked on the falling edge and fed straight from CLK registers
+   // (OBJ_COLINFO_*_Q below, no logic in between). On the board, writes on CLK corrupted
+   // sprite colour bits (hold margin 0.06 ns), and with the falling edge alone the select
+   // logic in front of the port had only half a period. With the registers, setup is half a
+   // period of routing and hold is half a period. Writes land one and a half cycles after
+   // the state machine issues them, which no read of the same pixel depends on.
+   reg  [8:0]       OBJ_COLINFO_ADDR_B_Q = 9'd0;
+   reg  [6:0]       OBJ_COLINFO_D_B_Q = 7'd0;
+   reg              OBJ_COLINFO_WE_B_Q = 1'b0;
+   always @(posedge CLK) begin
+      OBJ_COLINFO_ADDR_B_Q <= OBJ_COLINFO_ADDR_B;
+      OBJ_COLINFO_D_B_Q <= OBJ_COLINFO_D_B;
+      OBJ_COLINFO_WE_B_Q <= OBJ_COLINFO_WE_B;
+   end
    dpram_block #(9, /*7*/8) obj_ci(
-      .addr_a(OBJ_COLINFO_ADDR_A), .addr_b(OBJ_COLINFO_ADDR_B), 
-      .clka(CLK), .clkb(OBJ_COLINFO_CLK), .datain_a(1'b0), .datain_b(OBJ_COLINFO_D_B), 
-      .we_a(OBJ_COLINFO_WE_A), .we_b(OBJ_COLINFO_WE_B), 
+      .addr_a(OBJ_COLINFO_ADDR_A), .addr_b(OBJ_COLINFO_ADDR_B_Q), 
+      .clka(CLK), .clkb(OBJ_COLINFO_CLK), .datain_a(1'b0), .datain_b(OBJ_COLINFO_D_B_Q), 
+      .we_a(OBJ_COLINFO_WE_A), .we_b(OBJ_COLINFO_WE_B_Q), 
       .dataout_a(OBJ_COLINFO_Q_A), .dataout_b()
    );
    
