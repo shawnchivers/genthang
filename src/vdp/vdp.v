@@ -712,6 +712,33 @@ module vdp(
    assign OBJ_COLINFO_D_B = (SP3C != SP3C_DONE) ? OBJ_COLINFO_D_SP3 : OBJ_COLINFO_D_REND;
    
    
+`ifdef DPB_COLLISION_LOG
+   // simulation only: context of every same-address read/write on the sprite line buffer
+   integer obj_ci_coll = 0;
+   always @(posedge CLK)
+      if (OBJ_COLINFO_WE_B & OBJ_COLINFO_ADDR_A == OBJ_COLINFO_ADDR_B) begin
+         obj_ci_coll = obj_ci_coll + 1;
+         if (obj_ci_coll <= 50)
+            $display("OBJCOLL v=%0d h=%0d pixdiv=%0d sp3c=%0d addr=%0d we_sp3=%b we_rend=%b d=%02x rd_sp3=%0d wr_sp3=%0d rd_rend=%0d wr_rend=%0d obj_no=%0d obj_idx=%0d x_ofs=%0d pos=%0d ce=%b",
+                     HV_VCNT, HV_HCNT, HV_PIXDIV, SP3C, OBJ_COLINFO_ADDR_B, OBJ_COLINFO_WE_SP3, OBJ_COLINFO_WE_REND,
+                     OBJ_COLINFO_D_B, OBJ_COLINFO_ADDR_RD_SP3, OBJ_COLINFO_ADDR_WR_SP3, OBJ_COLINFO_ADDR_RD_REND,
+                     OBJ_COLINFO_ADDR_WR_REND, OBJ_NO, OBJ_IDX, OBJ_X_OFS, OBJ_POS, CE);
+      end
+   integer cram_coll = 0, vis_coll = 0;
+   always @(posedge CLK) begin
+      if (CRAM_WE_A & CRAM_ADDR_A == CRAM_ADDR_B) begin
+         cram_coll = cram_coll + 1;
+         if (cram_coll <= 400)
+            $display("CRAMCOLL v=%0d h=%0d pixdiv=%0d entry=%0d data=%03x", HV_VCNT, HV_HCNT, HV_PIXDIV, CRAM_ADDR_A, CRAM_D_A);
+      end
+      if (OBJ_VISINFO_WE & OBJ_VISINFO_ADDR_WR == OBJ_VISINFO_ADDR_RD) begin
+         vis_coll = vis_coll + 1;
+         if (vis_coll <= 100)
+            $display("VISCOLL v=%0d h=%0d sp1c=%0d sp2c=%0d addr=%0d d=%0d", HV_VCNT, HV_HCNT, SP1C, SP2C, OBJ_VISINFO_ADDR_WR, OBJ_VISINFO_D);
+      end
+   end
+`endif
+
    dpram_block #(9, /*7*/8) obj_ci2(
       .addr_a(OBJ_COLINFO2_ADDR_RD), .addr_b(OBJ_COLINFO2_ADDR_WR), 
       .clka(CLK), .clkb(CLK), .datain_a({7{1'b0}}), .datain_b(OBJ_COLINFO2_D), 
@@ -2331,6 +2358,21 @@ module vdp(
       
    assign OBJ_COLINFO_D_REND = {7{1'b0}};
 
+   // Line-buffer BSRAMs must not read and write one address on the two ports in the same
+   // cycle (GOWIN UG285, dual and semi-dual port mode). The sprite buffer clear trails the
+   // copy by one pixel, and the plane buffers are read at an address the plane renderers
+   // never write while the output is blanked. Debug builds can select the old behaviour.
+`ifdef GT_VPAD
+   wire FIX_REND_CLEAR = ~HWDBG[6];
+   wire FIX_HBL_ADDR   = ~HWDBG[7];
+`elsif SIM_OLD_LINEBUF
+   wire FIX_REND_CLEAR = 1'b0;          // simulation: the behaviour before the fix
+   wire FIX_HBL_ADDR   = 1'b0;
+`else
+   wire FIX_REND_CLEAR = 1'b1;
+   wire FIX_HBL_ADDR   = 1'b1;
+`endif
+
    always @(posedge CLK)
    begin
       reg [8:0]        x;
@@ -2350,7 +2392,8 @@ module vdp(
                begin
                   x = HV_HCNT;
                   OBJ_COLINFO_ADDR_RD_REND <= x;
-                  OBJ_COLINFO_ADDR_WR_REND <= x;
+                  // clear the pixel copied in the previous pixel period, not the one being read
+                  OBJ_COLINFO_ADDR_WR_REND <= FIX_REND_CLEAR ? x - 9'd1 : x;
                   OBJ_COLINFO2_ADDR_WR <= x;
                   OBJ_COLINFO_WE_REND <= 1'b0;
                end
@@ -2383,8 +2426,10 @@ module vdp(
          
    if (CE) begin
       if (IN_HBL | VBL_AREA) begin
-         BGB_COLINFO_ADDR_B <= {9{1'b0}};
-         BGA_COLINFO_ADDR_B <= {9{1'b0}};
+         // park the reads at 448: the plane renderers write -16..~335 (496-511, 0-~335),
+         // and write position 0 during HBLANK
+         BGB_COLINFO_ADDR_B <= FIX_HBL_ADDR ? 9'd448 : {9{1'b0}};
+         BGA_COLINFO_ADDR_B <= FIX_HBL_ADDR ? 9'd448 : {9{1'b0}};
          if (HV_PIXDIV == 4'b0101) begin
             FF_R <= {4{1'b0}};
             FF_G <= {4{1'b0}};
