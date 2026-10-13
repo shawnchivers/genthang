@@ -10,11 +10,25 @@ puts "GT_PAD=$pad GT_PINOUT=$pinout CST=$pad_cst OUTPUT=$output_base"
 # selects the pad ports in mdtang_top.sv (the checked-in default is GT_PAD_DB9)
 set f [open src/pad_config.vh w]
 puts $f "`define GT_PAD_[string toupper $pad]"
+# GT_NO_SOUND=1: debug builds without the YM2612/PSG/audio filters (silence, ~10% of the logic)
+if {[info exists ::env(GT_NO_SOUND)] && $::env(GT_NO_SOUND) eq "1"} {
+    puts $f "`define NO_SOUND"
+    puts "GT_NO_SOUND=1: audio removed (debug build)"
+}
 close $f
 
 # board layer
 add_file -type cst     $pad_cst
-add_file -type sdc     "src/mdtang.sdc"
+if {[info exists ::env(GT_NO_SOUND)] && $::env(GT_NO_SOUND) eq "1"} {
+    # the JT12 multicycle constraints name cells that do not exist without sound
+    set fi [open src/mdtang.sdc r]; set sdc [read $fi]; close $fi
+    set fo [open src/mdtang_nosound.sdc w]
+    foreach line [split $sdc "\n"] { if {[string first "u_jt12" $line] < 0} { puts $fo $line } }
+    close $fo
+    add_file -type sdc     "src/mdtang_nosound.sdc"
+} else {
+    add_file -type sdc     "src/mdtang.sdc"
+}
 add_file -type verilog "src/mdtang_top.sv"
 add_file -type verilog "src/md20k_core.sv"
 add_file -type verilog "src/nano20k/gowin_pll_sys.v"
