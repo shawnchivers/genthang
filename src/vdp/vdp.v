@@ -697,9 +697,12 @@ module vdp(
    assign BGA_COLINFO_WE_B = 1'b0;
    
    
+   // The write port is clocked on the falling edge: its address, data and write enable come
+   // from CLK registers and are sampled half a period later, so they have half a period of
+   // hold margin (0.06 ns on CLK). A write lands half a period earlier, which no read depends on.
    dpram_block #(9, /*7*/8) obj_ci(
       .addr_a(OBJ_COLINFO_ADDR_A), .addr_b(OBJ_COLINFO_ADDR_B), 
-      .clka(CLK), .clkb(CLK), .datain_a(1'b0), .datain_b(OBJ_COLINFO_D_B), 
+      .clka(CLK), .clkb(OBJ_COLINFO_CLK), .datain_a(1'b0), .datain_b(OBJ_COLINFO_D_B), 
       .we_a(OBJ_COLINFO_WE_A), .we_b(OBJ_COLINFO_WE_B), 
       .dataout_a(OBJ_COLINFO_Q_A), .dataout_b()
    );
