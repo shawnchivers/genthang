@@ -18,7 +18,7 @@ CDEFS ?=
 
 CORE = $D/system.sv $D/gpio_buttons.v \
 	$D/fx68k/verilator/fx68k.sv $D/fx68k/verilator/fx68kAlu.sv $D/fx68k/verilator/uaddrPla.sv \
-	$D/vdp/vdp.v $D/common/dpram_block.v $D/common/dpram.v $D/common/dpram32_block.v \
+	$D/vdp/vdp.v $D/common/dpram_block.v $D/common/sdpram_block.v $D/common/dpram.v $D/common/dpram32_block.v \
 	$D/peripherals/gen_io.sv \
 	$D/jt89/jt89_mixer.v $D/jt89/jt89_noise.v $D/jt89/jt89_tone.v $D/jt89/jt89_vol.v $D/jt89/jt89.v \
 	$(wildcard $D/jt12/*.v $D/jt12/adpcm/*.v $D/jt12/mixer/*.v) \

@@ -57,6 +57,18 @@ always @(posedge clkb) begin
     else 
         dataout_b <= ram[addr_b];
 end 
+
+`ifdef DPB_COLLISION_LOG
+// Simulation only: report reads and writes of one address on the two ports in the same
+// cycle, which the GOWIN BSRAM does not allow (UG285).
+integer collisions = 0;
+always @(posedge clka)
+    if (we_a != we_b && addr_a == addr_b) begin
+        collisions = collisions + 1;
+        if (collisions <= `DPB_COLLISION_LOG)
+            $display("DPBCOLL %m t=%0t addr=%0d %s", $time, addr_a, we_a ? "A-write/B-read" : "B-write/A-read");
+    end
+`endif
 `endif
     
 endmodule
