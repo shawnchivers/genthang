@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.1 - 2026-10-13
+
+- Fixed the Streets of Rage 2 stage 1 trash-can glitch (a stray pixel column beside the
+  can, or black dots and a white line on it). The VDP line buffers now use Gowin
+  simple-dual-port BSRAM instead of true dual-port, whose sprite buffer returned corrupted
+  colour bits on the board although simulation and timing were clean. The sprite buffer
+  write port runs on the falling clock edge, fed straight from registers. See
+  `docs/sor2-trashcan-glitch.md`.
+- Added the `GT_NO_SOUND=1` build option (debug builds without FM, PSG and audio filters).
+- Known issue: the menu's "Reset game" can hang some games (`docs/known-issues.md`).
+
 ## 1.6.0 - 2026-10-11
 
 - Added a **Video output** menu option: HDMI (default) or DVI. DVI sends the picture

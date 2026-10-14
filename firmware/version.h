@@ -1,1 +1,1 @@
-#define GENTHANG_VERSION "1.6.0"
+#define GENTHANG_VERSION "1.6.1"
