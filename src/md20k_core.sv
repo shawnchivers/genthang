@@ -220,6 +220,10 @@ end
 // Menu Reset Game resets the CPUs without applying the power-on reset used while no
 // game is loaded. SDRAM and the rest of the console state remain live, matching the
 // short physical reset-button press required by games such as X-Men.
+// The menu overlay pauses the core, but not during this reset: fx68k only takes an
+// external reset if its clock enables run while it is asserted. Paused for the whole
+// pulse, the 68K could miss it and continue the old game with the Z80 held in reset
+// (the "Reset game" hang, docs/known-issues.md).
 wire reset_btn = ss_ctrl[2:0] == 3'b110;
 
 // Genesis ------------------------------------------------------------------------------
@@ -260,7 +264,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
     .VRAM_A(vram_a), .VRAM_D(vram_d), .VRAM_Q(vram_q),
     .VRAM32_REQ(vram32_req), .VRAM32_ACK(vram32_ack), .VRAM32_A(vram32_a), .VRAM32_Q(vram32_q),
     .EN_HIFI_PCM(1'b0), .LADDER(1'b0), .OBJ_LIMIT_HIGH(1'b0), .TRANSP_DETECT(transp),
-    .PAUSE_EN(pause_core | (overlay_s[1] & ~ss_ctrl[0])), .BGA_EN(1'b1), .BGB_EN(1'b1), .SPR_EN(1'b1), .DBG_M68K_A(dbg_m68k_a), .DBG_VBUS_A(),
+    .PAUSE_EN(pause_core | (overlay_s[1] & ~ss_ctrl[0] & ~reset_btn)), .BGA_EN(1'b1), .BGB_EN(1'b1), .SPR_EN(1'b1), .DBG_M68K_A(dbg_m68k_a), .DBG_VBUS_A(),
     .SS_EN(ss_ctrl[0]), .SS_NMI(ss_ctrl[1]), .SS_ZFREEZE(ss_ctrl[2])
 );
 

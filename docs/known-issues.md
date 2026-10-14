@@ -1,32 +1,19 @@
 # Known issues
 
-## Menu "Reset game" does not always restart the game
+## Menu "Reset game" did not always restart the game (fixed in 1.6.2)
 
-**Status:** open. Workaround: use "Load another game" and pick the same ROM. That does a
-full reset with the ROM reloaded from the TF card, like power-on.
+**Symptom:** after "Reset game" the game sometimes froze, e.g. Streets of Rage 2 on a still
+picture, while another "Reset game" worked.
 
-**Seen:** Streets of Rage 2 (USA), 2026-10-13. After "Reset game" the game stopped on its
-SEGA logo and stayed there for minutes: the picture was static and the 68K made no
-progress. Another "Reset game" a few minutes later restarted it normally. The user
-reports the same in other games: reset works sometimes, not always.
+**Cause:** the menu overlay pauses the core (the 68K clock enables stop), and the firmware
+pulses the reset (`SS_RESET`, 100 ms) from inside the menu, so the whole pulse fell in the
+pause. fx68k sets its reset flags on every clock, but clears them on its next T3 and only
+jumps to the reset microcode on T1, both of which need the clock enables. Depending on the
+T-state the 68K was paused in, the reset was lost: the 68K continued the old game while the
+reset had put the Z80 (and YM2612) in reset. SOR2 then waits for its sound driver forever.
 
-**What "Reset game" does:** firmware `OPT_RESET` (`firmware/firmware.c`) writes
-`SS_RESET` to the save-state control register, waits 100 ms and for the buttons to be
-released, then clears it. In `md20k_core.sv` that value (`ss_ctrl[2:0] == 3'b110`) is
-`reset_btn`, the system's `SOFT_RESET`. It resets the CPUs while SDRAM and the rest of the
-console state stay live, matching a short press of a real reset button (X-Men needs that).
-The same value also asserts `SS_NMI` and `SS_ZFREEZE` for the whole pulse, and all three
-are released together.
-
-**Suspects (not yet examined):**
-- State that a real reset clears and the soft reset does not: Z80 bus request/reset
-  registers, YM2612/PSG, VDP FIFO/DMA or interrupt state, cartridge mapper registers.
-- The release order of the reset, NMI and Z80 freeze bits (one cycle apart after the
-  2-flop synchronizer).
-- SOR2 hangs on the SEGA logo, where it starts its Z80 sound driver; that points at the
-  Z80/YM state.
-
-**How to reproduce with the hardware loop:** a `GT_VPAD` debug build plus
-`genthangverify/scripts/hwloop/` can press "Reset game" repeatedly and check the picture
-keeps moving (`tcloop.wait_alive`). The loop itself now restarts games through "Load
-another game" because of this issue.
+**Fix:** `md20k_core.sv` lifts the overlay pause while the reset is asserted, so the CPUs see
+a clocked reset like a real reset button. Reproduced and verified in `tb_ref`
+(`+sreset=<cycle> +spause=<cycles>`, `+oldpause` for the old behaviour): resets at stage-1
+frames 40 and 47 hung before and restart into the SEGA logo and title now. Confirmed on
+the board (1.6.2): repeated resets in SOR2 restart every time.
