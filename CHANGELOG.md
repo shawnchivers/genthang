@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.2 - 2026-10-14
+
+- Fixed the menu's "Reset game" sometimes freezing the game (for example Streets of Rage 2
+  stopping on a still picture). The menu overlay pauses the core, and the reset was sent
+  entirely inside that pause. The fx68k 68000 only takes a reset when its clock enables run
+  while it is held, so depending on where the CPU was frozen the reset was lost. The 68000
+  then carried on with the old game while the Z80 and YM2612 had been reset. The pause is now
+  lifted while the reset is asserted. Tested on the board with repeated resets in SOR2.
+- Verilator `tb_ref`: `+sreset`, `+sreset_len`, `+spause`, `+oldpause` and `+sprobe` reproduce
+  and inspect a menu reset.
+
 ## 1.6.1 - 2026-10-13
 
 - Fixed the Streets of Rage 2 stage 1 trash-can glitch (a stray pixel column beside the

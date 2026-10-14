@@ -15,4 +15,5 @@ reset had put the Z80 (and YM2612) in reset. SOR2 then waits for its sound drive
 **Fix:** `md20k_core.sv` lifts the overlay pause while the reset is asserted, so the CPUs see
 a clocked reset like a real reset button. Reproduced and verified in `tb_ref`
 (`+sreset=<cycle> +spause=<cycles>`, `+oldpause` for the old behaviour): resets at stage-1
-frames 40 and 47 hung before and restart into the SEGA logo and title now.
+frames 40 and 47 hung before and restart into the SEGA logo and title now. Confirmed on
+the board (1.6.2): repeated resets in SOR2 restart every time.
