@@ -2890,7 +2890,8 @@ module vdp(
                      FIFO_PARTIAL <= 1'b0;
                   
                   if (VRAM_SPEED == 1'b0 | (FIFO_EN & FIFO_PARTIAL == 1'b0 & REFRESH_FLAG == 1'b0)) begin
-                     if (FIFO_EMPTY == 1'b0 & FIFO_DELAY[FIFO_RD_POS] == 0)
+                     // FIFO_EMPTY also counts the pending second byte (FIFO_PARTIAL): read only real entries
+                     if (FIFO_QUEUE != 0 & FIFO_DELAY[FIFO_RD_POS] == 0)
                         DTC <= DTC_FIFO_RD;
                      else if (DT_RD_SEL & DT_RD_DTACK_N)
                         case (DT_RD_CODE)
@@ -2917,10 +2918,11 @@ module vdp(
                         DTC <= DTC_VSRAM_WR;
                      4'b0001 :		// VRAM Write
                         begin
-                           // nand2maro: this causes fifo to underflow
-                           // if (M128 == 1'b0)
-                           //    //skip next FIFO slot since we write 16 bit now instead of the original 8
-                           //    FIFO_PARTIAL <= 1'b1;
+                           // VRAM is 8 bits wide outside 128K mode: a word takes two access
+                           // slots (BlastEm, real VDP). Only with the FIFO throttle on, so the
+                           // full-speed mode keeps its old behaviour.
+                           if (M128 == 1'b0 & VRAM_SPEED)
+                              FIFO_PARTIAL <= 1'b1;
                            DTC <= DTC_VRAM_WR1;
                         end
                      default :		//invalid target
@@ -3185,7 +3187,7 @@ module vdp(
                end
             
             DMA_COPY_RD :
-               begin
+               if (VRAM_SPEED == 1'b0 | FIFO_EN) begin		// read in one access slot...
                   DT_VRAM_SEL <= (~DT_VRAM_SEL);
                   DT_VRAM_ADDR <= {1'b0, DMA_SOURCE[15:1]};
                   DT_VRAM_RNW <= 1'b1;
@@ -3196,18 +3198,19 @@ module vdp(
             
             DMA_COPY_RD2 :
                if (early_ack_dt == 1'b0) begin
+                  DT_DMAV_DATA <= DT_VRAM_DO;		// held until the write slot
                   DMAC <= DMA_COPY_WR;
                end 
                
             DMA_COPY_WR :
-               begin
+               if (VRAM_SPEED == 1'b0 | FIFO_EN) begin		// ...and write the byte in the next one
                   DT_VRAM_SEL <= (~DT_VRAM_SEL);
                   DT_VRAM_ADDR <= {1'b0, ADDR[15:1]};
                   DT_VRAM_RNW <= 1'b0;
                   if (DMA_SOURCE[0] == 1'b0)
-                     DT_VRAM_DI <= {DT_VRAM_DO[7:0], DT_VRAM_DO[7:0]};
+                     DT_VRAM_DI <= {DT_DMAV_DATA[7:0], DT_DMAV_DATA[7:0]};
                   else
-                     DT_VRAM_DI <= {DT_VRAM_DO[15:8], DT_VRAM_DO[15:8]};
+                     DT_VRAM_DI <= {DT_DMAV_DATA[15:8], DT_DMAV_DATA[15:8]};
                   if (ADDR[0] == 1'b0) begin
                      DT_VRAM_UDS_N <= 1'b1;
                      DT_VRAM_LDS_N <= 1'b0;
