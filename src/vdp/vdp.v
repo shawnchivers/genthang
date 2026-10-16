@@ -526,6 +526,7 @@ module vdp(
    
    reg              WIN_V;
    reg              WIN_H;
+   reg              BGA_WIN_EDGE;
    
    reg              BGA_MAPPING_EN;
    wire             BGA_PATTERN_EN;
@@ -1281,6 +1282,7 @@ module vdp(
       reg [9:0]        bga_pos_next;
       reg [15:0]       bga_nametable_item;
       reg [3:0]        tile_pos;
+      reg [4:0]        bga_vs_col;
       reg [10:0]       vscroll_mask;
       reg [9:0]        hscroll_mask;
       reg [10:0]       vscroll_val;
@@ -1333,6 +1335,7 @@ module vdp(
                      WIN_H <= WRIGT_LATCH;
                   else
                      WIN_H <= (~WRIGT_LATCH);
+                  BGA_WIN_EDGE <= 1'b0;
                   
                   V_BGA_XSTART = 10'b0000000000 - HSC_VRAM32_DO[9:0];
                   if (V_BGA_XSTART[3:0] == 4'b0000) begin
@@ -1350,8 +1353,10 @@ module vdp(
                begin
                   BGA_COLINFO_WE_A <= 1'b0;
                   
-                  if (BGA_COL[5:1] <= 19)
-                     VSRAM0_ADDR_B <= BGA_COL[5:1];
+                  // the window-edge fetch is for the next column pair (BlastEm reads its vscroll)
+                  bga_vs_col = BGA_COL[5:1] + (BGA_WIN_EDGE ? 5'd1 : 5'd0);
+                  if (bga_vs_col <= 19)
+                     VSRAM0_ADDR_B <= bga_vs_col;
                   else
                      VSRAM0_ADDR_B <= {5{1'b0}};
                   BGAC <= BGAC_GET_VSCROLL2;
@@ -1363,7 +1368,7 @@ module vdp(
             BGAC_GET_VSCROLL3 :  // 3
                begin
                   if (VSCR) begin
-                     if (BGA_COL[5:1] <= 19) begin
+                     if (bga_vs_col <= 19) begin
                         BGA_VSRAM0_LATCH <= VSRAM0_Q_B;
                         BGA_VSRAM0_LAST_READ <= VSRAM0_Q_B;
                      end else if (H40 == 1'b0)
@@ -1408,7 +1413,10 @@ module vdp(
                         // WIN is 64 tiles wide in H40 mode
                         V_BGA_BASE = V_BGA_XBASE + ({y_cells, 6'b000000, 1'b0});
                   end else begin
-                     V_BGA_XBASE = ({NTAB, 13'b0000000000000}) + ({BGA_X[9:3], 1'b0});
+                     // after a left window, the edge column uses the next 16-pixel block's entries
+                     V_BGA_XBASE = ({NTAB, 13'b0000000000000}) +
+                                   ({(BGA_WIN_EDGE ? ((BGA_X + 10'd16) & hscroll_mask) : BGA_X) >> 3, 1'b0});
+                     BGA_WIN_EDGE <= 1'b0;
                      case (HSIZE)
                         2'b00, 2'b10 :		// HS 32 cells
                            V_BGA_BASE = V_BGA_XBASE + ({y_cells, 5'b00000, 1'b0});
@@ -1538,11 +1546,15 @@ module vdp(
                      BGAC <= BGAC_LOOP;
                   
                   if (WIN_H & WRIGT_LATCH == 1'b0 & BGA_POS[3:0] == 4'b1111 & bga_pos_next[8:4] == WHP_LATCH) begin
-                     // window on the left side ends, but not neccessarily on a scroll boundary,
-                     // when it continues to draw a wrong tile ("left window bug")
+                     // window on the left side ends, but not neccessarily on a scroll boundary. Like
+                     // BlastEm (FLAG_WINDOW_EDGE), the first column after it shows the plane A tile
+                     // pair of that column, wrapped by the fine scroll: fetch the next block's name
+                     // table entries and draw the remaining pixel offsets from them.
                      WIN_H <= 1'b0;
-                     if (WIN_V == 1'b0 & BGA_X[3:0] != 4'b1111)
-                        BGAC <= BGAC_LOOP;
+                     if (WIN_V == 1'b0 & BGA_X[3:0] != 4'b1111) begin
+                        BGA_WIN_EDGE <= 1'b1;
+                        BGAC <= BGAC_GET_VSCROLL;
+                     end
                   end else if (WIN_H == 1'b0 & WRIGT_LATCH & BGA_POS[3:0] == 4'b1111 & bga_pos_next[8:4] == WHP_LATCH) begin
                      // window on the right side starts, cancel rendering the current tile
                      WIN_H <= 1'b1;
