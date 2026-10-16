@@ -1098,6 +1098,7 @@ always @(posedge MCLK) begin
 					MBUS_UDS_N <= M68K_UDS_N;
 					MBUS_LDS_N <= M68K_LDS_N;
 					ZBUS_SEL <= 1;
+					cycle_cnt <= 2'd1;
 					mstate <= MBUS_RNW ? MBUS_ZBUS_WS : MBUS_ZBUS_READ;
 				end
 
@@ -1118,9 +1119,9 @@ always @(posedge MCLK) begin
 				end
 			endcase
 
-		MBUS_ZBUS_WS:
+		MBUS_ZBUS_WS:			// 68K reads of the Z80 area take one wait state (BlastEm io_read)
 			begin
-				if (M68K_CLKENp) begin
+				if (M68K_CLKENp && !cycle_cnt) begin
 					mstate <= MBUS_ZBUS_READ;
 				end
 			end
