@@ -824,6 +824,7 @@ always @(posedge MCLK) begin
 	reg [6:0] refresh_timer;
 	reg rfs_pend;
 	reg rfs_wait;
+	reg vbus_bgack_r;
 	reg [1:0] cycle_cnt;
 	reg wr_posted;
 
@@ -1282,12 +1283,21 @@ always @(posedge MCLK) begin
 			end
 		endcase
 
-		// 68K DRAM refresh: about every 128 CPU cycles the next 68K bus cycle waits 2 CPU cycles (BlastEm
-		// REFRESH_INTERVAL/REFRESH_DELAY). A 7-bit LFSR (period 127) instead of a counter, and the hold is
-		// counted here rather than in the bus state machine, because the device is full.
-		if (M68K_CLKENp) begin
-			refresh_timer <= {refresh_timer[5:0], refresh_timer[6] ^ refresh_timer[5]};
-			if (&refresh_timer) rfs_pend <= 1;
+		// 68K DRAM refresh: every 128 CPU cycles the next 68K bus cycle waits 2 CPU cycles (BlastEm
+		// REFRESH_INTERVAL/REFRESH_DELAY). A counter, not the old period-127 LFSR, whose extra 0.8% refreshes
+		// made long CPU-bound loops drift lines behind BlastEm; like BlastEm, the end of a DMA restarts the
+		// interval. The hold is counted here rather than in the bus state machine, because the device is full.
+		vbus_bgack_r <= VBUS_BGACK_N;
+		if (VBUS_BGACK_N && !vbus_bgack_r) begin
+			refresh_timer <= 7'd0;
+			rfs_pend <= 0;
+			rfs_wait <= 0;
+		end
+		else if (M68K_CLKENp) begin
+			refresh_timer <= refresh_timer + 7'd1;
+			if (&refresh_timer) begin
+				rfs_pend <= 1;
+			end
 			else if (rfs_pend && mstate == MBUS_IDLE && !M68K_AS_N && M68K_MBUS_DTACK_N) begin
 				rfs_wait <= ~rfs_wait;
 				if (rfs_wait) rfs_pend <= 0;
