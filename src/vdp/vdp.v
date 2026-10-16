@@ -2532,9 +2532,10 @@ module vdp(
                      col = col & cold;
                   
                   if (x >= H_DISP_WIDTH | V_ACTIVE_DISP == 1'b0 | (REG[0][5] & x < 8)) begin
-                     // border area and left-column blanking
+                     // border area and left-column blanking; in shadow/highlight mode the blanked
+                     // column shows the shadowed backdrop (BlastEm render_highlight)
                      col = BGCOL;
-                     PIX_MODE <= PIX_NORMAL;
+                     PIX_MODE <= (REG[0][5] & x < 8 & x < H_DISP_WIDTH & V_ACTIVE_DISP & SHI) ? PIX_SHADOW : PIX_NORMAL;
                   end 
                   
                   CRAM_ADDR_B <= col;
