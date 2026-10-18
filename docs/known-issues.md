@@ -1,19 +1,49 @@
 # Known issues
 
+## Regression-sensitive: 68K refresh timing around DMA (read before changing it)
+
+The 68K DRAM-refresh scheduler in [system.sv](../src/system.sv) (search for "68K DRAM
+refresh") restarts its 128-cycle interval when a 68K-to-VDP DMA releases the bus
+(`ff8f6f3`). Small changes to this phase move CPU bus cycles by a few clocks, which
+changes when palette, VRAM and HV-counter-dependent writes land relative to the raster.
+Different games depend on different phases, so a change that fixes one game can break
+others:
+
+| Variant | Aladdin `scenes-6` | Alien 3 `boot-7` | SOR2 trash-can demo |
+|---|---|---|---|
+| Before `ff8f6f3` (`08dbf6c`) | passes | **30 frames fail** | passes |
+| `ff8f6f3`, restart after DMA (current) | **1 frame fails** (7 px) | passes | passes |
+| `d294e0f`, free-running phase (reverted) | passes | **30 frames fail** | **1 frame fails** (16 px) |
+
+`d294e0f` was pushed and then reverted on 2026-10-18 after the overnight campaign on
+`7cdd2bf` showed these regressions. Before changing refresh, DMA bus hand-over, DTACK or
+other 68K bus-cycle timing:
+
+1. Run the three scenarios above, not just the one you are fixing. The campaign specs
+   are in `genthangverify/campaigns/genthang-overnight-20261015/campaign.db` (job names
+   `scenes-6`, `boot-7`, `library-sor2-demo-trashcan.json`).
+2. Run a full overnight campaign and compare it job by job against the previous
+   version. A single target scenario passing is not evidence of an improvement.
+3. BlastEm is the reference, not hardware truth. If the variants only trade failures,
+   keep the current behaviour and record the result here.
+
 ## Overnight differential follow-up (2026-10-17)
 
-These results follow the `genthang-overnight-20261015` campaign. Fixes below are in the
-working tree and have been verified in simulation, not on the FPGA.
+These results follow the `genthang-overnight-20261015` campaign. They have been verified
+in simulation, not on the FPGA.
 
-### Fixed
+### Fixed, then reverted
 
 - **Aladdin `scenes-6`:** the refresh-timing change `ff8f6f3` introduced seven early-white
   pixels at frame 81 during a palette transition. Registers and VDP memories matched
-  after the transition. [The refresh scheduler](../src/system.sv) now keeps its
-  128-cycle phase across DMA bus ownership changes, retaining the original reset seed.
-  The full 120-frame reproduction passes **106/106 compared frames**, with the original
-  input and state-capture schedule. This does not establish that the other Aladdin
-  campaign scenes are fixed.
+  after the transition. `d294e0f` kept the 128-cycle refresh phase across DMA bus
+  ownership changes, and the 120-frame reproduction passed **106/106 compared frames**.
+  **This was reverted:** the next campaign showed it broke Alien 3 `boot-7` and the SOR2
+  trash-can demo (see the table above). Aladdin `scenes-6` is open again, with one frame
+  failing.
+
+### Fixed
+
 - **Brett Hull Hockey 95 `boot-31`: verifier defect, not a renderer fix.** The verification
   top advertised `0x400000` ROM words (8 MiB), masking unbanked cartridge SRAM at
   `$200001`. Save writes were discarded and reads hit ROM padding. The active adapter
@@ -26,7 +56,7 @@ working tree and have been verified in simulation, not on the FPGA.
 ### Still open or reclassified
 
 - **Streets of Rage 1 `boot-16`: mostly temporal alignment, not new large image
-  corruption.** The refresh fix preserves all 600 DUT frame CRCs from the latest
+  corruption.** The (since reverted) refresh change `d294e0f` preserved all 600 DUT frame CRCs from the latest
   overnight binary. The strict comparison still reports 56 failures at offset +1,
   versus 52 in the baseline. Only DUT frames 338, 339, 343 and 347 changed between
   those binaries. In both runs, reference frame 78 is the only frame without an exact
@@ -44,9 +74,8 @@ working tree and have been verified in simulation, not on the FPGA.
 - **Timing probes:** H40 elapsed-time decoding now uses 210 counter steps per line,
   not 211 (`00-B6`, then `E5-FF`). Old numeric reports need redecoding. Remaining
   differences include FIFO active cost (reference 382, DUT 375), DMA fill/copy cost
-  (1101/1094 versus 1088/1082), and active 68K DMA cost (34812 versus 34820).
-  The latter DUT cost was 34813 before the refresh fix; this timing tradeoff is not
-  claimed fixed. HINT logging includes an initial pending sample, not evidence of
+  (1101/1094 versus 1088/1082), and active 68K DMA cost (reference 34812, DUT 34813
+  with the current refresh restart; 34820 with the reverted `d294e0f`). HINT logging includes an initial pending sample, not evidence of
   two extra sustained interrupts. The H40-to-H32 line-150 picture discrepancy is
   confined to border/stale-buffer padding outside the 256 active pixels. Six-button
   timeout differences remain hardware-uncertain.

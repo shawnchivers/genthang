@@ -824,6 +824,7 @@ always @(posedge MCLK) begin
 	reg [6:0] refresh_timer;
 	reg rfs_pend;
 	reg rfs_wait;
+	reg vbus_bgack_r;
 	reg [1:0] cycle_cnt;
 	reg wr_posted;
 
@@ -1283,10 +1284,20 @@ always @(posedge MCLK) begin
 			end
 		endcase
 
-		// Keep the 128-cycle refresh phase across DMA bus ownership changes. Restarting it at
-		// bus release shifts subsequent raster writes. A pending refresh holds the next bus cycle
-		// for two CPU cycles.
-		if (M68K_CLKENp) begin
+		// 68K DRAM refresh: every 128 CPU cycles the next 68K bus cycle waits 2 CPU cycles (BlastEm
+		// REFRESH_INTERVAL/REFRESH_DELAY). A counter, not the old period-127 LFSR, whose extra 0.8% refreshes
+		// made long CPU-bound loops drift lines behind BlastEm; like BlastEm, the end of a DMA restarts the
+		// interval. The hold is counted here rather than in the bus state machine, because the device is full.
+		// REGRESSION-SENSITIVE: the DMA-end restart below is a trade-off, not a settled model. Removing it
+		// (d294e0f, reverted) fixed Aladdin scenes-6 but broke Alien 3 boot-7 (30 frames) and the SOR2
+		// trash-can demo. Any change here needs those three plus a full campaign; see docs/known-issues.md.
+		vbus_bgack_r <= VBUS_BGACK_N;
+		if (VBUS_BGACK_N && !vbus_bgack_r) begin
+			refresh_timer <= 7'd0;
+			rfs_pend <= 0;
+			rfs_wait <= 0;
+		end
+		else if (M68K_CLKENp) begin
 			refresh_timer <= refresh_timer + 7'd1;
 			if (&refresh_timer) begin
 				rfs_pend <= 1;

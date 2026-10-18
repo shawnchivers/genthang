@@ -11,10 +11,12 @@
 - The menu's PicoRV32 uses a single-read-port register file (`ENABLE_REGS_DUALPORT=0`),
   halving its distributed RAM. The menu CPU takes an extra cycle for instructions with
   two source registers.
-- Result: logic 97% (20101/20736), CLS 10270/10368, timing met on all clocks
-  (clk_sys 62.6 MHz against 54 MHz). Not yet tested on the board.
-- 68000 refresh keeps its 128-cycle phase across DMA bus hand-overs (fixes seven wrong
-  pixels in an Aladdin palette transition; see `docs/known-issues.md`).
+- Result (with the refresh revert below): logic 97% (20001/20736), CLS 10238/10368,
+  timing met on all clocks (clk_sys 65.8 MHz against 54 MHz). Not yet tested on the board.
+- Reverted the 68000 refresh change that kept the 128-cycle phase across DMA bus
+  hand-overs (`d294e0f`). It fixed one Aladdin frame but broke Alien 3 (30 frames) and
+  the Streets of Rage 2 trash-can demo. Refresh timing around DMA is a known trade-off;
+  see the "Regression-sensitive" section of `docs/known-issues.md` before changing it.
 
 ## 1.6.2 - 2026-10-14
 
