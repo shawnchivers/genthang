@@ -35,6 +35,8 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 	+1800-2017ext+sv -Wno-fatal -Wno-PINMISSING -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-lint -Wno-style \
 	-Wno-MULTIDRIVEN -Wno-UNOPTFLAT -Wno-CASEINCOMPLETE -Wno-TIMESCALEMOD \
 	-I$D -I$D/fx68k -I$D/vdp -CFLAGS "-O2"
+# the board DUT keeps the iosys UART so the firmware's debug log reaches the console
+DUT_VFLAGS = +define+SERIAL_UPLOAD
 
 .PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io
 
@@ -60,7 +62,7 @@ ref: hex
 		-CFLAGS '-DTOP_HEADER=\"Vtb_ref.h\" -DTOP_CLASS=Vtb_ref $(CDEFS)' $(REF_SRCS) tb_main.cpp -o tb_ref
 
 dut: hex
-	$(VERILATOR) $(VFLAGS) --top-module tb_dut --Mdir $(DUT_MDIR) \
+	$(VERILATOR) $(VFLAGS) $(DUT_VFLAGS) --top-module tb_dut --Mdir $(DUT_MDIR) \
 		-CFLAGS '-DTOP_HEADER=\"Vtb_dut.h\" -DTOP_CLASS=Vtb_dut -DIS_DUT $(CDEFS)' $(DUT_SRCS) tb_main.cpp -o tb_dut
 
 run/%:

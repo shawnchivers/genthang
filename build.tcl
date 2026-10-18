@@ -15,6 +15,11 @@ if {[info exists ::env(GT_NO_SOUND)] && $::env(GT_NO_SOUND) eq "1"} {
     puts $f "`define NO_SOUND"
     puts "GT_NO_SOUND=1: audio removed (debug build)"
 }
+# GT_SERIAL_UPLOAD=1: keep the iosys UART for USB serial uploads (fits, but with little logic headroom)
+if {[info exists ::env(GT_SERIAL_UPLOAD)] && $::env(GT_SERIAL_UPLOAD) eq "1"} {
+    puts $f "`define SERIAL_UPLOAD"
+    puts "GT_SERIAL_UPLOAD=1: USB serial upload included"
+}
 close $f
 
 # board layer

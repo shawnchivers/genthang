@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def select(pad=None, pinout=None):
-    env = {k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT')}
+    env = {k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_SERIAL_UPLOAD')}
     if pad is not None: env['GT_PAD'] = pad
     if pinout is not None: env['GT_PINOUT'] = pinout
     return subprocess.run(['tclsh'], cwd=ROOT, env=env, text=True, capture_output=True,
@@ -103,7 +103,8 @@ proc run {args} {puts "RUN=$args"}
 if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
 '''
                 result=subprocess.run(['tclsh'],cwd=root,text=True,input=script,capture_output=True,
-                                      env={**os.environ,'GT_PAD':pad,'GT_PINOUT':pinout})
+                                      env={**{k:v for k,v in os.environ.items() if k != 'GT_SERIAL_UPLOAD'},
+                                           'GT_PAD':pad,'GT_PINOUT':pinout})
                 self.assertEqual(result.returncode,0,result.stderr)
                 self.assertIn(f'CST=src/boards/nano20k_{pad}.cst',result.stdout)
                 output='genthang_nano20k' if pad == 'ds' else f'genthang_nano20k_{pad}'

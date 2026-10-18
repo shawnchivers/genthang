@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **USB serial upload removed from the default build** so the design fits the GW2AR-18
+  again. Since the VDP slot-timing change (`08dbf6c`) every build failed placement by
+  42-348 LUTs at 100% CLS. The iosys UART is now only built with `GT_SERIAL_UPLOAD=1`
+  (which fits with the register-file change below, but with only 9 spare CLS); without
+  it the menu ignores the serial port and its debug output, and releases no longer ship
+  the upload tools. Copy ROMs and core images to the card in a card reader.
+- The menu's PicoRV32 uses a single-read-port register file (`ENABLE_REGS_DUALPORT=0`),
+  halving its distributed RAM. The menu CPU takes an extra cycle for instructions with
+  two source registers.
+- Result: logic 97% (20101/20736), CLS 10270/10368, timing met on all clocks
+  (clk_sys 62.6 MHz against 54 MHz). Not yet tested on the board.
+- 68000 refresh keeps its 128-cycle phase across DMA bus hand-overs (fixes seven wrong
+  pixels in an Aladdin palette transition; see `docs/known-issues.md`).
+
 ## 1.6.2 - 2026-10-14
 
 - Fixed the menu's "Reset game" sometimes freezing the game (for example Streets of Rage 2

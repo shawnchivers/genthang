@@ -4,7 +4,7 @@
 // - Menu system
 // - ROM file loading
 // - Configuration options
-// - USB serial ROM uploads
+// - USB serial ROM uploads (only with GT_SERIAL_UPLOAD=1)
 // - Save-state control
 //
 // This is similar to the IO controller of MIST, or HPS of MiSTer.
@@ -17,6 +17,7 @@
 // loaded from SPI flash on the board. Firmware source is in firmware/.
 //
 
+`include "pad_config.vh"   // build options (SERIAL_UPLOAD)
 `define MCU_PICORV32
 
 `ifndef PICORV32_REGS
@@ -215,6 +216,7 @@ picorv32 #(
     .CATCH_ILLINSN(0),
     .ENABLE_COUNTERS (0),
     .ENABLE_COUNTERS64 (0),
+    .ENABLE_REGS_DUALPORT(0),       // one register-file read port: half the distributed RAM, slower menu CPU
     .CATCH_MISALIGN (0),
     .TWO_STAGE_SHIFT(0)
 ) rv32 (
@@ -254,6 +256,14 @@ end
 
 // uart @ 0x0200_0010: 115200 baud from the 27 MHz iosys clock. The firmware only ever writes this
 // divider (234), so it is fixed in hardware to save logic.
+// Only built with GT_SERIAL_UPLOAD=1: the default build omits it to fit the GW2AR-18. Without it the
+// registers still respond, reads return "no byte" (no upload request is ever seen), writes are dropped.
+`ifndef SERIAL_UPLOAD
+assign uart_tx = 1'b1;
+assign simpleuart_reg_div_do = 32'd0;
+assign simpleuart_reg_dat_do = 32'hFFFF_FFFF;
+assign simpleuart_reg_dat_wait = 1'b0;
+`else
 simpleuart #(.FIXED_DIV(234)) simpleuart (
     .clk         (clk         ),
     .resetn      (resetn       ),
@@ -271,6 +281,7 @@ simpleuart #(.FIXED_DIV(234)) simpleuart (
     .reg_dat_do  (simpleuart_reg_dat_do),
     .reg_dat_wait(simpleuart_reg_dat_wait)
 );
+`endif
 
 // spi sd card @ 0x0200_0020
 assign sd_dat1 = 1;
@@ -374,6 +385,7 @@ module picosoc_regs (
 		if (wen) regs[waddr[4:0]] <= wdata;
 
 	assign rdata1 = regs[raddr1[4:0]];
-	assign rdata2 = regs[raddr2[4:0]];
+	// rv32 runs with ENABLE_REGS_DUALPORT=0 and never reads this port; tie it off so no RAM copy is built
+	assign rdata2 = 32'd0;
 endmodule
 

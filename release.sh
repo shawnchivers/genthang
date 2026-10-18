@@ -57,8 +57,7 @@ mkdir -p "$package"
 install -m 644 "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin \
     "$OUT/SHA256SUMS" README.md CHANGELOG.md VERSION LICENSE THIRD_PARTY.md "$package/"
 cp -r docs "$package/docs"
-mkdir -p "$package/upload"
-install -m 755 upload/genthang-upload upload/genthang-upload-gui.py "$package/upload/"
+# USB serial upload is not in release bitstreams (GT_SERIAL_UPLOAD), so its host tools are not shipped
 tar -C "$OUT" -czf "$OUT/genthang-v$version.tar.gz" "genthang-v$version"
 rm -rf "$package"
 echo "Release package: $OUT/genthang-v$version.tar.gz"

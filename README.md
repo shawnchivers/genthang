@@ -54,7 +54,8 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
   twelve directly wired buttons for handhelds on the same physical GPIO layout.
 - One save-state slot per game, with "Resume saved game" after a power cycle.
 - Scanline and composite-blend display options.
-- Optional ROM and core-image upload over the board's USB serial port.
+- Optional ROM and core-image upload over the board's USB serial port (only in
+  `GT_SERIAL_UPLOAD=1` builds; the default build leaves it out to fit the FPGA).
 
 Not supported: SVP (Virtua Racing), EEPROM cartridges, Game Genie, interleaved
 `.smd` ROMs and battery-backed cartridge saves (cartridge SRAM lives in SDRAM and is
@@ -188,9 +189,10 @@ sudo mkfs.vfat -F 32 -n GENTHANG /dev/sdX1
 ```
 
 (Replace `/dev/sdX` with your card and double-check it first: this erases the card.)
-Insert the card, connect HDMI and a controller, then power the board. You can also
-copy ROMs later over USB without removing the card; see
-[Uploading ROMs over USB serial](#uploading-roms-over-usb-serial).
+Insert the card, connect HDMI and a controller, then power the board. To add ROMs
+later, copy them to the card in a normal card reader. (Builds made with
+`GT_SERIAL_UPLOAD=1` can also copy them over USB; see
+[Uploading ROMs over USB serial](#uploading-roms-over-usb-serial).)
 
 ### 3. Connect a controller
 
@@ -358,6 +360,12 @@ made from.
 
 ### Uploading ROMs over USB serial
 
+**Not in the default build or releases.** The serial UART is only built with
+`GT_SERIAL_UPLOAD=1 ./build.sh`. That build currently fits, but with only 9 spare CLS
+(the default build leaves 98), so it may stop placing after further core changes.
+Without it the menu ignores the serial port; copy ROMs and core images to the card in
+a card reader instead.
+
 `genthang-upload` copies ROMs or core images to the inserted TF card through the Nano
 20K's USB serial port. The card stays FAT32 / exFAT and still works in a normal
 reader.
@@ -380,9 +388,10 @@ corrected debugger firmware. On Linux your user needs access to the serial devic
 ### Switching cores
 
 *Switch core* lists complete SPI-flash images (`.bin`) in `/cores`, programs the one
-you pick into the board's flash and asks you to power-cycle. Upload one with
-`./upload/genthang-upload /dev/ttyUSB0 other_flash.bin --core` (up to 8 MB, a full flash
-image, not a Gowin `.fs`; Gen Thang's own `*_flash.bin` files qualify). **Do not
+you pick into the board's flash and asks you to power-cycle. Copy one to `/cores` on
+the card (or, in a `GT_SERIAL_UPLOAD=1` build, upload it with
+`./upload/genthang-upload /dev/ttyUSB0 other_flash.bin --core`). It must be up to 8 MB, a full flash
+image, not a Gowin `.fs`; Gen Thang's own `*_flash.bin` files qualify. **Do not
 remove power while the menu says `FLASHING`.** An interrupted write may need
 recovery with Gowin Programmer over USB.
 
@@ -414,6 +423,10 @@ DB9 and raw share one physical 12-data-GPIO contract; DB9 additionally uses two 
 outputs. The old `GT_PINOUT=breadboard` and `breadboard-rev1` values are deprecated
 aliases for canonical DB9 and print a warning. The archival `GT_PAD=ds` option is
 also deprecated; see [deprecated controller pinouts](docs/deprecated-pinouts.md).
+`GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
+to leave logic headroom: with it the design fits with only 9 spare CLS. The default build also runs
+the menu's PicoRV32 with a single-read-port register file, which halves its
+distributed RAM at the cost of a slightly slower menu CPU.
 Gowin runs share intermediate files
 in `impl/`, so do not run two builds concurrently in one checkout.
 
@@ -506,7 +519,9 @@ core output, not captures from the physical board's HDMI port. Hardware performa
   state, VDP FIFO contents and raster position are not restored.
 - If the menu says the card is not FAT32/exFAT, reformat it with an MBR partition
   table and a FAT32 filesystem.
-- USB upload needs the on-screen menu open, and serial access on your computer.
+- USB upload is not in the default build (only with `GT_SERIAL_UPLOAD=1`, which has
+  little logic headroom); where present it needs the on-screen menu open and serial
+  access on your computer.
 - Core switching rewrites the SPI flash; never interrupt power while it says
   `FLASHING`.
 - Some Genesis pads need 5 V power and a 3.3 V level shifter, which the breadboard
