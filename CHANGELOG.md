@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Reverted the 68000 refresh change that kept the 128-cycle phase across DMA bus
+  hand-overs (`d294e0f`, shipped in 1.7.0). It fixed one Aladdin frame but broke Alien 3
+  (30 frames) and the Streets of Rage 2 trash-can demo. Refresh timing around DMA is a
+  known trade-off; see the "Regression-sensitive" section of `docs/known-issues.md`
+  before changing it.
+
 ## 1.7.0 - 2026-10-17
 
 - **USB serial upload removed from the default build** so the design fits the GW2AR-18
