@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.0 - 2026-10-17
 
 - **USB serial upload removed from the default build** so the design fits the GW2AR-18
   again. Since the VDP slot-timing change (`08dbf6c`) every build failed placement by
