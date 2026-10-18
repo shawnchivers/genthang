@@ -1,10 +1,7 @@
 # Pure build selection: no generated-file writes or Gowin commands here.
 set pad db9
 if {[info exists ::env(GT_PAD)] && $::env(GT_PAD) ne ""} { set pad $::env(GT_PAD) }
-if {[lsearch -exact {ds db9 raw} $pad] < 0} { error "GT_PAD must be ds, db9 or raw" }
-if {$pad eq "ds"} {
-    puts stderr "warning: GT_PAD=ds is deprecated and is not included in releases"
-}
+if {[lsearch -exact {db9 raw} $pad] < 0} { error "GT_PAD must be db9 or raw" }
 
 set pinout stock
 if {[info exists ::env(GT_PINOUT)] && $::env(GT_PINOUT) ne ""} { set pinout $::env(GT_PINOUT) }
@@ -17,5 +14,4 @@ if {$pinout ne "stock"} {
     set pinout stock
 }
 set pad_cst "src/boards/nano20k_$pad.cst"
-set output_base genthang_nano20k
-if {$pad ne "ds"} { set output_base "genthang_nano20k_$pad" }
+set output_base "genthang_nano20k_$pad"

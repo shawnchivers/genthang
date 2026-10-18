@@ -34,7 +34,7 @@ module md20k_core #(
     input             uart_rx,
     output            uart_tx,
 
-    // DualShock pad and/or DB9 Genesis pad, active high: {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
+    // DB9 Genesis pad or direct buttons, active high: {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
     // Genesis 6-button: Square A, Cross B, Circle C, L1 X, Triangle Y, R1 Z, Select Mode.
     // Menu: Select+Start (Mode+Start), or Start+A+B+C for 3-button pads.
     input      [11:0] pad,

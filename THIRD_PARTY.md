@@ -13,7 +13,7 @@ changes.
 |---|---|
 | [MDTang](https://github.com/nand2mario/mdtang) (nand2mario, GPL-3.0) | Gen Thang adapts MDTang, bringing its spirit to the much smaller Tang Nano 20K. The Genesis system wrapper, the Tang-specific changes to the MiSTer sources, the Z80 clock split and the Verilog T80 come from MDTang. |
 | [Genesis_MiSTer](https://github.com/MiSTer-devel/Genesis_MiSTer) and [MegaDrive_MiSTer](https://github.com/MiSTer-devel/MegaDrive_MiSTer) (MiSTer-devel, GPL-3.0) | The Genesis implementation MDTang ports: `system.sv`, the VDP, I/O block, audio filters and the 68000/Z80/FM/PSG wiring. |
-| [SNESTang](https://github.com/nand2mario/snestang) (nand2mario, GPL-3.0) | The "iosys" PicoRV32 I/O subsystem and menu-firmware architecture, the synchronised HDMI framebuffer, the PLL wrappers, the menu overlay and the DualShock reader. |
+| [SNESTang](https://github.com/nand2mario/snestang) (nand2mario, GPL-3.0) | The "iosys" PicoRV32 I/O subsystem and menu-firmware architecture, the synchronised HDMI framebuffer, the PLL wrappers and the menu overlay. |
 
 ## Components in this repository
 
@@ -27,7 +27,7 @@ changes.
 | JT12 (YM2612) | `src/jt12/` | Jose Tejada (jotego), [jt12](https://github.com/jotego/jt12) | GPL-3.0 |
 | JT89 (SN76489) | `src/jt89/` | Jose Tejada (jotego), [jt89](https://github.com/jotego/jt89) | GPL-3.0 |
 | PicoRV32 and `simpleuart.v` (PicoSoC) | `src/iosys/picorv32.v`, `simpleuart.v` | Claire Xenia Wolf, [YosysHQ/picorv32](https://github.com/YosysHQ/picorv32) | ISC |
-| iosys, SPI master/flash blocks, menu overlay, DualShock reader | `src/iosys/` | nand2mario (SNESTang / MDTang), modified for Gen Thang | GPL-3.0 |
+| iosys, SPI master/flash blocks, menu overlay | `src/iosys/` | nand2mario (SNESTang / MDTang), modified for Gen Thang | GPL-3.0 |
 | SPI master | `src/iosys/spi_master.v` | Russell Merrick, [nandland/spi-master](https://github.com/nandland/spi-master) (the file's header carries no author line; identified from the upstream module) | MIT |
 | HDMI transmitter | `src/hdmi/` | Sameer Puri, [hdl-util/hdmi](https://github.com/hdl-util/hdmi) | MIT or Apache-2.0 |
 | Synchronised framebuffer / HDMI scaler | `src/framebuffer_sync.sv` | nand2mario (SNESTang / MDTang), modified for Gen Thang | GPL-3.0 |

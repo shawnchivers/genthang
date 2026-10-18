@@ -15,6 +15,18 @@
   (clk_sys 62.6 MHz against 54 MHz). Not yet tested on the board.
 - 68000 refresh keeps its 128-cycle phase across DMA bus hand-overs (fixes seven wrong
   pixels in an Aladdin palette transition; see `docs/known-issues.md`).
+- **Removed the deprecated DualShock build** (`GT_PAD=ds`, `nano20k_ds.cst`,
+  `dualshock_controller.v`). `GT_PAD` now accepts only `db9` and `raw`; every build has the
+  line-out jack.
+- **Raw build: new handheld pinout (rewire existing raw builds).** The pins are laid out for
+  a Nano mounted component side forward. The D-pad (J6.8–11) and the 3.5 mm jack (J6.12–14)
+  are on the left header. The face buttons sit in column pairs (X/A J5.5–6, Y/B J5.10/12,
+  Z/C J5.17–18) with Start on J5.3 and Mode on J5.13. `btn_n[0..11]` is now on
+  `49, 41, 86, 76, 27, 28, 25, 26, 71, 48, 42, 72`; it was on the DB9 data pins.
+- Raw build: plays through the Nano's on-board MAX98357A speaker amplifier (`src/i2s_tx.v`,
+  48 kHz mono, −12 dB). The speaker mutes when headphones are plugged into a switching jack;
+  detection is on pin 29. The line-out moves to pins 31/30 with the RC filter values for
+  headphones.
 
 ## 1.6.2 - 2026-10-14
 

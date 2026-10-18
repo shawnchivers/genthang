@@ -1,4 +1,4 @@
-"""Validate build selection and the consolidated non-DualShock pin contract."""
+"""Validate build selection and the DB9 / raw pin contracts."""
 import os
 from pathlib import Path
 import re
@@ -21,16 +21,18 @@ def select(pad=None, pinout=None):
 
 class PinoutTests(unittest.TestCase):
     def test_defaults_and_existing_options(self):
-        for pad in [None,'','ds','db9','raw']:
+        for pad in [None,'','db9','raw']:
             for pinout in [None,'','stock']:
                 result=select(pad,pinout)
                 self.assertEqual(result.returncode,0,result.stderr)
                 p=pad or 'db9'
-                output='genthang_nano20k' if p == 'ds' else f'genthang_nano20k_{p}'
                 self.assertEqual(result.stdout.strip(),
-                                 f'{p}|stock|src/boards/nano20k_{p}.cst|{output}')
-                if p == 'ds':
-                    self.assertIn('GT_PAD=ds is deprecated',result.stderr)
+                                 f'{p}|stock|src/boards/nano20k_{p}.cst|genthang_nano20k_{p}')
+
+    def test_dualshock_build_removed(self):
+        self.assertNotEqual(select('ds').returncode,0)
+        self.assertFalse((ROOT/'src/boards/nano20k_ds.cst').exists())
+        self.assertFalse((ROOT/'src/iosys/dualshock_controller.v').exists())
 
     def test_deprecated_aliases_and_invalid_combinations(self):
         for alias in ('breadboard','breadboard-rev1'):
@@ -40,8 +42,7 @@ class PinoutTests(unittest.TestCase):
                 self.assertEqual(result.stdout.strip(),
                     'db9|stock|src/boards/nano20k_db9.cst|genthang_nano20k_db9')
                 self.assertIn(f'GT_PINOUT={alias} is deprecated',result.stderr)
-        for pad,pinout in [('ds','breadboard'),('raw','breadboard'),
-                           ('ds','breadboard-rev1'),('raw','breadboard-rev1'),
+        for pad,pinout in [('raw','breadboard'),('raw','breadboard-rev1'),
                            ('db9','typo'),('invalid','stock')]:
             self.assertNotEqual(select(pad,pinout).returncode,0)
 
@@ -62,27 +63,30 @@ class PinoutTests(unittest.TestCase):
             for i in range(6):
                 self.assertIn('PULL_MODE=UP',ports[f'{bus}[{i}]'])
 
-    def test_raw_uses_canonical_db9_data_pins(self):
+    def test_raw_handheld_pinout(self):
         pattern=r'IO_LOC\s+"([^"]+)"\s+([^;]+);'
-        db9=dict(re.findall(pattern,(ROOT/'src/boards/nano20k_db9.cst').read_text()))
-        raw=dict(re.findall(pattern,(ROOT/'src/boards/nano20k_raw.cst').read_text()))
-        db9_data=[int(db9[f'{bus}[{i}]']) for bus in ('db9_d','db9b_d') for i in range(6)]
-        raw_buttons=[int(raw[f'btn_n[{i}]']) for i in range(12)]
-        self.assertEqual(raw_buttons,db9_data)
-
-    def test_dualshock_pinout_is_distinct_and_unchanged(self):
-        text=(ROOT/'src/boards/nano20k_ds.cst').read_text()
-        pins=dict(re.findall(r'IO_LOC\s+"([^"]+)"\s+([^;]+);',text))
-        self.assertEqual({name:int(pins[name]) for name in
-                          ('ds_clk','ds_cs','ds_mosi','ds_miso','ds2_clk','ds2_cs',
-                           'ds2_mosi','ds2_miso')},
-                         {'ds_clk':17,'ds_cs':18,'ds_mosi':20,'ds_miso':19,
-                          'ds2_clk':52,'ds2_cs':72,'ds2_mosi':53,'ds2_miso':71})
+        text=(ROOT/'src/boards/nano20k_raw.cst').read_text()
+        raw={k:v.strip() for k,v in re.findall(pattern,text)}
+        ports=dict(re.findall(r'IO_PORT\s+"([^"]+)"\s+([^;]+);',text))
+        # B, A, Mode, Start, Up, Down, Left, Right, C, Y, X, Z
+        self.assertEqual([int(raw[f'btn_n[{i}]']) for i in range(12)],
+                         [49,41,86,76,27,28,25,26,71,48,42,72])
+        for i in range(12):
+            self.assertIn('PULL_MODE=UP',ports[f'btn_n[{i}]'])
+        self.assertEqual({k:int(raw[k]) for k in ('audio_jack_l','audio_jack_r','hp_det',
+                          'i2s_bclk','i2s_lrck','i2s_din','spk_en')},
+                         {'audio_jack_l':31,'audio_jack_r':30,'hp_det':29,
+                          'i2s_bclk':56,'i2s_lrck':55,'i2s_din':54,'spk_en':51})
+        self.assertIn('PULL_MODE=UP',ports['hp_det'])
+        used=[p for v in raw.values() for p in v.split(',')]
+        self.assertEqual(len(used),len(set(used)))
+        # header pins wired on the board to other parts: WS2812, EDID, LEDs 2-5
+        self.assertFalse({'79','52','53','17','18','19','20'} & set(used))
 
     def test_full_build_script_uses_selected_profile(self):
         # Run the actual build.tcl with Gowin commands stubbed; real file/glob
         # operations occur in a disposable source tree, never the live checkout.
-        for pad,pinout in [('ds','stock'),('db9','stock'),('raw','stock'),
+        for pad,pinout in [('db9','stock'),('raw','stock'),
                            ('db9','breadboard'),('db9','breadboard-rev1')]:
             with tempfile.TemporaryDirectory() as temp:
                 root=Path(temp)
@@ -107,8 +111,7 @@ if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
                                            'GT_PAD':pad,'GT_PINOUT':pinout})
                 self.assertEqual(result.returncode,0,result.stderr)
                 self.assertIn(f'CST=src/boards/nano20k_{pad}.cst',result.stdout)
-                output='genthang_nano20k' if pad == 'ds' else f'genthang_nano20k_{pad}'
-                self.assertIn(f'OUTPUT={output}',result.stdout)
+                self.assertIn(f'OUTPUT=genthang_nano20k_{pad}',result.stdout)
                 self.assertIn('PLACE=2',result.stdout)
                 self.assertIn('ROUTE=1',result.stdout)
                 self.assertIn('RUN=all',result.stdout)

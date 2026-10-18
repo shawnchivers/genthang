@@ -3,7 +3,7 @@
 #   genthang_nano20k_<variant>.fs          bitstream only (SRAM load with Gowin Programmer)
 #   genthang_nano20k_<variant>_flash.bin   bitstream + menu firmware for SPI flash address 0
 #   SHA256SUMS, genthang-v<VERSION>.tar.gz
-# Variants: db9 (default) and raw. Both share the same 12 data GPIOs.
+# Variants: db9 (default) and raw. Raw has its own handheld pinout.
 # usage: ./release.sh [outdir]      VARIANTS="db9" ./release.sh   for a subset
 #        PACKAGE_ONLY=1 ./release.sh   re-pack the tarball from the images already in outdir
 # A variant that misses its clock targets or leaves negative slack fails the release.
@@ -17,7 +17,6 @@ rm -f "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin "$OUT"/SH
 
 for variant in ${VARIANTS:-db9 raw}; do
     case $variant in
-        ds)             pad=ds;  pinout=stock; name=ds;  base=genthang_nano20k ;;
         raw|db9)        pad=$variant; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         *) echo "unknown variant: $variant" >&2; exit 2 ;;
     esac

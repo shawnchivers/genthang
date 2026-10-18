@@ -1,8 +1,7 @@
 // Gen Thang menu firmware (PicoRV32 iosys): pick a Mega Drive / Genesis ROM from the
 // TF card and stream it into SDRAM. Drawn by the overlay in textdisp.v.
 //
-// Works with a DualShock or a Genesis 3/6-button pad (Genesis A/B/C = Square/Cross/
-// Circle). Games page: D-pad move, Left/Right page, B/C load or enter, A parent
+// Works with a Genesis 3/6-button pad or the raw build's direct buttons. Games page: D-pad move, Left/Right page, B/C load or enter, A parent
 // directory, Start options. Options page: resume, save/load state, reset, video
 // settings. While a game runs, Select+Start (Mode+Start) or Start+A+B+C opens the menu.
 //

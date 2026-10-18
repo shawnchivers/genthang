@@ -13,7 +13,7 @@ module genesis_pad #(
     input             clk,
     input       [5:0] d,            // {TR (pin 9), TL (pin 6), D3, D2, D1, D0 (pin 1)}, pulled up
     output reg        th = 1'b1,    // pin 7, select
-    // active high, DualShock order {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
+    // active high, pad order {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
     // = Genesis {Z, X, Y, C, Right, Left, Down, Up, Start, Mode, A, B}
     output reg [11:0] btns = 12'd0
 );

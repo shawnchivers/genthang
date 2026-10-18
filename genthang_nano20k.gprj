@@ -5,14 +5,13 @@
     <Version>5</Version>
     <Device name="GW2AR-18C" pn="GW2AR-LV18QN88C8/I7">gw2ar18c-000</Device>
     <FileList>
-        <File path="src/boards/nano20k_ds.cst" type="file.cst" enable="1"/>
+        <File path="src/boards/nano20k_db9.cst" type="file.cst" enable="1"/>
         <File path="src/mdtang.sdc" type="file.sdc" enable="1"/>
         <File path="src/mdtang_top.sv" type="file.verilog" enable="1"/>
         <File path="src/md20k_core.sv" type="file.verilog" enable="1"/>
         <File path="src/nano20k/gowin_pll_sys.v" type="file.verilog" enable="1"/>
         <File path="src/nano20k/gowin_pll_hdmi.v" type="file.verilog" enable="1"/>
         <File path="src/memory/sdram_md20k.v" type="file.verilog" enable="1"/>
-        <File path="src/iosys/dualshock_controller.v" type="file.verilog" enable="1"/>
         <File path="src/iosys/genesis_pad.v" type="file.verilog" enable="1"/>
         <File path="src/iosys/iosys_picorv32.v" type="file.verilog" enable="1"/>
         <File path="src/iosys/picorv32.v" type="file.verilog" enable="1"/>

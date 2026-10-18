@@ -144,7 +144,7 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 | Image | Controllers | Notes |
 |---|---|---|
 | `genthang_nano20k_db9_flash.bin` | Two Genesis pads on DB9 breakouts (default) | Canonical J6/J5 wiring, 3.3 V only; see [dual Genesis pads](#dual-genesis-pads-db9-build) |
-| `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Uses exactly the same 12 data GPIOs as the DB9 build; see [direct buttons](#direct-buttons-raw-build) |
+| `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Handheld pinout, plus the Nano's speaker and a headphone jack; see [direct buttons](#direct-buttons-raw-build) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
 
@@ -202,8 +202,8 @@ number used in the constraints file; the "Nano contact" is the header position,
 counted 1-20 from the USB-C end with the board viewed from above (USB at the top):
 **J6** is the left header and **J5** the right header.
 
-Deprecated DualShock and original single-DB9 layouts are documented separately in
-[deprecated controller pinouts](docs/deprecated-pinouts.md). They are not included
+The original single-DB9 breadboard layout is documented separately in
+[deprecated controller pinouts](docs/deprecated-pinouts.md). It is not included
 in current releases.
 
 #### Dual Genesis pads (`db9` build)
@@ -262,19 +262,36 @@ GT_PAD=db9 ./build.sh
 #### Direct buttons (`raw` build)
 
 For handheld builds: twelve buttons, each switching an FPGA pin to GND (the
-internal pull-ups are enabled).
+internal pull-ups are enabled), plus the Nano's speaker and a headphone jack (see
+[speaker and headphone jack](#speaker-and-headphone-jack-raw-build)).
 
-| Button | Pin | Button | Pin | Button | Pin |
-|---|---|---|---|---|---|
-| A | 74 (J6.2) | B | 73 (J6.1) | C | 51 (J5.9) |
-| X | 49 (J5.12) | Y | 48 (J5.10) | Z | 71 (J5.18) |
-| Mode | 77 (J6.5) | Start | 27 (J6.8) | Up | 41 (J5.6) |
-| Down | 42 (J5.5) | Left | 30 (J6.13) | Right | 28 (J6.9) |
+The pinout is laid out for a Nano mounted component side forward with USB-C at the
+top. The left header (J6) faces the D-pad and the jack, and the right header (J5)
+faces the face buttons. Groups sit on neighbouring pins, for neat solder runs or
+multi-pin Dupont housings.
 
-In vector order, `btn_n[0..11]` uses the same pins as
-`db9_d[0..5], db9b_d[0..5]`: `73, 74, 77, 27, 28, 30, 42, 41, 51, 48, 49, 71`.
-Their Genesis functions are `B, A, Mode, Start, Up, Down, Left, Right, C, Y, X, Z`.
-The DB9 TH outputs on GPIO29 and GPIO72 are unused by the raw build.
+| Header pin | FPGA pin | Function | | Header pin | FPGA pin | Function |
+|---|---|---|---|---|---|---|
+| J6.8 | 27 | Up | | J5.3 | 76 | Start |
+| J6.9 | 28 | Down | | J5.5 | 42 | X |
+| J6.10 | 25 | Left | | J5.6 | 41 | A |
+| J6.11 | 26 | Right | | J5.10 | 48 | Y |
+| J6.12 | 29 | Headphone detect | | J5.12 | 49 | B |
+| J6.13 | 30 | Jack R | | J5.13 | 86 | Mode |
+| J6.14 | 31 | Jack L | | J5.17 | 72 | Z |
+| J6.20 | GND | Button and jack ground | | J5.18 | 71 | C |
+| | | | | J5.15 | GND | Button ground |
+
+- Each face-button column shares neighbouring pins: X/A on J5.5–6, Y/B on
+  J5.10/12 and Z/C on J5.17–18.
+- The pins skipped on J5 belong to the TF card (80), the speaker amplifier (51,
+  54–56) and the LED strip (79).
+- Spare: 73, 74, 75 and 77 (J6.1, J6.2, J6.3, J6.5).
+- In vector order, `btn_n[0..11]` (`B, A, Mode, Start, Up, Down, Left, Right, C, Y,
+  X, Z`) uses pins `49, 41, 86, 76, 27, 28, 25, 26, 71, 48, 42, 72`.
+- Releases up to 1.6.2 used the DB9 data pins for the raw build instead
+  (`73, 74, 77, 27, 28, 30, 42, 41, 51, 48, 49, 71`). Rewire older raw builds when
+  updating.
 
 ## Using Gen Thang
 
@@ -413,16 +430,15 @@ recovery with Gowin Programmer over USB.
 git clone https://github.com/shawnchivers/genthang.git
 cd genthang
 ./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
-GT_PAD=raw ./build.sh             # twelve direct buttons on canonical data GPIOs
+GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 ./release.sh                      # supported variants + flash images + tarball in release/
 ```
 
 `GT_PAD` (`db9`, `raw`) selects the supported pad ports in `src/mdtang_top.sv`, through
 `src/pad_config.vh` (written by `build.tcl`) and `src/boards/nano20k_<pad>.cst`.
-DB9 and raw share one physical 12-data-GPIO contract; DB9 additionally uses two TH
-outputs. The old `GT_PINOUT=breadboard` and `breadboard-rev1` values are deprecated
-aliases for canonical DB9 and print a warning. The archival `GT_PAD=ds` option is
-also deprecated; see [deprecated controller pinouts](docs/deprecated-pinouts.md).
+The raw build has its own handheld pinout; DB9 uses 12 data GPIOs and two TH outputs. The old `GT_PINOUT=breadboard` and `breadboard-rev1` values are deprecated
+aliases for canonical DB9 and print a warning. The DualShock (`GT_PAD=ds`) build has
+been removed.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
 to leave logic headroom: with it the design fits with only 9 spare CLS. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
@@ -458,8 +474,8 @@ negative setup and hold slack:
 
 | Variant | `clk_sys` Fmax (needs 54.0 MHz) | `clk_z80` Fmax (needs 27.0 MHz) | `hclk` Fmax (needs 74.25 MHz) |
 |---|---|---|---|
-| `db9` | 55.790 MHz | 45.589 MHz | 77.659 MHz |
-| `raw` | 59.789 MHz | 47.656 MHz | 81.496 MHz |
+| `db9` | 62.634 MHz | 46.562 MHz | 81.836 MHz |
+| `raw` | 61.397 MHz | 46.781 MHz | 82.836 MHz |
 
 Every release build is rejected if a clock misses its target or the timing report
 contains negative setup or hold slack.
@@ -536,7 +552,8 @@ core output, not captures from the physical board's HDMI port. Hardware performa
 
 A stereo 3.5 mm line-out is available on two otherwise unused header pins, in both HDMI
 and DVI modes: left on FPGA pin 31 (J6 row 14), right on pin 56 (J5 row 7), ground on
-J6 row 20 or J5 row 15. The pins carry 1-bit (sigma-delta) audio, so each needs a small
+J6 row 20 or J5 row 15. The raw build uses its own jack pins; see
+[below](#speaker-and-headphone-jack-raw-build). The pins carry 1-bit (sigma-delta) audio, so each needs a small
 filter:
 
 ```
@@ -551,13 +568,47 @@ it is not meant to drive headphones directly.
 **Not hot-pluggable without the filter.** Wired straight to the pins (no resistor or
 capacitors) the line-out works for a quick test, but plugging or unplugging the jack or
 the speaker while the board is powered gave trouble. Power the board off first, or fit
-the 1 kΩ / 10 nF / 10 µF filter, which isolates the pins. Pin 56 also reaches the Nano's on-board
-speaker amplifier input, so leave that amplifier's speaker connector empty.
+the 1 kΩ / 10 nF / 10 µF filter, which isolates the pins. In the DB9 build, pin 56 also reaches the
+Nano's on-board speaker amplifier input, so leave that amplifier's speaker pads empty.
 
 On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to
 **j11**, sleeve to **j19**.
 
 ![Line-out jack on the P1 DB9 breadboard](docs/images/line-out-breadboard.svg)
+
+### Speaker and headphone jack (raw build)
+
+The raw build plays through the Nano's **on-board MAX98357A speaker amplifier** and mutes it
+when headphones are plugged into a switching 3.5 mm jack. Solder a 4–8 Ω speaker (1 W or
+more) to the two speaker pads between the FPGA and header pins 56/54.
+
+| Signal | Pin | Notes |
+|---|---|---|
+| I2S BCLK / LRCK / DIN | 56 / 55 / 54 | Board traces to the amplifier: 48 kHz, mono (L+R)/2 in both slots |
+| Amplifier enable | 51 | High = speaker on |
+| Line-out L / R | 31 (J6.14) / 30 (J6.13) | 1-bit audio, filter below |
+| Headphone detect | 29 (J6.12) | Jack's RING-NORMAL contact; internal pull-up, high = plug in |
+
+```
+pin 31 ─330Ω─┬─100µF(+ to resistor)─┬─► jack TIP
+            33nF                   4.7k
+pin 30 ─330Ω─┬─100µF(+ to resistor)─┼─► jack RING ◄── RING-NORMAL ──► pin 29
+            33nF                   4.7k
+GND ────────┴──────────────────────┴─► jack SLEEVE        (TIP-NORMAL: not connected)
+```
+
+- With nothing plugged in, the RING-NORMAL contact touches the ring, so pin 29 reads low
+  through the 4.7 k and the speaker plays. A plug opens the contact; after about 11 ms the
+  speaker amplifier shuts down and the jack plays.
+- While nothing is plugged in, both line-outs carry the DAC's silence pattern (a 27 MHz
+  square wave that the filter removes). The detect pin sees a clean level, and the
+  capacitors stay charged, so plugging in doesn't pop.
+- These values suit 32 Ω earbuds (moderate volume) as well as line inputs. The 1 kΩ / 10 µF
+  line-out filter above is too weak for headphones.
+- Speaker volume is −12 dB of full scale (`ATTEN` in `src/i2s_tx.v`, 6 dB per step). This
+  protects small speakers and battery packs.
+- The jack's pin numbering varies between makers. With no plug in, find RING ↔ RING-NORMAL
+  with a continuity meter.
 
 ## Credits and tooling
 

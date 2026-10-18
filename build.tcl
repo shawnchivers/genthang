@@ -1,7 +1,6 @@
 # Gowin build for Gen Thang on the Tang Nano 20K (GW2AR-18C)
 #   ./build.sh                -> impl/pnr/genthang_nano20k_db9.fs, two Genesis pads
-#   GT_PAD=ds ./build.sh      -> impl/pnr/genthang_nano20k.fs, DualShock pads
-#   GT_PAD=raw ./build.sh     -> 12 direct buttons on the same 12 data GPIOs
+#   GT_PAD=raw ./build.sh     -> 12 direct buttons, handheld pinout + speaker amp
 
 set_device GW2AR-LV18QN88C8/I7 -device_version C
 
@@ -39,7 +38,6 @@ add_file -type verilog "src/md20k_core.sv"
 add_file -type verilog "src/nano20k/gowin_pll_sys.v"
 add_file -type verilog "src/nano20k/gowin_pll_hdmi.v"
 add_file -type verilog "src/memory/sdram_md20k.v"
-add_file -type verilog "src/iosys/dualshock_controller.v"
 add_file -type verilog "src/iosys/genesis_pad.v"
 
 # iosys: PicoRV32 menu system (iosys_picorv32.v must come before picorv32.v)
@@ -54,6 +52,7 @@ add_file -type verilog "src/iosys/spi_master.v"
 # HDMI
 add_file -type verilog "src/framebuffer_sync.sv"
 add_file -type verilog "src/audio_dac.v"
+add_file -type verilog "src/i2s_tx.v"
 add_file -type verilog "src/frame_sync.sv"
 add_file -type verilog "src/hdmi/audio_clock_regeneration_packet.sv"
 add_file -type verilog "src/hdmi/audio_info_frame.sv"

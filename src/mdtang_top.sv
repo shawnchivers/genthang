@@ -2,8 +2,8 @@
 //
 // ROMs are picked from the TF card with the on-screen menu (iosys + PicoRV32
 // firmware at SPI flash 0x500000). Video and audio over HDMI (720p). Controllers by
-// build variant (GT_PAD, see build.tcl): two DualShocks, two Genesis pads on DB9,
-// or 12 direct buttons. Mode+Start or Start+A+B+C = menu.
+// build variant (GT_PAD, see build.tcl): two Genesis pads on DB9, or 12 direct
+// buttons with the Nano speaker (handheld). Mode+Start or Start+A+B+C = menu.
 // Game and menu logic live in md20k_core; this file holds clocks, pads and HDMI.
 `include "pad_config.vh"
 
@@ -39,22 +39,18 @@ module mdtang_top (
 `elsif GT_PAD_RAW
     // btn_n[0..11] buttons to GND: B, A, Mode, Start, Up, Down, Left, Right, C, Y, X, Z
     input [11:0] btn_n,
-`else
-    // DualShock 1 on PMOD, DualShock 2 on the header
-    output       ds_clk,
-    output       ds_cs,
-    output       ds_mosi,
-    input        ds_miso,
-    output       ds2_clk,
-    output       ds2_cs,
-    output       ds2_mosi,
-    input        ds2_miso,
 `endif
 
-`ifndef GT_PAD_DS
     // 3.5 mm line-out jack: 1-bit audio, RC-filtered off board (see README)
     output       audio_jack_l,
     output       audio_jack_r,
+`ifdef GT_PAD_RAW
+    // on-board MAX98357A speaker amplifier, muted while headphones are plugged in
+    output       i2s_bclk,
+    output       i2s_lrck,
+    output       i2s_din,
+    output       spk_en,
+    input        hp_det,            // jack switch: high = headphones in (internal pull-up)
 `endif
 
     // embedded SDRAM (fixed connections, not in the .cst)
@@ -120,19 +116,6 @@ reg [11:0] btn_s1, btn_s2;
 always @(posedge clk_sys) {btn_s2, btn_s1} <= {btn_s1, ~btn_n};
 assign pad1 = btn_s2;
 assign pad2 = 12'd0;
-`else
-dualshock_controller #(.FREQ(FREQ)) ds1 (
-    .clk(clk_sys), .I_RSTn(pll_sys_lock),
-    .O_psCLK(ds_clk), .O_psSEL(ds_cs), .O_psTXD(ds_mosi), .I_psRXD(ds_miso),
-    .O_RXD_1(), .O_RXD_2(), .O_RXD_3(), .O_RXD_4(), .O_RXD_5(), .O_RXD_6(),
-    .snes_btns(pad1)
-);
-dualshock_controller #(.FREQ(FREQ)) ds2 (
-    .clk(clk_sys), .I_RSTn(pll_sys_lock),
-    .O_psCLK(ds2_clk), .O_psSEL(ds2_cs), .O_psTXD(ds2_mosi), .I_psRXD(ds2_miso),
-    .O_RXD_1(), .O_RXD_2(), .O_RXD_3(), .O_RXD_4(), .O_RXD_5(), .O_RXD_6(),
-    .snes_btns(pad2)
-);
 `endif
 
 md20k_core #(.FREQ(FREQ),
@@ -160,12 +143,42 @@ md20k_core #(.FREQ(FREQ),
 
 assign led = ~{loading, md_on};
 
-`ifndef GT_PAD_DS
+`ifdef GT_PAD_RAW
+// The detect pin sits on the jack's ring switch contact, so with no plug it sees the
+// right line-out. While no headphones are in, both line-outs carry a 27 MHz 50% square
+// (the DAC's own silence pattern, removed by the RC filter), which leaves a clean DC
+// level to read and keeps the coupling capacitors charged, so plugging in does not pop.
+wire jack_l, jack_r, i2s_frame;
+reg [1:0] hp_s = 2'b00;
+reg [8:0] hp_cnt = 9'd0;
+reg hp = 1'b0, idle = 1'b0;
+always @(posedge clk_sys) begin
+    idle <= ~idle;
+    hp_s <= {hp_s[0], hp_det};
+    if (hp_s[1] == hp) hp_cnt <= 9'd0;
+    else if (i2s_frame) begin       // ~11 ms of a steady new level
+        hp_cnt <= hp_cnt + 9'd1;
+        if (&hp_cnt) hp <= hp_s[1];
+    end
+end
+assign audio_jack_l = hp ? jack_l : idle;
+assign audio_jack_r = hp ? jack_r : idle;
+assign spk_en = ~hp;
+
+i2s_tx speaker (
+    .clk(clk_sys), .left(audio_left), .right(audio_right),
+    .bclk(i2s_bclk), .lrck(i2s_lrck), .din(i2s_din), .frame(i2s_frame)
+);
+`else
+wire jack_l, jack_r;
+assign audio_jack_l = jack_l;
+assign audio_jack_r = jack_r;
+`endif
+
 audio_dac jack (
     .clk(clk_sys), .left(audio_left), .right(audio_right),
-    .out_l(audio_jack_l), .out_r(audio_jack_r)
+    .out_l(jack_l), .out_r(jack_r)
 );
-`endif
 
 // HDMI ----------------------------------------------------------------------------------
 // there are 15 dummy pixels after VBLANK before the first HBLANK
