@@ -1,0 +1,20 @@
+Player,DB9 Contact,Nano Socket,Nano Contact,Net,Required
+1,1,J6,1,P1_D0,Continuity; test with Nano removed
+1,2,J6,2,P1_D1,Continuity; test with Nano removed
+1,3,J6,5,P1_D2,Continuity; test with Nano removed
+1,4,J6,8,P1_D3,Continuity; test with Nano removed
+1,5,J6,19,3V3,Continuity; test with Nano removed
+1,6,J6,9,P1_TL,Continuity; test with Nano removed
+1,7,J6,12,P1_TH,Continuity; test with Nano removed
+1,8,J6,20,GND,Continuity; test with Nano removed
+1,9,J6,13,P1_TR,Continuity; test with Nano removed
+2,1,J5,5,P2_D0,Continuity; test with Nano removed
+2,2,J5,6,P2_D1,Continuity; test with Nano removed
+2,3,J5,9,P2_D2,Continuity; test with Nano removed
+2,4,J5,10,P2_D3,Continuity; test with Nano removed
+2,5,J5,16,3V3,Continuity; test with Nano removed
+2,6,J5,12,P2_TL,Continuity; test with Nano removed
+2,7,J5,17,P2_TH,Continuity; test with Nano removed
+2,8,J5,15,GND,Continuity; test with Nano removed
+2,9,J5,18,P2_TR,Continuity; test with Nano removed
+1+2,Boardlocks of J1 and J2,J6,20,GND,Continuity

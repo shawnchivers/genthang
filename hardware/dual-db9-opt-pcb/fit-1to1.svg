@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="110mm" height="85mm" viewBox="-5 -5 110 85">
+<rect x="-5" y="-5" width="110" height="85" fill="white"/>
+<style>text{font-family:monospace;font-size:1.7px}.line{fill:none;stroke:#111;stroke-width:.15}</style>
+<rect class="line" width="100" height="70"/>
+<circle class="line" cx="90.495" cy="60.475" r="1.525"/>
+<circle class="line" cx="65.505" cy="60.475" r="1.525"/>
+<circle class="line" cx="82.155" cy="61.92" r="0.545"/>
+<circle class="line" cx="79.385" cy="61.92" r="0.545"/>
+<circle class="line" cx="76.615" cy="61.92" r="0.545"/>
+<circle class="line" cx="73.845" cy="61.92" r="0.545"/>
+<circle class="line" cx="83.54" cy="59.08" r="0.545"/>
+<circle class="line" cx="80.77" cy="59.08" r="0.545"/>
+<circle class="line" cx="78.0" cy="59.08" r="0.545"/>
+<circle class="line" cx="75.23" cy="59.08" r="0.545"/>
+<circle class="line" cx="72.46" cy="59.08" r="0.545"/>
+<text x="73.46" y="58.08">J2.1</text>
+<circle class="line" cx="34.495" cy="60.475" r="1.525"/>
+<circle class="line" cx="9.505" cy="60.475" r="1.525"/>
+<circle class="line" cx="26.155" cy="61.92" r="0.545"/>
+<circle class="line" cx="23.385" cy="61.92" r="0.545"/>
+<circle class="line" cx="20.615" cy="61.92" r="0.545"/>
+<circle class="line" cx="17.845" cy="61.92" r="0.545"/>
+<circle class="line" cx="27.54" cy="59.08" r="0.545"/>
+<circle class="line" cx="24.77" cy="59.08" r="0.545"/>
+<circle class="line" cx="22.0" cy="59.08" r="0.545"/>
+<circle class="line" cx="19.23" cy="59.08" r="0.545"/>
+<circle class="line" cx="16.46" cy="59.08" r="0.545"/>
+<text x="17.46" y="58.08">J1.1</text>
+<circle class="line" cx="95.0" cy="45.0" r="1.35"/>
+<circle class="line" cx="5.0" cy="45.0" r="1.35"/>
+<circle class="line" cx="95.0" cy="5.0" r="1.35"/>
+<circle class="line" cx="5.0" cy="5.0" r="1.35"/>
+<circle class="line" cx="60.16" cy="56.26" r="0.51"/>
+<circle class="line" cx="60.16" cy="53.72" r="0.51"/>
+<circle class="line" cx="60.16" cy="51.18" r="0.51"/>
+<circle class="line" cx="60.16" cy="48.64" r="0.51"/>
+<circle class="line" cx="60.16" cy="46.1" r="0.51"/>
+<circle class="line" cx="60.16" cy="43.56" r="0.51"/>
+<circle class="line" cx="60.16" cy="41.02" r="0.51"/>
+<circle class="line" cx="60.16" cy="38.48" r="0.51"/>
+<circle class="line" cx="60.16" cy="35.94" r="0.51"/>
+<circle class="line" cx="60.16" cy="33.4" r="0.51"/>
+<circle class="line" cx="60.16" cy="30.86" r="0.51"/>
+<circle class="line" cx="60.16" cy="28.32" r="0.51"/>
+<circle class="line" cx="60.16" cy="25.78" r="0.51"/>
+<circle class="line" cx="60.16" cy="23.24" r="0.51"/>
+<circle class="line" cx="60.16" cy="20.7" r="0.51"/>
+<circle class="line" cx="60.16" cy="18.16" r="0.51"/>
+<circle class="line" cx="60.16" cy="15.62" r="0.51"/>
+<circle class="line" cx="60.16" cy="13.08" r="0.51"/>
+<circle class="line" cx="60.16" cy="10.54" r="0.51"/>
+<circle class="line" cx="60.16" cy="8.0" r="0.51"/>
+<text x="61.16" y="7.0">J5.1</text>
+<circle class="line" cx="39.84" cy="56.26" r="0.51"/>
+<circle class="line" cx="39.84" cy="53.72" r="0.51"/>
+<circle class="line" cx="39.84" cy="51.18" r="0.51"/>
+<circle class="line" cx="39.84" cy="48.64" r="0.51"/>
+<circle class="line" cx="39.84" cy="46.1" r="0.51"/>
+<circle class="line" cx="39.84" cy="43.56" r="0.51"/>
+<circle class="line" cx="39.84" cy="41.02" r="0.51"/>
+<circle class="line" cx="39.84" cy="38.48" r="0.51"/>
+<circle class="line" cx="39.84" cy="35.94" r="0.51"/>
+<circle class="line" cx="39.84" cy="33.4" r="0.51"/>
+<circle class="line" cx="39.84" cy="30.86" r="0.51"/>
+<circle class="line" cx="39.84" cy="28.32" r="0.51"/>
+<circle class="line" cx="39.84" cy="25.78" r="0.51"/>
+<circle class="line" cx="39.84" cy="23.24" r="0.51"/>
+<circle class="line" cx="39.84" cy="20.7" r="0.51"/>
+<circle class="line" cx="39.84" cy="18.16" r="0.51"/>
+<circle class="line" cx="39.84" cy="15.62" r="0.51"/>
+<circle class="line" cx="39.84" cy="13.08" r="0.51"/>
+<circle class="line" cx="39.84" cy="10.54" r="0.51"/>
+<circle class="line" cx="39.84" cy="8.0" r="0.51"/>
+<text x="40.84" y="7.0">J6.1</text>
+<rect class="line" x="38.725" y="4.91" width="22.55" height="54.04" stroke-dasharray="1,1"/>
+<rect class="line" x="6.595000000000001" y="57.6" width="30.81" height="18.5"/>
+<rect class="line" x="62.595" y="57.6" width="30.81" height="18.5"/>
+<text x="50.0" y="2" text-anchor="middle">NANO USB-C UP</text>
+<text x="50.0" y="63" text-anchor="middle">NANO HDMI DOWN</text>
+<text x="1" y="73">100 x 70 mm / TOP VIEW / K22X-E9P-N ONLY / J5-J6 20.32mm APART</text>
+<path class="line" d="M 7,78 h50 M7,76 v4 M57,76 v4"/>
+<text x="7" y="75">50mm ruler: PRINT 100%, NO FIT-TO-PAGE</text>
+</svg>

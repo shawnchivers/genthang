@@ -1,0 +1,58 @@
+{
+  "units": "mm^3 of overlap (0 = clear)",
+  "checks": {
+    "base_vs_pcb": 0.0,
+    "lid_vs_pcb": 0.0,
+    "base_vs_db9": 0.0,
+    "lid_vs_db9": 0.0,
+    "base_vs_sockets": 0.0,
+    "lid_vs_sockets": 0.0,
+    "base_vs_nano": 0.0,
+    "lid_vs_nano": 0.0,
+    "base_vs_hdmi": 0.0,
+    "lid_vs_hdmi": 0.0,
+    "base_vs_usbc": 0.0,
+    "lid_vs_usbc": 0.0,
+    "base_vs_plugs": 0.0,
+    "lid_vs_plugs": 0.0,
+    "base_vs_screws": 0.0,
+    "lid_vs_screws": 0.0,
+    "lid_vs_base": 0.0,
+    "slide_dy_0.00": 0.0,
+    "slide_dy_1.66": 0.0,
+    "slide_dy_3.33": 0.0,
+    "slide_dy_4.99": 0.0,
+    "slide_dy_6.65": 0.0
+  },
+  "drop_in_clear": true,
+  "ok": true,
+  "parts": {
+    "case_base": {
+      "size_mm": [
+        121.7,
+        98.4,
+        35.3
+      ],
+      "volume_cm3": 73.6,
+      "print": "floor down, no supports"
+    },
+    "case_lid": {
+      "size_mm": [
+        121.0,
+        97.7,
+        15.0
+      ],
+      "volume_cm3": 44.8,
+      "print": "flat face down, no supports"
+    }
+  },
+  "assembled_height_mm": 48.5,
+  "key_z_mm": {
+    "pcb_top": 9.0,
+    "db9_centre": 15.28,
+    "nano_top": 21.64,
+    "hdmi_centre": 24.79,
+    "usbc_centre": 23.29,
+    "lid_underside": 33.5
+  }
+}

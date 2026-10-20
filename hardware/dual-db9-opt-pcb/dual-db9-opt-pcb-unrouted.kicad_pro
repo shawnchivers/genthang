@@ -1,0 +1,35 @@
+{
+  "board": {
+    "design_settings": {
+      "rules": {
+        "min_clearance": 0.25,
+        "min_track_width": 0.3,
+        "min_copper_edge_clearance": 0.5,
+        "min_via_diameter": 0.8,
+        "min_through_hole_diameter": 0.3
+      }
+    }
+  },
+  "net_settings": {
+    "classes": [
+      {
+        "name": "Default",
+        "clearance": 0.25,
+        "track_width": 0.3,
+        "via_diameter": 0.8,
+        "via_drill": 0.4
+      },
+      {
+        "name": "Power",
+        "clearance": 0.25,
+        "track_width": 0.6,
+        "via_diameter": 0.8,
+        "via_drill": 0.4,
+        "nets": [
+          "3V3",
+          "GND"
+        ]
+      }
+    ]
+  }
+}

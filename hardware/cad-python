@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Run with installed KiCad, or the rootless toolchain prepared on this machine.
+set -euo pipefail
+local_root="$HOME/.local/kicad-pkg/root"
+if [[ -d "$local_root/usr/lib/python3/dist-packages" ]]; then
+    export PYTHONPATH="$local_root/usr/lib/python3/dist-packages${PYTHONPATH:+:$PYTHONPATH}"
+    export LD_LIBRARY_PATH="$local_root/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    export KICAD_FOOTPRINT_DIR="$local_root/usr/share/kicad/footprints"
+    export PATH="$local_root/usr/bin:$PATH"
+fi
+exec /usr/bin/python3 "$@"

@@ -1,0 +1,5 @@
+Reference,X_mm,Y_mm,Rotation_deg,Side,Datum,Note
+J6,39.84,62,0,Top,Bottom-left board corner; X right/Y up; footprint anchor pin 1,"Manual THT reference, NOT SMT centroid; see assembly drawing for physical orientation"
+J5,60.160000000000004,62,0,Top,Bottom-left board corner; X right/Y up; footprint anchor pin 1,"Manual THT reference, NOT SMT centroid; see assembly drawing for physical orientation"
+J1,16.46,10.920000000000002,0,Top,Bottom-left board corner; X right/Y up; footprint anchor pin 1,"Manual THT reference, NOT SMT centroid; see assembly drawing for physical orientation"
+J2,72.46,10.920000000000002,0,Top,Bottom-left board corner; X right/Y up; footprint anchor pin 1,"Manual THT reference, NOT SMT centroid; see assembly drawing for physical orientation"

@@ -1,0 +1,3 @@
+Line,Quantity Per Board,Reference Designator,Manufacturer,Manufacturer Part Number,Description,Package,Type,Substitutions,Source URL
+1,2,J5 J6,Harwin,M20-7822046,1x20 female socket; 2.54mm pitch; 8.5mm body height,1x20 SIL,Through-hole,NO - written approval required,https://www.harwin.com/products/M20-7822046
+2,2,J1 J2,Kycon,K22X-E9P-N,Male DE9 right angle; boardlocks; recessed 4-40 inserts; NOT NJ,DE9 right angle THT,Through-hole,NO - fit of other DB9 parts is not verified,https://www.kycon.com/Pub_Eng_Draw/K22X-E9P-N.pdf

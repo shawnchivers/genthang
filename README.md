@@ -39,6 +39,7 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 - [Setup](#setup): [flash](#1-flash-the-board) · [TF card](#2-prepare-the-tf-card) · [controllers](#3-connect-a-controller)
 - [Using Gen Thang](#using-gen-thang): [controls](#controls) · [options](#options-menu) · [display options](#display-options) · [save states](#save-states) · [USB upload](#uploading-roms-over-usb-serial) · [core switching](#switching-cores)
 - [Build from source](#build-from-source) · [Simulation and screenshots](#simulation-and-screenshots)
+- [PCB and printable case](#pcb-and-printable-case)
 - [Limitations and troubleshooting](#limitations-and-troubleshooting)
 - [Credits and tooling](#credits-and-tooling) · [Disclaimer](#disclaimer) · [License](#license)
 
@@ -124,6 +125,28 @@ That testbench uses ideal memory and BRAM VRAM rather than the full board's SDRA
 controller and menu firmware; these are simulation captures, not physical HDMI
 captures.</sub>
 
+## PCB and printable case
+
+The [hardware directory](hardware/README.md) includes the
+[O1 dual-DB9 carrier PCB](hardware/dual-db9-opt-pcb/README.md) for two Genesis
+controllers and an original
+[Giger-inspired biomechanical case](hardware/dual-db9-biomech-case/README.md)
+for the carrier and Tang Nano 20K.
+
+- **PCB:** KiCad sources, fabrication ZIPs, BOM, assembly instructions and
+  continuity-test tables.
+- **Case:** printable [base STL](hardware/dual-db9-biomech-case/stl/case_base.stl)
+  and [lid STL](hardware/dual-db9-biomech-case/stl/case_lid.stl), an editable
+  [STEP model](hardware/dual-db9-biomech-case/dual-db9-biomech-case.step), and
+  parametric CadQuery source. The case has been printed.
+
+**OSH Park is the recommended PCB manufacturer for people within the USA.** Use the [OSH Park order ZIP](hardware/dual-db9-opt-pcb/dual-db9-opt-O1-OSHPARK.zip).
+
+The carrier uses the standard `db9` firmware and the pinout in
+[step 3](#3-connect-a-controller). It is unprotected **3.3 V-only**. This worked
+on my personal configuration, but not all third-party controllers might work; only
+3-button and 6-button SEGA OEM controllers were tested.
+
 ## What you need
 
 - Tang Nano 20K and a USB-C cable.
@@ -208,10 +231,13 @@ in current releases.
 
 #### Dual Genesis pads (`db9` build)
 
+For a PCB instead of hand wiring, see the
+[dual-DB9 carrier and matching printable case](#pcb-and-printable-case).
+
 For two wired 3- or 6-button Genesis pads, use
 `genthang_nano20k_db9_flash.bin`. Player 1 is entirely on J6 and player 2 entirely on J5.
 Leave the Nano LCD connector and speaker header empty. Both ports use 3.3 V with
-internal pull-ups; never connect either controller to 5 V or hot-plug it.
+internal pull-ups; the DB9 pin 5 supply is 3.3 V.
 
 | DB9 pin (male) | Signal | Player 1 FPGA pin (contact) | Player 2 FPGA pin (contact) |
 |---|---|---|---|
@@ -322,6 +348,7 @@ The Options page opens first when you call up the menu during a game:
 - **Scanlines**: off, 25 %, 50 %
 - **Composite blend**: off, on, adaptive
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
+- **Display**: TV (default), or 4:3 LCD
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
 
@@ -329,12 +356,12 @@ Opening the menu pauses the game and mutes HDMI audio. **Reset game** pulses the
 console reset input without clearing work RAM, like the physical Genesis reset
 button (this is the reset X-Men's Mojo level expects). Display settings are saved
 to `GENTHANG.CFG` on the card. Scanlines and composite blend never affect the menu
-itself; the video output setting applies to the menu too.
+itself; the video output and display settings apply to the menu too.
 
 ### Display options
 
 The menu draws at 256x224 and the game at 320x224 or 256x224, both scaled into the
-same centred 960x720 (4:3) window inside the 1280x720 HDMI frame. Two
+same centred 960x720 (4:3) window inside the 1280x720 HDMI frame by default. Two
 post-processing options are applied by the HDMI scaler:
 
 - **Scanlines** dims the lower half of each Genesis line by 25 % or 50 %. It is
@@ -349,6 +376,15 @@ post-processing options are applied by the HDMI scaler:
 [line-out jack](#line-out-jack-db9-and-raw-builds) for sound. Use it if a
 display pulses or flickers on mid and dark tones: on an LG 50PN6500 plasma, any HDMI
 data island made the picture pulse regardless of its contents, and DVI was stable.
+
+**Display** chooses **TV** (default, the centred 4:3 window) or **4:3 LCD**.
+Use LCD mode for a 640x480 panel/controller such as the PCB800850 that squeezes
+the entire 1280x720 input onto its 4:3 panel. It expands the game and menu across
+all 1280 input pixels, removing the built-in side bars so the controller's
+downscaling restores the intended proportions. On a normal 16:9 TV this mode
+looks stretched; switch back to TV there. HDMI timing stays at 720p60, and no
+extra framebuffer is used. Changes take effect at a frame boundary and are
+saved to `GENTHANG.CFG`; settings from older versions still load with TV mode.
 
 <p align="center">
   <img src="docs/images/composite-blending-options.jpg" width="820"

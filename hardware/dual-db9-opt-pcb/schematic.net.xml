@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>/home/papa/code/tang-fpga/genthang-hw/dual-db9-opt-pcb/dual-db9-opt-pcb.kicad_sch</source>
+    <date>Sat 10 Oct 2026 01:57:24 PM EDT</date>
+    <tool>Eeschema 7.0.11+dfsg-1build4</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>dual-db9-opt-pcb O1 - 3.3V PROTOTYPE CARRIER</title>
+        <company/>
+        <rev/>
+        <date/>
+        <source>dual-db9-opt-pcb.kicad_sch</source>
+        <comment number="1" value="Pin-level connectivity drawing; passive symbols, not functional ERC validation"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="J1">
+      <value>GENESIS_3V3_PLAYER1</value>
+      <footprint>DualDB9Opt:Kycon_K22X-E9P-N</footprint>
+      <libsource lib="GenThang" part="J1" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="dual-db9-opt-pcb.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8474926c-f41c-5a1d-8fb4-3618b99ef937</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>GENESIS_3V3_PLAYER2</value>
+      <footprint>DualDB9Opt:Kycon_K22X-E9P-N</footprint>
+      <libsource lib="GenThang" part="J2" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="dual-db9-opt-pcb.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b4916a5e-30a3-5bc0-96c9-88e96cae4020</tstamps>
+    </comp>
+    <comp ref="J5">
+      <value>Nano_socket_1x20</value>
+      <footprint>DualDB9Opt:Harwin_M20-7822046_1x20</footprint>
+      <libsource lib="GenThang" part="J5" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="dual-db9-opt-pcb.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3a6bd4ec-f14f-567a-8679-ddc2937b58e5</tstamps>
+    </comp>
+    <comp ref="J6">
+      <value>Nano_socket_1x20</value>
+      <footprint>DualDB9Opt:Harwin_M20-7822046_1x20</footprint>
+      <libsource lib="GenThang" part="J6" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="dual-db9-opt-pcb.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>881e2678-cb8a-5bbf-b87e-b11e2277d391</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="GenThang" part="J1">
+      <fields>
+        <field name="Reference">J1</field>
+        <field name="Value">GENESIS_3V3_PLAYER1</field>
+        <field name="Footprint">DualDB9Opt:Kycon_K22X-E9P-N</field>
+      </fields>
+      <pins>
+        <pin num="0" name="0" type="passive"/>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+        <pin num="4" name="4" type="passive"/>
+        <pin num="5" name="5" type="passive"/>
+        <pin num="6" name="6" type="passive"/>
+        <pin num="7" name="7" type="passive"/>
+        <pin num="8" name="8" type="passive"/>
+        <pin num="9" name="9" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="GenThang" part="J2">
+      <fields>
+        <field name="Reference">J2</field>
+        <field name="Value">GENESIS_3V3_PLAYER2</field>
+        <field name="Footprint">DualDB9Opt:Kycon_K22X-E9P-N</field>
+      </fields>
+      <pins>
+        <pin num="0" name="0" type="passive"/>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+        <pin num="4" name="4" type="passive"/>
+        <pin num="5" name="5" type="passive"/>
+        <pin num="6" name="6" type="passive"/>
+        <pin num="7" name="7" type="passive"/>
+        <pin num="8" name="8" type="passive"/>
+        <pin num="9" name="9" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="GenThang" part="J5">
+      <fields>
+        <field name="Reference">J5</field>
+        <field name="Value">Nano_socket_1x20</field>
+        <field name="Footprint">DualDB9Opt:Harwin_M20-7822046_1x20</field>
+      </fields>
+      <pins>
+        <pin num="1" name="NC_1" type="passive"/>
+        <pin num="2" name="NC_2" type="passive"/>
+        <pin num="3" name="NC_3" type="passive"/>
+        <pin num="4" name="NC_4" type="passive"/>
+        <pin num="5" name="GPIO42_P2_D0" type="passive"/>
+        <pin num="6" name="GPIO41_P2_D1" type="passive"/>
+        <pin num="7" name="NC_7" type="passive"/>
+        <pin num="8" name="NC_8" type="passive"/>
+        <pin num="9" name="GPIO51_P2_D2" type="passive"/>
+        <pin num="10" name="GPIO48_P2_D3" type="passive"/>
+        <pin num="11" name="NC_11" type="passive"/>
+        <pin num="12" name="GPIO49_P2_TL" type="passive"/>
+        <pin num="13" name="NC_13" type="passive"/>
+        <pin num="14" name="NC_14" type="passive"/>
+        <pin num="15" name="GND" type="passive"/>
+        <pin num="16" name="3V3" type="passive"/>
+        <pin num="17" name="GPIO72_P2_TH" type="passive"/>
+        <pin num="18" name="GPIO71_P2_TR" type="passive"/>
+        <pin num="19" name="NC_19" type="passive"/>
+        <pin num="20" name="NC_20" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="GenThang" part="J6">
+      <fields>
+        <field name="Reference">J6</field>
+        <field name="Value">Nano_socket_1x20</field>
+        <field name="Footprint">DualDB9Opt:Harwin_M20-7822046_1x20</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GPIO73_P1_D0" type="passive"/>
+        <pin num="2" name="GPIO74_P1_D1" type="passive"/>
+        <pin num="3" name="NC_3" type="passive"/>
+        <pin num="4" name="NC_4" type="passive"/>
+        <pin num="5" name="GPIO77_P1_D2" type="passive"/>
+        <pin num="6" name="NC_6" type="passive"/>
+        <pin num="7" name="NC_7" type="passive"/>
+        <pin num="8" name="GPIO27_P1_D3" type="passive"/>
+        <pin num="9" name="GPIO28_P1_TL" type="passive"/>
+        <pin num="10" name="NC_10" type="passive"/>
+        <pin num="11" name="NC_11" type="passive"/>
+        <pin num="12" name="GPIO29_P1_TH" type="passive"/>
+        <pin num="13" name="GPIO30_P1_TR" type="passive"/>
+        <pin num="14" name="NC_14" type="passive"/>
+        <pin num="15" name="NC_15" type="passive"/>
+        <pin num="16" name="NC_16" type="passive"/>
+        <pin num="17" name="NC_17" type="passive"/>
+        <pin num="18" name="NC_18" type="passive"/>
+        <pin num="19" name="3V3" type="passive"/>
+        <pin num="20" name="GND" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries/>
+  <nets>
+    <net code="1" name="/3V3">
+      <node ref="J1" pin="5" pinfunction="5" pintype="passive"/>
+      <node ref="J2" pin="5" pinfunction="5" pintype="passive"/>
+      <node ref="J5" pin="16" pinfunction="3V3" pintype="passive"/>
+      <node ref="J6" pin="19" pinfunction="3V3" pintype="passive"/>
+    </net>
+    <net code="2" name="/GND">
+      <node ref="J1" pin="0" pinfunction="0" pintype="passive"/>
+      <node ref="J1" pin="8" pinfunction="8" pintype="passive"/>
+      <node ref="J2" pin="0" pinfunction="0" pintype="passive"/>
+      <node ref="J2" pin="8" pinfunction="8" pintype="passive"/>
+      <node ref="J5" pin="15" pinfunction="GND" pintype="passive"/>
+      <node ref="J6" pin="20" pinfunction="GND" pintype="passive"/>
+    </net>
+    <net code="3" name="/P1_D0">
+      <node ref="J1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="J6" pin="1" pinfunction="GPIO73_P1_D0" pintype="passive"/>
+    </net>
+    <net code="4" name="/P1_D1">
+      <node ref="J1" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="J6" pin="2" pinfunction="GPIO74_P1_D1" pintype="passive"/>
+    </net>
+    <net code="5" name="/P1_D2">
+      <node ref="J1" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="J6" pin="5" pinfunction="GPIO77_P1_D2" pintype="passive"/>
+    </net>
+    <net code="6" name="/P1_D3">
+      <node ref="J1" pin="4" pinfunction="4" pintype="passive"/>
+      <node ref="J6" pin="8" pinfunction="GPIO27_P1_D3" pintype="passive"/>
+    </net>
+    <net code="7" name="/P1_TH">
+      <node ref="J1" pin="7" pinfunction="7" pintype="passive"/>
+      <node ref="J6" pin="12" pinfunction="GPIO29_P1_TH" pintype="passive"/>
+    </net>
+    <net code="8" name="/P1_TL">
+      <node ref="J1" pin="6" pinfunction="6" pintype="passive"/>
+      <node ref="J6" pin="9" pinfunction="GPIO28_P1_TL" pintype="passive"/>
+    </net>
+    <net code="9" name="/P1_TR">
+      <node ref="J1" pin="9" pinfunction="9" pintype="passive"/>
+      <node ref="J6" pin="13" pinfunction="GPIO30_P1_TR" pintype="passive"/>
+    </net>
+    <net code="10" name="/P2_D0">
+      <node ref="J2" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="J5" pin="5" pinfunction="GPIO42_P2_D0" pintype="passive"/>
+    </net>
+    <net code="11" name="/P2_D1">
+      <node ref="J2" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="J5" pin="6" pinfunction="GPIO41_P2_D1" pintype="passive"/>
+    </net>
+    <net code="12" name="/P2_D2">
+      <node ref="J2" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="J5" pin="9" pinfunction="GPIO51_P2_D2" pintype="passive"/>
+    </net>
+    <net code="13" name="/P2_D3">
+      <node ref="J2" pin="4" pinfunction="4" pintype="passive"/>
+      <node ref="J5" pin="10" pinfunction="GPIO48_P2_D3" pintype="passive"/>
+    </net>
+    <net code="14" name="/P2_TH">
+      <node ref="J2" pin="7" pinfunction="7" pintype="passive"/>
+      <node ref="J5" pin="17" pinfunction="GPIO72_P2_TH" pintype="passive"/>
+    </net>
+    <net code="15" name="/P2_TL">
+      <node ref="J2" pin="6" pinfunction="6" pintype="passive"/>
+      <node ref="J5" pin="12" pinfunction="GPIO49_P2_TL" pintype="passive"/>
+    </net>
+    <net code="16" name="/P2_TR">
+      <node ref="J2" pin="9" pinfunction="9" pintype="passive"/>
+      <node ref="J5" pin="18" pinfunction="GPIO71_P2_TR" pintype="passive"/>
+    </net>
+    <net code="17" name="unconnected-(J5-NC_1-Pad1)">
+      <node ref="J5" pin="1" pinfunction="NC_1" pintype="passive+no_connect"/>
+    </net>
+    <net code="18" name="unconnected-(J5-NC_2-Pad2)">
+      <node ref="J5" pin="2" pinfunction="NC_2" pintype="passive+no_connect"/>
+    </net>
+    <net code="19" name="unconnected-(J5-NC_3-Pad3)">
+      <node ref="J5" pin="3" pinfunction="NC_3" pintype="passive+no_connect"/>
+    </net>
+    <net code="20" name="unconnected-(J5-NC_4-Pad4)">
+      <node ref="J5" pin="4" pinfunction="NC_4" pintype="passive+no_connect"/>
+    </net>
+    <net code="21" name="unconnected-(J5-NC_7-Pad7)">
+      <node ref="J5" pin="7" pinfunction="NC_7" pintype="passive+no_connect"/>
+    </net>
+    <net code="22" name="unconnected-(J5-NC_8-Pad8)">
+      <node ref="J5" pin="8" pinfunction="NC_8" pintype="passive+no_connect"/>
+    </net>
+    <net code="23" name="unconnected-(J5-NC_11-Pad11)">
+      <node ref="J5" pin="11" pinfunction="NC_11" pintype="passive+no_connect"/>
+    </net>
+    <net code="24" name="unconnected-(J5-NC_13-Pad13)">
+      <node ref="J5" pin="13" pinfunction="NC_13" pintype="passive+no_connect"/>
+    </net>
+    <net code="25" name="unconnected-(J5-NC_14-Pad14)">
+      <node ref="J5" pin="14" pinfunction="NC_14" pintype="passive+no_connect"/>
+    </net>
+    <net code="26" name="unconnected-(J5-NC_19-Pad19)">
+      <node ref="J5" pin="19" pinfunction="NC_19" pintype="passive+no_connect"/>
+    </net>
+    <net code="27" name="unconnected-(J5-NC_20-Pad20)">
+      <node ref="J5" pin="20" pinfunction="NC_20" pintype="passive+no_connect"/>
+    </net>
+    <net code="28" name="unconnected-(J6-NC_3-Pad3)">
+      <node ref="J6" pin="3" pinfunction="NC_3" pintype="passive+no_connect"/>
+    </net>
+    <net code="29" name="unconnected-(J6-NC_4-Pad4)">
+      <node ref="J6" pin="4" pinfunction="NC_4" pintype="passive+no_connect"/>
+    </net>
+    <net code="30" name="unconnected-(J6-NC_6-Pad6)">
+      <node ref="J6" pin="6" pinfunction="NC_6" pintype="passive+no_connect"/>
+    </net>
+    <net code="31" name="unconnected-(J6-NC_7-Pad7)">
+      <node ref="J6" pin="7" pinfunction="NC_7" pintype="passive+no_connect"/>
+    </net>
+    <net code="32" name="unconnected-(J6-NC_10-Pad10)">
+      <node ref="J6" pin="10" pinfunction="NC_10" pintype="passive+no_connect"/>
+    </net>
+    <net code="33" name="unconnected-(J6-NC_11-Pad11)">
+      <node ref="J6" pin="11" pinfunction="NC_11" pintype="passive+no_connect"/>
+    </net>
+    <net code="34" name="unconnected-(J6-NC_14-Pad14)">
+      <node ref="J6" pin="14" pinfunction="NC_14" pintype="passive+no_connect"/>
+    </net>
+    <net code="35" name="unconnected-(J6-NC_15-Pad15)">
+      <node ref="J6" pin="15" pinfunction="NC_15" pintype="passive+no_connect"/>
+    </net>
+    <net code="36" name="unconnected-(J6-NC_16-Pad16)">
+      <node ref="J6" pin="16" pinfunction="NC_16" pintype="passive+no_connect"/>
+    </net>
+    <net code="37" name="unconnected-(J6-NC_17-Pad17)">
+      <node ref="J6" pin="17" pinfunction="NC_17" pintype="passive+no_connect"/>
+    </net>
+    <net code="38" name="unconnected-(J6-NC_18-Pad18)">
+      <node ref="J6" pin="18" pinfunction="NC_18" pintype="passive+no_connect"/>
+    </net>
+  </nets>
+</export>

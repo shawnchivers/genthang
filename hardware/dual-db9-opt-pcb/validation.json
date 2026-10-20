@@ -1,0 +1,20 @@
+{
+  "board": "dual-db9-opt-pcb",
+  "revision": "O1",
+  "size_mm": [
+    100,
+    70
+  ],
+  "fitted_components": 4,
+  "electrical_nets": 16,
+  "unique_connected_pad_ids": 38,
+  "drc_findings": {},
+  "pin_geometry_and_firmware_contract": "PASS",
+  "schematic_pcb_equivalence": "PASS",
+  "firmware_pinout": "GT_PAD=db9 (genthang)",
+  "firmware_contract_source": "live checkout",
+  "breadboard_validated": false,
+  "manufactured_pcb_tested": false,
+  "assembly_connector": "Kycon K22X-E9P-N",
+  "fabrication_release": "PROTOTYPE_READY"
+}

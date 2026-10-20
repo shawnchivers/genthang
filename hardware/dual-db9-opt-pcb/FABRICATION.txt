@@ -1,0 +1,27 @@
+BOARD: dual-db9-opt-pcb, revision O1, KYCON K22X-E9P-N connector version
+INTENT: two-player 3.3V personal-use prototype; no 5V/ESD/hot-plug protection
+RECOMMENDATION: OSH Park is the recommended PCB manufacturer for people within the USA. Use dual-db9-opt-O1-OSHPARK.zip.
+SIZE: 100.00mm x 70.00mm rectangle. DB9 nose overhang (6.1mm each) is NOT PCB material.
+MATERIAL: FR-4, Tg>=130C
+LAYERS: 2
+THICKNESS: 1.60mm
+COPPER: 1oz outer copper
+FINISH: ENIG, RoHS/lead-free
+SOLDER MASK: both sides; OSH Park uses its standard purple mask (generic export originally specified green).
+SILKSCREEN: white top. Empty bottom silk is intentional.
+MIN TRACE: 0.30mm. Power/ground trunks 0.60mm.
+MIN COPPER CLEARANCE: 0.25mm
+MIN COPPER TO EDGE: 0.50mm
+VIAS: 0.80mm pad / 0.40mm finished drill. No blind/buried vias.
+PTH COMPONENT DRILLS: 1.02mm sockets (40); 1.09mm DB9 (18); 3.05mm boardlocks (4).
+PTH FINISHED HOLE TOLERANCE: +/-0.05mm requested; confirm capability before order.
+NPTH: 4x 2.70mm mounting holes. Keep NONPLATED.
+DRILL UNITS: mm, absolute origin, Excellon, separate PTH/NPTH files.
+SLOTS/CUTOUTS: none
+EDGE: closed rectangular Edge_Cuts only
+ELECTRICAL TEST: 100% flying-probe continuity/isolation against Gerber/net data.
+STENCIL: NONE (only through-hole components)
+SUBSTITUTIONS: NONE without written approval.
+CONNECTOR WARNING: only Kycon K22X-E9P-N geometry is used; other DB9 parts are unverified.
+SAFETY: not voltage translating; controller supply 3.3V only.
+FIRMWARE: requires the canonical GenThang GT_PAD=db9 bitstream.
