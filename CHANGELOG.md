@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.0 - 2026-10-20
 
 - Added a saved **Display: TV / 4:3 LCD** option for panels whose controllers
   squeeze the full 720p input onto a 4:3 screen (such as a 640x480 PCB800850 kit).
