@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- New **`GT_VIDEO=800x480`** build (`genthang_nano20k_<pad>_800x480.fs`) for bare TFT
+  panels behind a scaler-less DVI decoder such as the Adafruit TFP401 with an 800x480
+  40-pin panel, which cannot display 720p. It outputs 800x480 at 59.9 Hz (CVT timing,
+  992x500 total, 29.7 MHz pixel clock from a 148.5 MHz PLL) and always as DVI. The
+  Display option picks a centred 640x480 window (TV) or the full 800 width (LCD).
+  The default 720p build is unchanged. Result: logic 95% (19544/20736), CLS 10145/10368,
+  timing met (hclk Fmax 82 MHz). Tested on the board with an Adafruit TFP401 and an
+  800x480 TFT. `release.sh` now also builds `db9_800x480` and `raw_800x480`.
+
 ## 1.8.0 - 2026-10-20
 
 - Added a saved **Display: TV / 4:3 LCD** option for panels whose controllers

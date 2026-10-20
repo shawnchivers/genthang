@@ -102,6 +102,19 @@ logic invert;
 // See CEA-861-D for more specifics formats described below.
 generate
     case (VIDEO_ID_CODE)
+        // Not a CEA mode: 800x480 CVT timing for bare TFT panels behind a TFP401 (DVI only).
+        0:
+        begin
+            assign frame_width = 992;
+            assign frame_height = 500;
+            assign screen_width = 800;
+            assign screen_height = 480;
+            assign hsync_pulse_start = 24;
+            assign hsync_pulse_size = 72;
+            assign vsync_pulse_start = 3;
+            assign vsync_pulse_size = 7;
+            assign invert = 0;
+        end
         1:
         begin
             assign frame_width = 800;
@@ -201,7 +214,8 @@ always_comb begin
         vsync <= invert ^ (cy >= screen_height + vsync_pulse_start && cy < screen_height + vsync_pulse_start + vsync_pulse_size);
 end
 
-localparam real VIDEO_RATE = (VIDEO_ID_CODE == 1 ? 25.2E6
+localparam real VIDEO_RATE = (VIDEO_ID_CODE == 0 ? 29.7E6
+    : VIDEO_ID_CODE == 1 ? 25.2E6
     : VIDEO_ID_CODE == 2 || VIDEO_ID_CODE == 3 ? 27.027E6
     : VIDEO_ID_CODE == 4 ? 74.25E6
     : VIDEO_ID_CODE == 16 ? 148.5E6

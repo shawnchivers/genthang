@@ -3,7 +3,8 @@
 #   genthang_nano20k_<variant>.fs          bitstream only (SRAM load with Gowin Programmer)
 #   genthang_nano20k_<variant>_flash.bin   bitstream + menu firmware for SPI flash address 0
 #   SHA256SUMS, genthang-v<VERSION>.tar.gz
-# Variants: db9 (default) and raw. Raw has its own handheld pinout.
+# Variants: db9 (default) and raw, each also as <pad>_800x480 (GT_VIDEO=800x480, native
+# 800x480 DVI for bare TFT panels on a TFP401 board). Raw has its own handheld pinout.
 # usage: ./release.sh [outdir]      VARIANTS="db9" ./release.sh   for a subset
 #        PACKAGE_ONLY=1 ./release.sh   re-pack the tarball from the images already in outdir
 # A variant that misses its clock targets or leaves negative slack fails the release.
@@ -15,13 +16,16 @@ mkdir -p "$OUT"
 if [ -z "${PACKAGE_ONLY:-}" ]; then
 rm -f "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin "$OUT"/SHA256SUMS
 
-for variant in ${VARIANTS:-db9 raw}; do
+for variant in ${VARIANTS:-db9 raw db9_800x480 raw_800x480}; do
     case $variant in
-        raw|db9)        pad=$variant; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
+        raw|db9)        pad=$variant; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
+        raw_800x480|db9_800x480)
+                        pad=${variant%_800x480}; video=800x480; pinout=stock; name=$variant
+                        base=genthang_nano20k_$variant ;;
         *) echo "unknown variant: $variant" >&2; exit 2 ;;
     esac
-    echo "== $variant (GT_PAD=$pad GT_PINOUT=$pinout)"
-    GT_PAD=$pad GT_PINOUT=$pinout ./build.sh > "$OUT/build_$name.log" 2>&1
+    echo "== $variant (GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout)"
+    GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout ./build.sh > "$OUT/build_$name.log" 2>&1
     install -m 644 "impl/pnr/$base.fs" "$OUT/genthang_nano20k_$name.fs"   # Gowin writes it read-only
     python3 merge_flash.py "impl/pnr/$base.bin" firmware/firmware.bin \
         "$OUT/genthang_nano20k_${name}_flash.bin"

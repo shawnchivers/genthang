@@ -1,11 +1,12 @@
 # Gowin build for Gen Thang on the Tang Nano 20K (GW2AR-18C)
 #   ./build.sh                -> impl/pnr/genthang_nano20k_db9.fs, two Genesis pads
 #   GT_PAD=raw ./build.sh     -> 12 direct buttons, handheld pinout + speaker amp
+#   GT_VIDEO=800x480 ./build.sh -> native 800x480 DVI for a bare TFT on a TFP401 board (*_800x480.fs)
 
 set_device GW2AR-LV18QN88C8/I7 -device_version C
 
 source build_config.tcl
-puts "GT_PAD=$pad GT_PINOUT=$pinout CST=$pad_cst OUTPUT=$output_base"
+puts "GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout CST=$pad_cst OUTPUT=$output_base"
 # selects the pad ports in mdtang_top.sv (the checked-in default is GT_PAD_DB9)
 set f [open src/pad_config.vh w]
 puts $f "`define GT_PAD_[string toupper $pad]"
@@ -19,17 +20,25 @@ if {[info exists ::env(GT_SERIAL_UPLOAD)] && $::env(GT_SERIAL_UPLOAD) eq "1"} {
     puts $f "`define SERIAL_UPLOAD"
     puts "GT_SERIAL_UPLOAD=1: USB serial upload included"
 }
+if {$video eq "800x480"} { puts $f "`define VIDEO_800X480" }
 close $f
 
 # board layer
 add_file -type cst     $pad_cst
-if {[info exists ::env(GT_NO_SOUND)] && $::env(GT_NO_SOUND) eq "1"} {
-    # the JT12 multicycle constraints name cells that do not exist without sound
+set nosound [expr {[info exists ::env(GT_NO_SOUND)] && $::env(GT_NO_SOUND) eq "1"}]
+if {$nosound || $video ne "720p"} {
     set fi [open src/mdtang.sdc r]; set sdc [read $fi]; close $fi
-    set fo [open src/mdtang_nosound.sdc w]
-    foreach line [split $sdc "\n"] { if {[string first "u_jt12" $line] < 0} { puts $fo $line } }
+    if {$video eq "800x480"} {
+        # 148.5MHz 5x pixel clock (29.7MHz pixel)
+        set sdc [string map {"-period 2.6936 -waveform {0 1.347}" "-period 6.734 -waveform {0 3.367}"} $sdc]
+    }
+    set fo [open src/mdtang_build.sdc w]
+    foreach line [split $sdc "\n"] {
+        # the JT12 multicycle constraints name cells that do not exist without sound
+        if {!$nosound || [string first "u_jt12" $line] < 0} { puts $fo $line }
+    }
     close $fo
-    add_file -type sdc     "src/mdtang_nosound.sdc"
+    add_file -type sdc     "src/mdtang_build.sdc"
 } else {
     add_file -type sdc     "src/mdtang.sdc"
 }

@@ -24,4 +24,4 @@ __pycache__/
 .vscode/
 *.kate-swp
 *.swp
-src/mdtang_nosound.sdc
+src/mdtang_build.sdc

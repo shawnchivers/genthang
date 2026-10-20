@@ -168,6 +168,7 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 |---|---|---|
 | `genthang_nano20k_db9_flash.bin` | Two Genesis pads on DB9 breakouts (default) | Canonical J6/J5 wiring, 3.3 V only; see [dual Genesis pads](#dual-genesis-pads-db9-build) |
 | `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Handheld pinout, plus the Nano's speaker and a headphone jack; see [direct buttons](#direct-buttons-raw-build) |
+| `genthang_nano20k_db9_800x480_flash.bin`, `genthang_nano20k_raw_800x480_flash.bin` | Same pads, for an 800x480 TFT on a TFP401 board | Native 800x480 DVI, no HDMI audio; see [display options](#display-options) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
 
@@ -386,6 +387,13 @@ looks stretched; switch back to TV there. HDMI timing stays at 720p60, and no
 extra framebuffer is used. Changes take effect at a frame boundary and are
 saved to `GENTHANG.CFG`; settings from older versions still load with TV mode.
 
+**Bare TFT panels behind a DVI/HDMI decoder board** (such as the Adafruit TFP401
+with an 800x480 40-pin TFT) have no scaler, so they cannot show 720p at all. Build
+the `GT_VIDEO=800x480` variant (`genthang_nano20k_<pad>_800x480.fs`) for them. It
+outputs native 800x480 at 59.9 Hz (CVT timing, 29.7 MHz pixel clock), always as DVI
+because the TFP401 cannot receive audio, so use the line-out jack for sound. TV mode
+shows a centred 640x480 4:3 window; 4:3 LCD mode fills the full 800 width.
+
 <p align="center">
   <img src="docs/images/composite-blending-options.jpg" width="820"
        alt="Gen Thang composite blending off, on and adaptive comparison">
@@ -467,7 +475,8 @@ git clone https://github.com/shawnchivers/genthang.git
 cd genthang
 ./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
-./release.sh                      # supported variants + flash images + tarball in release/
+GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
+./release.sh                      # all variants (db9, raw, *_800x480) + flash images + tarball
 ```
 
 `GT_PAD` (`db9`, `raw`) selects the supported pad ports in `src/mdtang_top.sv`, through

@@ -5,6 +5,8 @@
 // This module takes RGB pixel input, buffers 16 lines of the video in BRAM, 
 // then upscales and output the video in 720p HDMI format.
 // TV mode centers a 4:3 window; LCD mode fills the input of a 4:3 panel controller.
+// LCD800=1 outputs native 800x480 DVI instead, for bare TFT panels behind a TFP401
+// (which has no scaler): TV = centred 640x480, LCD = full 800 width.
 //
 // This is different from framebuffer.sv in that it requires the input video
 // to be synchronized to HDMI. This allows the module use much less BRAM space
@@ -13,11 +15,12 @@ module framebuffer #(
     parameter WIDTH = 320,          // max frame width (<=1280)
     parameter HEIGHT = 240,         // max frame height (<=720)
     parameter COLOR_BITS = 4,       // bits per RGB color channel
-    parameter BUFFER_LINES = 32     // power-of-two line ring, must exceed core lead over HDMI
+    parameter BUFFER_LINES = 32,    // power-of-two line ring, must exceed core lead over HDMI
+    parameter LCD800 = 0            // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
 )(
 	input clk,                      // megadrive clock
 	input resetn,
-	input clk_pixel,                // 74.25Mhz pixel clock
+	input clk_pixel,                // 74.25Mhz pixel clock (29.7MHz with LCD800)
 	input clk_5x_pixel,             // 5x pixel clock
 
     // video signals
@@ -53,7 +56,11 @@ module framebuffer #(
 	output [2:0] tmds_d_p
 );
 
-localparam CLKFRQ = 74250;
+localparam CLKFRQ = LCD800 ? 29700 : 74250;
+localparam SCREEN_W = LCD800 ? 800 : 1280;
+localparam SCREEN_H = LCD800 ? 480 : 720;
+localparam TV_W = SCREEN_H * 4 / 3;             // centred 4:3 window
+localparam TV_BEGIN = (SCREEN_W - TV_W) / 2 - 1;
 
 // video stuff
 wire [10:0] cx /* xsynthesis syn_keep=1 */;
@@ -98,7 +105,7 @@ frame_sync sync (
     .pause_core(pause_core)
 );
 always @(posedge clk_pixel) begin
-    if (cy == 0 && cx >= 160)                           // start position of 4:3 frame
+    if (cy == 0 && cx >= TV_BEGIN + 1)                  // start position of 4:3 frame
         hdmi_first_line <= 1;
     else
         hdmi_first_line <= 0;
@@ -137,13 +144,13 @@ assign overlay_x = xx;
 assign overlay_y = yy;
 reg lcd = 1'b0;
 // LCD mode starts at cx=2, once yy has advanced for the new line (cy_r lags cy by one
-// cycle), and spans the remaining 1277 pixels.
-wire [10:0] window_width = lcd ? 11'd1277 : 11'd960;
-wire [10:0] xbegin = lcd ? 11'd2 : 11'd159;
-wire [10:0] xend = lcd ? 11'd1279 : 11'd1119;
+// cycle), and spans the remaining SCREEN_W-3 pixels.
+wire [10:0] window_width = lcd ? 11'(SCREEN_W - 3) : 11'(TV_W);
+wire [10:0] xbegin = lcd ? 11'd2 : 11'(TV_BEGIN);
+wire [10:0] xend = lcd ? 11'(SCREEN_W - 1) : 11'(TV_BEGIN + TV_W);
 
 // address calculation
-// Assume the video occupies fully on the Y direction, we are upscaling the video by `720/height`.
+// Assume the video occupies fully on the Y direction, we are upscaling the video by `SCREEN_H/height`.
 // xcnt and ycnt are fractional scaling counters.
 always @(posedge clk_pixel) begin
     reg active_t;
@@ -172,8 +179,8 @@ always @(posedge clk_pixel) begin
     cy_r <= cy;
     if (cy[0] != cy_r[0]) begin         // increment yy at new lines
         ycnt <= ycnt_next;
-        if (ycnt_next >= 720) begin
-            ycnt <= ycnt_next - 720;
+        if (ycnt_next >= SCREEN_H) begin
+            ycnt <= ycnt_next - 11'(SCREEN_H);
             yy <= yy + 1;
         end
     end
@@ -206,7 +213,7 @@ always @(posedge clk_pixel) begin
     opt_s2 <= opt_s1;
     il_s1 <= interlace;
     il_s2 <= il_s1;
-    scan <= ycnt >= 11'd360 && !il_s2;
+    scan <= ycnt >= 11'(SCREEN_H / 2) && !il_s2;
     xx_r <= xx;
     xx_px <= xx_r;
     rdata_r <= mem_portB_rdata[COLOR_WIDTH-1:0];
@@ -252,12 +259,7 @@ end
 // HDMI output.
 logic[2:0] tmds;
 
-localparam FRAMEWIDTH = 1280;
-localparam FRAMEHEIGHT = 720;
-localparam TOTALWIDTH = 1650;
-localparam TOTALHEIGHT = 750;
-localparam SCALE = 5;
-localparam VIDEOID = 4;
+localparam VIDEOID = LCD800 ? 0 : 4;    // 0 = custom 800x480 timing in hdmi.sv
 localparam VIDEO_REFRESH = 60.0;
 localparam COLLEN = 80;
 localparam AUDIO_BIT_WIDTH = 16;
@@ -267,12 +269,12 @@ localparam AUDIO_BIT_WIDTH = 16;
 reg dvi = 1'b0;
 always @(posedge clk_pixel)
     if (cx == 0 && cy == 0) begin
-        dvi <= opt_s2[4];
+        dvi <= LCD800 ? 1'b1 : opt_s2[4];     // a TFP401 is a DVI receiver
         lcd <= opt_s2[5];
     end
 
 hdmi #( .VIDEO_ID_CODE(VIDEOID), 
-        .DVI_OUTPUT(0),
+        .DVI_OUTPUT(LCD800),
         .VIDEO_REFRESH_RATE(VIDEO_REFRESH),
         .IT_CONTENT(1),
         .AUDIO_RATE(AUDIO_RATE), 

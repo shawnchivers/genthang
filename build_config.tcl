@@ -13,5 +13,10 @@ if {$pinout ne "stock"} {
     puts stderr "warning: GT_PINOUT=$pinout is deprecated; using the canonical db9 pinout"
     set pinout stock
 }
+set video 720p
+if {[info exists ::env(GT_VIDEO)] && $::env(GT_VIDEO) ne ""} { set video $::env(GT_VIDEO) }
+if {[lsearch -exact {720p 800x480} $video] < 0} { error "GT_VIDEO must be 720p or 800x480" }
+
 set pad_cst "src/boards/nano20k_$pad.cst"
 set output_base "genthang_nano20k_$pad"
+if {$video ne "720p"} { append output_base "_$video" }

@@ -82,7 +82,12 @@ gowin_pll_sys pll_sys (
     .clkin(sys_clk), .clkout(clk_sys), .clkoutp(O_sdram_clk), .clkoutd(clk_z80), .lock(pll_sys_lock)
 );
 
-gowin_pll_hdmi pll_hdmi (.clkin(sys_clk), .clkout(hclk5), .lock(pll_hdmi_lock));
+`ifdef VIDEO_800X480
+gowin_pll_hdmi #(.IDIV(1), .FBDIV(10), .ODIV(4)) pll_hdmi (
+`else
+gowin_pll_hdmi pll_hdmi (
+`endif
+   .clkin(sys_clk), .clkout(hclk5), .lock(pll_hdmi_lock));
 
 CLKDIV #(.DIV_MODE(5)) hdmi_div5 (
     .CLKOUT(hclk), .HCLKIN(hclk5), .RESETN(pll_hdmi_lock), .CALIB(1'b0)
@@ -207,7 +212,11 @@ end
 
 // 720p reads a 224-line frame ~11% slower than the core writes it, so the core runs
 // up to ~25 lines ahead by the bottom of the frame: the ring needs 32 lines.
-framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)) fb (
+framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)
+`ifdef VIDEO_800X480
+    , .LCD800(1)
+`endif
+) fb (
     .clk(clk_sys), .resetn(md_on), .clk_pixel(hclk), .clk_5x_pixel(hclk5),
     .ce_pix(ce_pix & hsync_seen), .r(red), .g(green), .b(blue), .transp(transp), .interlace(interlace), .x(x), .y(y),
     .width(resolution[0] ? 11'd320 : 11'd256), .height(resolution[1] ? 10'd240 : 10'd224),

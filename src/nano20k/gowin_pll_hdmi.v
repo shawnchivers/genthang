@@ -1,9 +1,10 @@
 // HDMI pixel clock PLL for Tang Nano 20K (GW2AR-18C)
 // 27MHz in -> 371.25MHz out (5x 720p pixel clock). Divide by 5 (CLKDIV) in top
-// to get the 74.25MHz pixel clock.
+// to get the 74.25MHz pixel clock. The 800x480 build overrides the dividers for
+// 148.5MHz = 27 * 11 / 2 (29.7MHz pixel clock, VCO 594MHz).
 //
 // Based on snestang/src/pllr/gowin_pll_hdmi.v from SNESTang (proven on GW2AR-18C).
-module gowin_pll_hdmi (clkout, lock, clkin);
+module gowin_pll_hdmi #(parameter IDIV = 3, parameter FBDIV = 54, parameter ODIV = 2) (clkout, lock, clkin);
 
 output clkout;
 output lock;
@@ -36,11 +37,11 @@ rPLL rpll_inst (
 
 defparam rpll_inst.FCLKIN = "27";
 defparam rpll_inst.DYN_IDIV_SEL = "false";
-defparam rpll_inst.IDIV_SEL = 3;        // 720p, 371.25 = 27 * 55 / 4, 371.25/5 = 74.25 (720p pixel clock)
+defparam rpll_inst.IDIV_SEL = IDIV;       // 720p default: 371.25 = 27 * 55 / 4, 371.25/5 = 74.25 (720p pixel clock)
 defparam rpll_inst.DYN_FBDIV_SEL = "false";
-defparam rpll_inst.FBDIV_SEL = 54;      // 720p, 371.25 = 27 * 55 / 4, 371.25/5 = 74.25 (720p pixel clock)
+defparam rpll_inst.FBDIV_SEL = FBDIV;
 defparam rpll_inst.DYN_ODIV_SEL = "false";
-defparam rpll_inst.ODIV_SEL = 2;
+defparam rpll_inst.ODIV_SEL = ODIV;
 defparam rpll_inst.PSDA_SEL = "0000";
 defparam rpll_inst.DYN_DA_EN = "true";
 defparam rpll_inst.DUTYDA_SEL = "1000";
