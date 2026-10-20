@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added a saved **Display: TV / 4:3 LCD** option for panels whose controllers
+  squeeze the full 720p input onto a 4:3 screen (such as a 640x480 PCB800850 kit).
+  LCD mode fills the input width for both games and menus; TV mode retains the
+  existing centred 4:3 window and remains the default.
 - Reverted the 68000 refresh change that kept the 128-cycle phase across DMA bus
   hand-overs (`d294e0f`, shipped in 1.7.0). It fixed one Aladdin frame but broke Alien 3
   (30 frames) and the Streets of Rage 2 trash-can demo. Refresh timing around DMA is a

@@ -380,7 +380,7 @@ data island made the picture pulse regardless of its contents, and DVI was stabl
 **Display** chooses **TV** (default, the centred 4:3 window) or **4:3 LCD**.
 Use LCD mode for a 640x480 panel/controller such as the PCB800850 that squeezes
 the entire 1280x720 input onto its 4:3 panel. It expands the game and menu across
-all 1280 input pixels, removing the built-in side bars so the controller's
+the full input width (the leftmost 3 pixels stay black), removing the built-in side bars so the controller's
 downscaling restores the intended proportions. On a normal 16:9 TV this mode
 looks stretched; switch back to TV there. HDMI timing stays at 720p60, and no
 extra framebuffer is used. Changes take effect at a frame boundary and are

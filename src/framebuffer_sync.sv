@@ -4,7 +4,7 @@
 //
 // This module takes RGB pixel input, buffers 16 lines of the video in BRAM, 
 // then upscales and output the video in 720p HDMI format.
-// The video aspect ratio is 4:3, with the video centered on the screen.
+// TV mode centers a 4:3 window; LCD mode fills the input of a 4:3 panel controller.
 //
 // This is different from framebuffer.sv in that it requires the input video
 // to be synchronized to HDMI. This allows the module use much less BRAM space
@@ -41,7 +41,7 @@ module framebuffer #(
     output [7:0] overlay_x,
     output [7:0] overlay_y,
     input [14:0] overlay_color,     // BGR5
-    input [4:0] video_opt,          // [1:0] scanlines off/25%/50%, [3:2] composite blend off/on/adaptive, [4] DVI output
+    input [5:0] video_opt,          // [1:0] scanlines, [3:2] blend, [4] DVI output, [5] 4:3 LCD
 
     input [15:0] audio_left,        // audio sample
     input [15:0] audio_right,
@@ -135,8 +135,12 @@ reg [10:0] ycnt             /* xsynthesis syn_keep=1 */;                  // fra
 reg [9:0] cy_r;
 assign overlay_x = xx;
 assign overlay_y = yy;
-localparam XSTART = (1280 - 960) / 2;   // 960:720 = 4:3
-localparam XSTOP = (1280 + 960) / 2;
+reg lcd = 1'b0;
+// LCD mode starts at cx=2, once yy has advanced for the new line (cy_r lags cy by one
+// cycle), and spans the remaining 1277 pixels.
+wire [10:0] window_width = lcd ? 11'd1277 : 11'd960;
+wire [10:0] xbegin = lcd ? 11'd2 : 11'd159;
+wire [10:0] xend = lcd ? 11'd1279 : 11'd1119;
 
 // address calculation
 // Assume the video occupies fully on the Y direction, we are upscaling the video by `720/height`.
@@ -149,18 +153,18 @@ always @(posedge clk_pixel) begin
     ycnt_next = ycnt + (overlay ? 224 : height);
 
     active_t = 0;
-    if (cx == XSTART - 1) begin
+    if (cx == xbegin) begin
         active_t = 1;
         active <= 1;
-    end else if (cx == XSTOP - 1) begin
+    end else if (cx == xend) begin
         active_t = 0;
         active <= 0;
     end
 
     if (active_t | active) begin        // increment xx
         xcnt <= xcnt_next;
-        if (xcnt_next >= 960) begin
-            xcnt <= xcnt_next - 960;
+        if (xcnt_next >= window_width) begin
+            xcnt <= xcnt_next - window_width;
             xx <= xx + 1;
         end
     end
@@ -190,7 +194,7 @@ end
 // Game pixels go through MiSTer's measured Genesis DAC table. Blend averages each pixel
 // with the one to its left (composite dither blending; adaptive = only where the VDP
 // flags transparency dither). Scanlines dim the lower half of each Genesis line.
-reg [4:0] opt_s1, opt_s2;
+reg [5:0] opt_s1, opt_s2;
 reg il_s1, il_s2;
 reg [$clog2(WIDTH)-1:0] xx_r, xx_px;
 reg [COLOR_WIDTH-1:0] rdata_r, prev_px;
@@ -262,8 +266,10 @@ localparam AUDIO_BIT_WIDTH = 16;
 // whenever data islands are present. Switch only at a frame start.
 reg dvi = 1'b0;
 always @(posedge clk_pixel)
-    if (cx == 0 && cy == 0)
+    if (cx == 0 && cy == 0) begin
         dvi <= opt_s2[4];
+        lcd <= opt_s2[5];
+    end
 
 hdmi #( .VIDEO_ID_CODE(VIDEOID), 
         .DVI_OUTPUT(0),

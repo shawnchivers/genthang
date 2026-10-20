@@ -96,7 +96,7 @@ wire [3:0]  red, green, blue;
 wire        hsync, hblank, vblank, ce_pix, pause_core, md_on, loading, overlay;
 wire [7:0]  overlay_x, overlay_y;
 wire [14:0] overlay_color;
-wire [4:0]  video_opt;
+wire [5:0]  video_opt;
 wire [1:0]  resolution;
 wire        transp, interlace;
 wire [15:0] audio_left, audio_right;

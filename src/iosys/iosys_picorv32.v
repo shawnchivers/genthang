@@ -53,7 +53,7 @@ module iosys_picorv32 #(
     input [7:0] overlay_x,          // 0-255
     input [7:0] overlay_y,          // 0-223
     output [14:0] overlay_color,    // BGR5
-    output reg [4:0] video_opt,     // [1:0] scanlines off/25%/50%, [3:2] composite blend off/on/adaptive, [4] DVI output
+    output reg [5:0] video_opt,     // [1:0] scanlines, [3:2] blend, [4] DVI output, [5] 4:3 LCD
     output reg [3:0] ss_ctrl,       // save state: [0] window/hooks on, [1] 68K NMI, [2] Z80 freeze; [3] game reset
     input [11:0] joy1,              // joystick 1: (R L X A RT LT DN UP START SELECT Y B)
     input [11:0] joy2,              // joystick 2
@@ -239,14 +239,14 @@ assign overlay = overlay_buf;
 always @(posedge clk) begin
     if (~resetn) begin
         overlay_buf <= 1;
-        video_opt <= 5'd0;
+        video_opt <= 6'd0;
         ss_ctrl <= 4'd0;
     end else begin
         if (textdisp_reg_char_sel && mem_wstrb[0]) begin
             case (mem_wdata[25:24])
             2'd1: overlay_buf <= 1;
             2'd2: overlay_buf <= 0;
-            2'd3: if (mem_wdata[23:16] == 8'd1) video_opt <= mem_wdata[4:0];
+            2'd3: if (mem_wdata[23:16] == 8'd1) video_opt <= mem_wdata[5:0];
                   else if (mem_wdata[23:16] == 8'd2) ss_ctrl <= mem_wdata[3:0];
             default: ;
             endcase

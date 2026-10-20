@@ -66,6 +66,7 @@ static char cur_rom[1024 + NAME_LEN + 2];
 static int scanlines;               // 0 off, 1 25%, 2 50%
 static int blend;                   // composite blend 0 off, 1 on, 2 adaptive
 static int dvi;                     // video output 0 HDMI, 1 DVI (no HDMI data islands; audio only on the line-out jack)
+static int lcd;                     // 4:3 LCD controller squeezes the full 720p input onto its panel
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -121,23 +122,26 @@ static void help(const char *s) {
 
 // ---- video options ---------------------------------------------------------------
 static void apply_options() {
-    td_reg(1, scanlines | blend << 2 | dvi << 4);
+    td_reg(1, scanlines | blend << 2 | dvi << 4 | lcd << 5);
     ss_reg(0);
 }
 
 static void load_options() {
     FIL f;
-    char c[4];
+    char c[5];
     unsigned br;
     if (f_open(&f, CFG_PATH, FA_READ) == FR_OK) {
         if (f_read(&f, c, sizeof c, &br) == FR_OK && br >= 2) {
             unsigned prefix = 0;
             if (c[0] >= '0' && c[0] <= '2') scanlines = c[0] - '0';
             if (c[1] >= '0' && c[1] <= '2') blend = c[1] - '0';
-            if (br >= 4 && c[3] == '\n' && c[2] >= '0' && c[2] <= '1') dvi = c[2] - '0';
-            if (br >= 3 && c[2] == '\n' && br == sizeof c)
-                cur_rom[prefix++] = c[3];
-            if ((br >= 4 && c[3] == '\n') || (br >= 3 && c[2] == '\n')) {
+            unsigned header = 2;
+            while (header < br && c[header] != '\n') header++;
+            if (header < br) {
+                if (header >= 3 && c[2] >= '0' && c[2] <= '1') dvi = c[2] - '0';
+                if (header >= 4 && c[3] >= '0' && c[3] <= '1') lcd = c[3] - '0';
+                prefix = br - header - 1;
+                memcpy(cur_rom, c + header + 1, prefix);
                 if (f_read(&f, cur_rom + prefix, sizeof cur_rom - 1 - prefix, &br) == FR_OK) {
                     cur_rom[prefix + br] = 0;
                     char *end = strchr(cur_rom, '\n');
@@ -152,7 +156,7 @@ static void load_options() {
 
 static void save_options() {
     FIL f;
-    char c[4] = {'0' + scanlines, '0' + blend, '0' + dvi, '\n'};
+    char c[5] = {'0' + scanlines, '0' + blend, '0' + dvi, '0' + lcd, '\n'};
     unsigned bw;
     if (sd_init() != 0 || f_open(&f, CFG_PATH, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK) {
         status("Cannot save settings");
@@ -762,8 +766,8 @@ static int receive_upload() {
 }
 
 // ---- menu --------------------------------------------------------------------------
-enum { OPT_RESTORE, OPT_RESUME, OPT_SAVE, OPT_LOAD, OPT_RESET, OPT_GAMES, OPT_CORES, OPT_SCAN, OPT_BLEND, OPT_OUTPUT };
-static int opt_items[10], nopt;
+enum { OPT_RESTORE, OPT_RESUME, OPT_SAVE, OPT_LOAD, OPT_RESET, OPT_GAMES, OPT_CORES, OPT_SCAN, OPT_BLEND, OPT_OUTPUT, OPT_DISPLAY };
+static int opt_items[11], nopt;
 
 static void draw_options(int active) {
     static const char *const sl[] = {"OFF", "25%", "50%"};
@@ -783,6 +787,7 @@ static void draw_options(int active) {
     opt_items[nopt++] = OPT_SCAN;
     opt_items[nopt++] = OPT_BLEND;
     opt_items[nopt++] = OPT_OUTPUT;
+    opt_items[nopt++] = OPT_DISPLAY;
     for (int i = 0; i < PAGESIZE; i++) {
         int row = LIST_ROW + i;
         fill(0, row, 32);
@@ -798,6 +803,7 @@ static void draw_options(int active) {
         case OPT_SCAN:   strcpy(buf, "Scanlines: "); strcat(buf, sl[scanlines]); break;
         case OPT_BLEND:  strcpy(buf, "Composite blend: "); strcat(buf, bl[blend]); break;
         case OPT_OUTPUT: strcpy(buf, dvi ? "Video output: DVI+LINE OUT" : "Video output: HDMI"); break;
+        case OPT_DISPLAY: strcpy(buf, lcd ? "Display: 4:3 LCD" : "Display: TV"); break;
         }
         text(3, row, buf);
     }
@@ -902,6 +908,12 @@ static void menu() {
                     break;
                 case OPT_OUTPUT:
                     dvi = !dvi;
+                    apply_options();
+                    save_options();
+                    redraw = true;
+                    break;
+                case OPT_DISPLAY:
+                    lcd = !lcd;
                     apply_options();
                     save_options();
                     redraw = true;
