@@ -176,6 +176,11 @@ reg  [20:0] ld_cnt;                     // 32-bit words written (4MB max)
 wire [31:0] ld_din = {rom_word[23:16], rom_word[31:24], rom_word[7:0], rom_word[15:8]};
 assign loading = loading_s[1];
 
+// "RA" (backup RAM) in the header at $1B0, or at $2001B0 in a Sonic & Knuckles lock-on
+// image (Sonic 3 there has it, Sonic 2 does not). Only then does $A130F1 switch SRAM.
+reg         ram_hdr, ram_hdr_lock;
+wire        rom_word_ra = rom_word[15:0] == 16'h4152;   // bytes 'R','A'
+
 always @(posedge clk_sys) begin
     rom_req_s <= {rom_req_s[0], rom_req_z};
     loading_s <= {loading_s[0], rom_loading_z};
@@ -194,12 +199,16 @@ always @(posedge clk_sys) begin
         else begin
             ld_req <= ~ld_req;
             ld_busy <= 1'b1;
+            if (ld_cnt == 21'h0006C) ram_hdr <= rom_word_ra;
+            if (ld_cnt == 21'h8006C) ram_hdr_lock <= rom_word_ra;
         end
     end
 
     if (loading && !loading_r) begin
         md_on <= 1'b0;
         ld_cnt <= 21'd0;
+        ram_hdr <= 1'b0;
+        ram_hdr_lock <= 1'b0;
     end
     if (!loading && loading_r)
         start_pend <= 1'b1;
@@ -248,7 +257,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
     .LPF_MODE(2'b11), .ENABLE_FM(1'b1), .ENABLE_PSG(1'b1), .DAC_LDATA(core_audio_left), .DAC_RDATA(core_audio_right),
     .LOADING(loading), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
     .EEPROM_QUIRK(1'b0), .NORAM_QUIRK(1'b0), .PIER_QUIRK(1'b0), .SVP_QUIRK(1'b0), .FMBUSY_QUIRK(1'b0),
-    .SCHAN_QUIRK(1'b0), .TURBO(2'b00),
+    .SCHAN_QUIRK(1'b0), .SRAM_REG(ram_hdr | ram_hdr_lock), .TURBO(2'b00),
     .GG_RESET(1'b0), .GG_EN(1'b0), .GG_CODE(129'd0), .GG_AVAILABLE(),
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),

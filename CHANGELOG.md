@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Fixed: Sonic & Knuckles + Sonic 2 (lock-on) showed a white/black screen.** S&K writes 1
+  to `$A130F1` and then jumps to the locked-on Sonic 2 code at `$300000`. The core took
+  every such write as "map cartridge SRAM over `$200000-$3FFFFF`" and executed SRAM. That
+  register only exists on cartridges with backup RAM, so the core now honours it only when
+  the loaded ROM declares backup RAM (`RA` at `$1B0`) or, for S&K lock-on images, the
+  locked-on game does (`RA` at `$2001B0`, which Sonic 3 has and Sonic 2 lacks). This matches
+  BlastEm. Among the test ROMs only Sonic & Knuckles (alone and with Sonic 2) changes
+  behaviour; Sonic 3 & Knuckles still saves through `$A130F1`.
+
 - **Fixed: games of exactly 4 MB showed a white screen and never started** (Toy Story,
   Sonic 3 & Knuckles, Ultimate Mortal Kombat 3, Sonic 3D Blast, ...). The loader counts
   32-bit words in a 21-bit counter, but `md20k_core.sv` passed only its low 20 bits to the
