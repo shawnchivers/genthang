@@ -257,7 +257,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
     .MOUSE(25'd0), .MOUSE_OPT(3'd0), .GUN_OPT(1'b0), .GUN_TYPE(1'b0), .GUN_SENSOR(1'b0), .GUN_A(1'b0),
     .GUN_B(1'b0), .GUN_C(1'b0), .GUN_START(1'b0),
     .SERJOYSTICK_IN(8'd0), .SERJOYSTICK_OUT(), .SER_OPT(2'd0),
-    .ROMSZ({3'b000, ld_cnt[19:0], 1'b0}),
+    .ROMSZ({2'b00, ld_cnt, 1'b0}),      // all 21 bits: a full 4MB ROM is 0x100000 words
     .MEM_ADDR(mem_addr), .MEM_DATA(mem_data), .MEM_WDATA(mem_wdata), .MEM_WE(mem_we), .MEM_BE(mem_be),
     .MEM_REQ(mem_req), .MEM_ACK(mem_ack),
     .VRAM_REQ(vram_req), .VRAM_ACK(vram_ack), .VRAM_WE(vram_we), .VRAM_U_N(vram_u_n), .VRAM_L_N(vram_l_n),
