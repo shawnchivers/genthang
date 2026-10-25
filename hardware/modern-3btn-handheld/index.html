@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenThang Modern · 3-button build guide</title>
+<meta name="description" content="Step-by-step guide to building the GenThang Modern three-button handheld: printed shell, Tang Nano 20K, 3.5-inch IPS, PM11 battery.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="#top"><span class="logo">GT</span> GenThang <b>Modern</b> <span class="pill">3-button</span></a>
+  <div class="navlinks">
+    <a href="#parts">Parts</a><a href="#print">Print</a><a href="#nano">Nano</a><a href="#buttons">Buttons</a>
+    <a href="#screen">Screen</a><a href="#back">Back</a><a href="#wiring">Wiring</a><a href="#close">Close up</a>
+  </div>
+  <div class="progress"><span id="progress"></span></div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-text">
+    <p class="eyebrow">Build guide · three-button variant · <span class="beta">Beta</span></p>
+    <h1>A 16-bit console you can<br><span class="grad">hold in one hand.</span></h1>
+    <p class="lede">GenThang Modern is a 3D-printed handheld built around a Tang Nano 20K running GenThang, an open-source FPGA clone of the Sega Genesis / Mega Drive that plays original Genesis games,
+      a 3.5" 640×480 IPS panel and a 1200 mAh battery module. This variant has the classic
+      <b>A · B · C</b> layout.</p>
+    <p class="beta-note"><b>Beta:</b> this handheld has been printed, assembled and played, but some design questions are
+      still open, such as cooling. Expect changes to the files and steps.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#parts">Start building</a>
+      <button class="btn ghost" data-open3d="hero">Explore in 3D</button>
+    </div>
+    <div class="swatches" id="swatches" aria-label="Colour preview"></div>
+  </div>
+  <div class="hero-art">
+    <div class="hero-glow"></div>
+    <img id="hero-img" src="renders/hero-midnight.png" alt="Rendered GenThang Modern handheld, front">
+    <img id="hero-img-back" src="renders/hero-back-midnight.png" alt="Rendered GenThang Modern handheld, back">
+  </div>
+</header>
+
+<section class="specs">
+  <div><b>90 × 158</b><span>mm footprint</span></div>
+  <div><b>35 → 28</b><span>mm wedge back</span></div>
+  <div><b>3.5"</b><span>640 × 480 IPS</span></div>
+  <div><b>~1 h</b><span>play per charge</span></div>
+  <div><b>A B C</b><span>+ Start + Mode</span></div>
+  <div><b>Speaker</b><span>+ headphone jack</span></div>
+</section>
+
+<main>
+
+<!-- ============ OVERVIEW ============ -->
+<section class="chapter" id="overview">
+  <div class="chapter-head">
+    <span class="kicker">Overview</span>
+    <h2>What goes where</h2>
+    <p>Three printed parts sandwich four layers. The <b>front shell</b> holds the buttons, the
+      button board and the screen stack. The <b>back shell</b> carries the battery, the FPGA board and the audio parts.
+      Everything inside plugs together with Dupont jumpers. The only soldering is headers, the diode, the screen's
+      power lead and the audio filter.</p>
+  </div>
+  <figure class="media wide" data-render="exploded"></figure>
+  <div class="layers">
+    <div><i style="background:#c8242f"></i><b>Caps</b> D-pad, A B C, Start, Mode</div>
+    <div><i style="background:#55585e"></i><b>Membranes</b> one intact, one cut in half</div>
+    <div><i style="background:#1d6b3f"></i><b>Button PCB</b> six-button board</div>
+    <div><i style="background:#1d4fa0"></i><b>Screen</b> panel, bracket, PCB800850</div>
+    <div><i style="background:#1c1d21"></i><b>Nano 20K</b> the console itself</div>
+    <div><i style="background:#d2d4d8"></i><b>PM11</b> battery, charger, 5 V boost</div>
+  </div>
+</section>
+
+<!-- ============ PARTS ============ -->
+<section class="chapter" id="parts">
+  <div class="chapter-head">
+    <span class="kicker">Step 0</span>
+    <h2>Gather the parts</h2>
+    <p>Most of this is one Amazon cart plus a set of Game Boy-size replacement button rubbers and caps.
+      Measure your screen's glass thickness before printing.</p>
+  </div>
+  <div class="bom">
+    <div class="bom-group">
+      <h3><span class="ico">⬢</span> Printed</h3>
+      <ul>
+        <li><b>Front shell</b> <a href="stl/genthang-modern-3btn-front.stl" download>genthang-modern-3btn-front.stl</a></li>
+        <li><b>Back shell</b> <a href="stl/genthang-modern-back.stl" download>genthang-modern-back.stl</a></li>
+        <li><b>Glass bracket</b> <a href="stl/genthang-modern-glass-bracket.stl" download>genthang-modern-glass-bracket.stl</a></li>
+      </ul>
+    </div>
+    <div class="bom-group">
+      <h3><span class="ico">◧</span> Electronics</h3>
+      <ul>
+        <li><b>Sipeed Tang Nano 20K</b> flashed with the GenThang <code>raw</code> image</li>
+        <li><b>3.5" 640×480 54-pin IPS + PCB800850</b> HDMI driver</li>
+        <li><b>NULLLAB PM11</b> 1200 mAh LiPo module <a href="https://www.amazon.com/dp/B0GWZTQC35">B0GWZTQC35</a></li>
+        <li><b>Six-button handheld PCB</b> (Game Boy Zero style, 13-pin header)</li>
+        <li><b>microSD card</b> FAT32 or exFAT, for ROMs</li>
+      </ul>
+    </div>
+    <div class="bom-group">
+      <h3><span class="ico">◉</span> Buttons &amp; rubbers</h3>
+      <ul>
+        <li><b>2 × A/B button membrane</b>: one stays whole, one is cut in half</li>
+        <li><b>3 × A/B button caps</b> for A, B, C</li>
+        <li><b>D-pad</b> + its membrane</li>
+        <li><b>Start/Select</b> caps + its one-piece membrane</li>
+      </ul>
+    </div>
+    <div class="bom-group">
+      <h3><span class="ico">⚙</span> Hardware</h3>
+      <ul>
+        <li><b>Taiss self-tapping kit</b> <a href="https://www.amazon.com/dp/B0GY2HSQDP">B0GY2HSQDP</a>: 6 × M2.3×8 · 4 × M2×5 · 5 × M1.7×5 · 2 × M3×4</li>
+        <li><b>Double-sided foam tape</b>, 1 mm <a href="https://www.amazon.com/dp/B07DWX1NN9">B07DWX1NN9</a></li>
+        <li><b>Kapton tape</b> for insulation</li>
+      </ul>
+    </div>
+    <div class="bom-group">
+      <h3><span class="ico">⌁</span> Wiring</h3>
+      <ul>
+        <li><b>Dupont F-F jumpers</b>, 20 cm <a href="https://www.amazon.com/dp/B0BRTJQGS6">B0BRTJQGS6</a>: about 18 used</li>
+        <li><b>Right-angle male headers</b> <a href="https://www.amazon.com/dp/B0G56RWP5D">B0G56RWP5D</a>: 2 × 20 + 1 × 13</li>
+        <li><b>FPV ribbon</b> mini-HDMI ▸ HDMI-A, 20 cm <a href="https://www.amazon.com/dp/B08CV31KP5">B08CV31KP5</a></li>
+        <li><b>JST-PH 2-pin pigtail</b> <a href="https://www.amazon.com/dp/B0D7Q9HJLQ">B0D7Q9HJLQ</a></li>
+        <li><b>1N5817 Schottky diode</b> <a href="https://www.amazon.com/dp/B07Q5H1SLY">B07Q5H1SLY</a> + heat-shrink</li>
+      </ul>
+    </div>
+    <div class="bom-group">
+      <h3><span class="ico">♪</span> Audio</h3>
+      <ul>
+        <li><b>Ø28 mm 8 Ω 1 W speaker</b> <a href="https://www.amazon.com/dp/B09YH5JZ1K">B09YH5JZ1K</a></li>
+        <li><b>PJ-307 3.5 mm switching jack</b> <a href="https://www.amazon.com/dp/B07MFKKWG5">B07MFKKWG5</a></li>
+        <li>2 × 330 Ω · 2 × 4.7 k · 2 × 33 nF · 2 × 100 µF · 20 × 12 mm perfboard</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tools">
+    <b>Tools:</b> soldering iron · flush cutters · hobby knife · small Phillips driver · multimeter
+  </div>
+</section>
+
+<!-- ============ STEPS ============ -->
+<section class="step" id="print">
+  <div class="step-text">
+    <span class="num">1</span>
+    <h2>Print the three parts</h2>
+    <p>The STLs are already oriented. Don't rotate them, and turn supports <b>off</b>. The front prints face down, and its
+      recesses are 45° bezels, so they grow from the bed like countersinks.</p>
+    <ul class="checks">
+      <li>PLA or PETG, 0.2 mm layers, 3–4 perimeters, 20–25 % infill (solid screw bosses).</li>
+      <li><b>Bed:</b> smooth PEI or glass for a glossy face, textured PEI for matte. The face is the first layer, so clean the bed.</li>
+      <li><b>Elephant-foot compensation 0.15–0.2 mm</b> so the face edge and button holes don't flare.</li>
+      <li>First layer slow (~20 mm/s), 100 % flow. Seam "rear" or aligned, away from the visible face edge.</li>
+      <li>Everything fits a 200 × 200 × 100 mm printer.</li>
+    </ul>
+  </div>
+  <figure class="media" data-render="print"></figure>
+  <div class="diagram-wrap full" data-diagram="printBeds"></div>
+</section>
+
+<section class="step" id="nano">
+  <div class="step-text">
+    <span class="num">2</span>
+    <h2>Flash and prepare the Nano 20K</h2>
+    <p>Flash first, while the board is still bare. Use <code>genthang_nano20k_raw_flash.bin</code>: the
+      <b>raw</b> build reads direct buttons and drives the speaker and jack. A db9 image would read the wrong pins.</p>
+    <ol class="steps">
+      <li>Verify the download (<code>sha256sum -c SHA256SUMS --ignore-missing</code>), then write it at
+        <code>0x000000</code> with Gowin Programmer: GW2AR-18C, <i>External Flash Mode</i>, <i>exFlash Erase, Program thru GAO-bridge</i>.</li>
+      <li>Format a microSD card (MBR + FAT32/exFAT) and copy your <code>.md / .bin / .gen</code> ROMs onto it (see <a href="#roms">getting your games</a>).</li>
+      <li>Solder a <b>20-pin right-angle header on each row</b>, on the component side, pins pointing <b>outward</b> like wings.</li>
+      <li>Trim the legs on the underside to about 1.5 mm, so the board sits flat on its foam pads.</li>
+    </ol>
+    <div class="callout tip"><b>Why wings?</b> They keep every jumper inside the case's 28 mm top section. The Nano needs
+      no zip ties: four corner lands with foam tape hold it, and side guards locate it.</div>
+  </div>
+  <figure class="media" data-render="nano"></figure>
+  <div class="diagram-wrap full" data-diagram="nanoWings"></div>
+</section>
+
+<section class="step" id="buttons">
+  <div class="step-text">
+    <span class="num">3</span>
+    <h2>Buttons: header, membranes, caps</h2>
+    <p>The six-button board is used as-is. Only its bottom row is open in this face: pads <b>R · B · A</b> become
+      <b>A · B · C</b>. X, Y and L stay unwired under a solid face.</p>
+    <ol class="steps">
+      <li>Solder a <b>13-pin right-angle header</b> on the <b>back</b> of the board, pins pointing <b>down</b> (toward the battery), lying along the board.</li>
+      <li>Cut one A/B membrane <b>through the rib midway between its domes</b> (8.2 mm from each dome centre). Keep the half with a locating ear.</li>
+      <li>Front shell face down. The caps go in <b>from the inside</b>: drop the D-pad, the two Start/Select pills and the three A/B caps into their holes, so their little legs (flanges) rest on the inside of the face.</li>
+      <li>Lay the D-pad rubber over the D-pad, and the <b>single Start/Select rubber</b> (one piece for both) over the two pills.</li>
+      <li>Lay the intact membrane over <b>B–C</b>, and the half over <b>A</b> with its ear lower right and the cut edge toward the lower left (as drawn).</li>
+      <li>Lower the board on, check the membranes are still seated, and fit <b>five M1.7 × 5</b> screws. Leave out the one just below the header, left of centre.</li>
+    </ol>
+    <div class="callout warn"><b>Check the half against B–C.</b> The fit comes from photos; they clear by under 0.5 mm.
+      If they touch, shave a little more off the cut edge, away from the dome.</div>
+  </div>
+  <figure class="media" data-render="membranes"></figure>
+  <div class="diagram-wrap full" data-diagram="membranes"></div>
+  <figure class="media wide2" data-render="buttons"></figure>
+  <div class="diagram-wrap full" data-diagram="buttonBoard"></div>
+</section>
+
+<section class="step" id="screen">
+  <div class="step-text">
+    <span class="num">4</span>
+    <h2>Screen stack</h2>
+    <p>The panel's flex is short, so it S-folds under the driver board. That's why there is extra room at the top of the case:
+      the mini-HDMI plug needs the room above the board.</p>
+    <ol class="steps">
+      <li>Slide the <b>glass in from the back, FPC edge down</b>. It has 0.5 mm per side, plus 1.3 mm for the panel's ledge.</li>
+      <li>Fit the <b>bracket</b> with <b>4 × M2 × 5</b>: two above the glass, one lower left, one into the right wall. Feed the flex through its 44 mm notch.
+        If your glass is thinner than 4.5 mm, add foam tape of the difference on the bracket.</li>
+      <li>Fold the flex up the back of the bracket, down, then up into the board's connector. Make <b>gentle folds (~1.5 mm), not creases</b>.</li>
+      <li>Stick two <b>6 × 35 mm strips of 1 mm insulating foam tape</b> into the bracket's recesses, then press the board's bare side on, parts facing the back.
+        No pins, no heat staking. Keep tape off the flex path and solder joints.</li>
+      <li>Plug the ribbon's <b>mini-HDMI</b> end straight down into the board. Solder the <b>JST-PH lead</b> to its USB-C VBUS/GND pads (or use a right-angle USB-C plug).</li>
+    </ol>
+    <div class="callout warn"><b>Don't use thicker tape.</b> It moves the board back into the Nano's HDMI plug. Strain-relieve the
+      HDMI ribbon; don't let the tape carry it.</div>
+  </div>
+  <figure class="media" data-render="screen"></figure>
+  <div class="diagram-wrap full" data-diagram="sFold"></div>
+  <figure class="media wide2" data-render="section"></figure>
+</section>
+
+<section class="step" id="back">
+  <div class="step-text">
+    <span class="num">5</span>
+    <h2>Fill the back shell</h2>
+    <p>The back is a wedge: 35.2 mm at the bottom for the battery and your palms, 28 mm at the top.</p>
+    <ol class="steps">
+      <li><b>PM11</b>, components toward the front (header pins point at you), USB-C and switch out of the bottom edge.
+        Two <b>M3 × 4</b> through its free holes; locating pins take the holes under the cell.</li>
+      <li><b>Nano 20K</b> on its four corner lands with a dab of foam tape each, USB-C out of the top edge, HDMI pointing down.</li>
+      <li><b>Speaker</b> into the flat-seated ring upper right, behind the hex grille.</li>
+      <li><b>PJ-307 jack</b> upside down in its cradle on the bottom edge, pins up.</li>
+      <li>Build the <b>audio filter</b> on the 20 × 12 mm perfboard and tape it down upper left.</li>
+    </ol>
+    <div class="callout tip"><b>Battery gauge:</b> a light tube in the front face sits 1 mm over the PM11's four LEDs.
+      Read the charge below Start/Select while you play. There's no low-voltage cut-off, so recharge at one LED.</div>
+  </div>
+  <figure class="media" data-render="inside"></figure>
+</section>
+
+<section class="step" id="wiring">
+  <div class="step-text">
+    <span class="num">6</span>
+    <h2>Wire it up</h2>
+    <p>The Nano sits component side forward, so <b>J6 faces the D-pad and the jack</b>, and <b>J5 faces the face buttons</b>.
+      No wire crosses the board. Leave ~8 cm of slack on the button and HDMI leads so the halves open like a book.</p>
+    <ol class="steps">
+      <li><b>Power:</b> PM11 5 V pair 1 → <b>1N5817</b> → Nano J5.1 / J5.2. Pair 2 → <b>JST-PH</b> → PCB800850.</li>
+      <li><b>Buttons:</b> 10 jumpers from the button header. Positions 9–11 (X Y L) stay empty.</li>
+      <li><b>Speaker:</b> solder to the Nano's SPEAKER pads. <b>Jack:</b> 4 jumpers, pins 29, 30, 31 and GND.</li>
+      <li><b>HDMI ribbon:</b> run it down the left of the Nano, over the left-wing housings, and fold the spare flat beside it.</li>
+    </ol>
+  </div>
+  <figure class="media" data-render="wiring"></figure>
+  <div class="diagram-wrap full" data-diagram="power"></div>
+  <div class="diagram-wrap full" data-diagram="buttonWiring"></div>
+  <div class="pin-table" id="pin-table"></div>
+  <div class="diagram-wrap full" data-diagram="audio"></div>
+</section>
+
+<section class="step" id="close">
+  <div class="step-text">
+    <span class="num">7</span>
+    <h2>Close up and power on</h2>
+    <ol class="steps">
+      <li>Fold the halves together, tucking the HDMI ribbon and jumpers into the side channels. Nothing should pinch.</li>
+      <li>Fit <b>six M2.3 × 8</b> from the back. Snug, not tight: they're self-tapping into plastic.</li>
+      <li>Insert the microSD through the top slot below the Nano's USB-C.</li>
+      <li>Slide the PM11 switch <b>ON</b>. The menu lists your ROMs. B / C opens, A goes up, Start opens Options.</li>
+      <li>In game, press <b>Mode</b> to open the menu.</li>
+    </ol>
+    <div class="callout"><b>Charging:</b> switch <b>ON</b> and plug USB-C into the bottom edge. The LEDs chase while charging and
+      go solid when full (~1 h). The PM11 is not a UPS: don't plug the charger in mid-game.</div>
+    <div class="callout warn"><b>Charging turns the console on.</b> The PM11 passes 5 V through to its outputs whenever USB-C is
+      plugged in, even with its switch OFF, so the Nano and screen boot while charging. To charge with the console off you
+      currently have to unplug the 5 V Dupont pairs from the PM11 header.
+      <br><b>Proposed fix:</b> add a small DPDT slide switch (e.g. SS22D, 2.54 mm pitch) with one pole in each +5 V Dupont lead (Nano and screen),
+      so both loads are cut. Charging still works with this switch OFF.
+      It needs a slot in the back shell's bottom edge next to the PM11 switch; that isn't in the CAD yet.</div>
+  </div>
+  <figure class="media" data-render="close"></figure>
+  <div class="diagram-wrap full" data-diagram="screws"></div>
+</section>
+
+<section class="chapter" id="notes">
+  <div class="chapter-head">
+    <span class="kicker">Before you start</span>
+    <h2>Notes</h2>
+  </div>
+  <div class="notes">
+    <div><h4>Open design questions</h4><p>The case has been printed and assembled and it plays. Still being worked out:
+      <b>cooling</b> (the FPGA and screen driver sit in a closed shell with no vents yet) and longer-term fit and durability.
+      Keep an eye on heat during long sessions.</p></div>
+    <div><h4>Membranes are photo-sized</h4><p>Their outlines come from photos on grid paper, scaled by the A/B button pitch. Thickness
+      is assumed to be the stock 2.7 mm gap. Check the half membrane against B–C as you assemble.</p></div>
+    <div><h4>Check your PM11</h4><p>The cell's position, the switch lever (~3.8 mm) and the USB-A socket are modelled from photos and NULLLAB's STEP model.
+      The openings are oversized by 1.5 mm to allow for this.</p></div>
+    <div><h4>Header order</h4><p>Wire by <b>position</b>, not by the PCB's silkscreen. The board's "R" pad is A, "B" is B and "A" is C.
+      Confirm pin 1 against your board's silkscreen before plugging in.</p></div>
+  </div>
+</section>
+
+<section class="chapter" id="roms">
+  <div class="chapter-head">
+    <span class="kicker">Games</span>
+    <h2>Getting your games legally</h2>
+    <p>GenThang plays Sega Genesis / Mega Drive ROM files, but it doesn't come with any. The clean way to get them is to
+      back up cartridges you own yourself. A USB cartridge reader such as the
+      <a href="https://krikzz.com/our-products/accessories/flashkitmd.html">Krikzz FlashKit MD</a> plugs into a PC.
+      Its <a href="http://krikzz.com/pub/support/flashkit-md/">FlashKit software</a> (Windows; Mono on macOS and Linux)
+      reads the cartridge ROM to a <code>.bin</code> you can copy to the microSD card. It can also back up and restore
+      the cart's save RAM.</p>
+    <p>Homebrew is the other easy option: many new Genesis games are released free, or sold, by their authors as ROM files.
+      Downloading copies of commercial games you don't own is generally copyright infringement, so stick to your own dumps
+      and homebrew.</p>
+  </div>
+</section>
+
+<section class="finale">
+  <figure class="media" data-render="done"></figure>
+  <div>
+    <h2>Done. Go play Streets of Rage 2.</h2>
+    <p>Print the three STLs in <code>stl/</code>, flash the GenThang <code>raw</code> image, and you're set.</p>
+    <button class="btn primary" data-open3d="exploded">Take it apart in 3D</button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Renders and diagrams are generated from the CAD.<br>
+  SEGA, Genesis and Mega Drive are trademarks of SEGA Corporation. GenThang is an independent hobby project; it is not
+  affiliated with, sponsored or endorsed by SEGA, Sipeed, NULLLAB or Nintendo. Bring your own legally obtained game files.
+</footer>
+
+<!-- 3D viewer -->
+<div class="viewer-modal" id="viewer" hidden>
+  <div class="viewer-bar">
+    <b>GenThang Modern · 3D</b>
+    <div class="viewer-states" id="viewer-states"></div>
+    <div class="viewer-tools">
+      <label>Explode <input type="range" id="explode" min="0" max="1" step="0.01" value="0"></label>
+      <select id="theme"></select>
+      <button class="btn ghost small" id="close3d">Close ✕</button>
+    </div>
+  </div>
+  <div class="viewer-stage">
+    <canvas id="gl"></canvas>
+    <div class="viewer-labels" id="gl-labels"></div>
+    <div class="viewer-hint">Drag to orbit · right-drag or shift-drag to pan · scroll to zoom · double-click to reset</div>
+    <div class="viewer-loading" id="gl-loading">Loading CAD…</div>
+  </div>
+</div>
+
+<script src="assets/scene.js"></script>
+<script src="assets/diagram.js"></script>
+<script src="renders/labels.js"></script>
+<script src="assets/diagrams.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

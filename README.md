@@ -140,6 +140,11 @@ for the carrier and Tang Nano 20K.
   [STEP model](hardware/dual-db9-biomech-case/dual-db9-biomech-case.step), and
   parametric CadQuery source. The case has been printed.
 
+**Handheld (beta):** the [GenThang Modern 3-button build guide](https://shawnchivers.github.io/genthang/hardware/modern-3btn-handheld/)
+([source](hardware/modern-3btn-handheld/index.html)) walks through printing and assembling a battery-powered A·B·C handheld
+with a 3.5" IPS screen, with 3D renders, an interactive viewer, wiring diagrams and the three
+[STLs](hardware/modern-3btn-handheld/stl/). It uses the `raw` firmware.
+
 **OSH Park is the recommended PCB manufacturer for people within the USA.** Use the [OSH Park order ZIP](hardware/dual-db9-opt-pcb/dual-db9-opt-O1-OSHPARK.zip).
 
 The carrier uses the standard `db9` firmware and the pinout in
