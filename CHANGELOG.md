@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.9.0 - 2026-10-25
 
 - **Raw build: Color mode and Brightness options.** The handheld build adds saved
   **Color mode: Original / Warm / Cool / Vivid** and **Brightness: 100% / 75% / 50% / 25%**
@@ -9,6 +9,10 @@
   default for `GT_PAD=raw` and off for DB9, whose build has no logic to spare. The core
   reports the flag in bit 16 of the core ID register, so the shared menu firmware only
   shows the options on builds that have them. Older settings files still load.
+
+- Tested on the handheld (raw build): Toy Story, Sonic & Knuckles + Sonic 2, and the
+  Color mode and Brightness options. The DB9 build has these fixes too but was only
+  verified in simulation.
 
 - **Fixed: Sonic & Knuckles + Sonic 2 (lock-on) showed a white/black screen.** S&K writes 1
   to `$A130F1` and then jumps to the locked-on Sonic 2 code at `$300000`. The core took
