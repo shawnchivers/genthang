@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.9.1 - 2026-10-25
+
+- **Raw build: sound and game loading fixed.** The 1.9.0 Color mode / Brightness stage
+  broke X-Men audio (only a rumble) and white-screened some games (Aladdin) on the
+  handheld, even though the build met timing. Bisected on hardware to that stage alone.
+  **Color mode is removed**; **Brightness** (100 / 75 / 50 / 25 %) now reuses the
+  scanline dimmer, with no extra pipeline stage. It dims games only; the menu stays
+  at full brightness. A Color mode saved by 1.9.0 is ignored.
+- **New `raw_3btn` image** (`GT_PAD=raw GT_3BTN=1`) for the single-player three-button
+  handheld: player 1 is a 3-button pad, port 2 reads as unplugged (Streets of Rage 2 no
+  longer sees a second player), and **Mode alone** opens the menu (20 ms debounce).
+  Other builds keep Mode+Start / Start+A+B+C.
+
 ## 1.9.0 - 2026-10-25
 
 - **Raw build: Color mode and Brightness options.** The handheld build adds saved

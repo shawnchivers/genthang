@@ -16,16 +16,18 @@ mkdir -p "$OUT"
 if [ -z "${PACKAGE_ONLY:-}" ]; then
 rm -f "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin "$OUT"/SHA256SUMS
 
-for variant in ${VARIANTS:-db9 raw db9_800x480 raw_800x480}; do
+for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480}; do
     case $variant in
         raw|db9)        pad=$variant; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
+        raw_3btn)       pad=raw; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         raw_800x480|db9_800x480)
                         pad=${variant%_800x480}; video=800x480; pinout=stock; name=$variant
                         base=genthang_nano20k_$variant ;;
         *) echo "unknown variant: $variant" >&2; exit 2 ;;
     esac
     echo "== $variant (GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout)"
-    GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout ./build.sh > "$OUT/build_$name.log" 2>&1
+    three=0; [ "$variant" = raw_3btn ] && three=1
+    GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout GT_3BTN=$three ./build.sh > "$OUT/build_$name.log" 2>&1
     install -m 644 "impl/pnr/$base.fs" "$OUT/genthang_nano20k_$name.fs"   # Gowin writes it read-only
     python3 merge_flash.py "impl/pnr/$base.bin" firmware/firmware.bin \
         "$OUT/genthang_nano20k_${name}_flash.bin"

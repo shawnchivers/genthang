@@ -237,16 +237,16 @@ function automatic [7:0] chan(input [COLOR_BITS-1:0] a, input [COLOR_BITS-1:0] b
     case (dim)
     2'd1:    chan = v - v[7:2];
     2'd2:    chan = {1'b0, v[7:1]};
-    2'd3:    chan = {2'b00, v[7:2]};
+    2'd3:    chan = PICTURE_OPTS ? {2'b00, v[7:2]} : v;   // 25 % only exists with brightness
     default: chan = v;
     endcase
 endfunction
 
 // Brightness (GT_PICTURE, video_opt[9:8]: 100/75/50/25%) shares the scanline dimmer:
 // on scanline rows the two levels add, capped at 25%. Games only; the menu stays full.
-wire [1:0] bright = PICTURE_OPTS ? opt_s2[9:8] : 2'd0;
-wire [2:0] dim_sum = (scan ? {1'b0, opt_s2[1:0]} : 3'd0) + {1'b0, bright};
-wire [1:0] dim = dim_sum[2] ? 2'd3 : dim_sum[1:0];
+wire [2:0] dim_sum = (scan ? {1'b0, opt_s2[1:0]} : 3'd0) + {1'b0, opt_s2[9:8]};
+wire [1:0] dim = !PICTURE_OPTS ? (scan ? opt_s2[1:0] : 2'd0)    // exactly the pre-brightness dimmer
+               : dim_sum[2] ? 2'd3 : dim_sum[1:0];
 wire do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && mem_portB_rdata[COLOR_WIDTH]);
 wire [23:0] picture_rgb = overlay
     ? {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],

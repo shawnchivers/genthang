@@ -168,6 +168,7 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 |---|---|---|
 | `genthang_nano20k_db9_flash.bin` | Two Genesis pads on DB9 breakouts (default) | Canonical J6/J5 wiring, 3.3 V only; see [dual Genesis pads](#dual-genesis-pads-db9-build) |
 | `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Handheld pinout, plus the Nano's speaker and a headphone jack; see [direct buttons](#direct-buttons-raw-build) |
+| `genthang_nano20k_raw_3btn_flash.bin` | Single-player three-button handheld | Raw pinout; port 2 reads as unplugged and **Mode** alone opens the menu |
 | `genthang_nano20k_db9_800x480_flash.bin`, `genthang_nano20k_raw_800x480_flash.bin` | Same pads, for an 800x480 TFT on a TFP401 board | Native 800x480 DVI, no HDMI audio; see [display options](#display-options) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
@@ -350,7 +351,6 @@ The Options page opens first when you call up the menu during a game:
 - **Composite blend**: off, on, adaptive
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
 - **Display**: TV (default), or 4:3 LCD
-- **Color mode**: Original (default), Warm, Cool, Vivid (raw build only)
 - **Brightness**: 100 % (default), 75 %, 50 %, 25 % (raw build only)
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
@@ -359,7 +359,7 @@ Opening the menu pauses the game and mutes HDMI audio. **Reset game** pulses the
 console reset input without clearing work RAM, like the physical Genesis reset
 button (this is the reset X-Men's Mojo level expects). Display settings are saved
 to `GENTHANG.CFG` on the card. Scanlines and composite blend never affect the menu
-itself; video output, display, color mode and brightness apply to the menu too.
+itself, nor does brightness; video output and display apply to the menu too.
 
 ### Display options
 
@@ -374,17 +374,15 @@ post-processing options are applied by the HDMI scaler:
   cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
   dither, leaving the rest of the picture sharp.
 
-**Color mode** and **Brightness** exist only in builds with `GT_PICTURE=1`, which is
-the default for the raw (handheld) build; the DB9 build leaves them out because the
-FPGA has no logic to spare, and its menu does not show them. Color mode adjusts both
-the game and menu after blending and scanlines: **Original** leaves colors unchanged,
-**Warm** reduces green slightly and blue more, **Cool** reduces green slightly and red
-more, and **Vivid** increases contrast around mid-grey with clipping at black and white.
-**Brightness** then scales the RGB picture to 75 %, 50 % or 25 % (approximately, rounded
-to 8-bit channel values). This is software dimming, not LCD backlight control: it does
-not reduce backlight power or improve the panel's black level, and dark detail can be
-lost. Both settings are saved to `GENTHANG.CFG` (older files default to Original and
-100 %) and are kept, unused, when the card moves to a DB9 board.
+**Brightness** exists only in builds with `GT_PICTURE=1`, the default for the raw
+(handheld) build; the DB9 build leaves it out because the FPGA has no logic to spare,
+and its menu does not show it. It dims the game picture to 75 %, 50 % or 25 % using the
+scanline dimmer: on scanline rows the scanline and brightness levels add, down to 25 %.
+The menu stays at full brightness. This is software dimming, not LCD backlight control:
+it does not reduce backlight power or improve the panel's black level, and dark detail
+can be lost. The setting is saved to `GENTHANG.CFG` and kept, unused, when the card
+moves to a DB9 board. (1.9.0 also had a Color mode; it was removed in 1.9.1 because that
+picture stage broke audio and game loading on the handheld.)
 
 **Video output** chooses HDMI (default, with audio) or DVI. DVI sends the same
 720p60 picture without HDMI data islands, so the display gets no audio; use the
@@ -490,8 +488,9 @@ cd genthang
 ./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
-GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the color mode / brightness options
-./release.sh                      # all variants (db9, raw, *_800x480) + flash images + tarball
+GT_PAD=raw GT_3BTN=1 ./build.sh   # 3-button handheld (*_3btn): no player 2, Mode alone opens the menu
+GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the brightness option
+./release.sh                      # all variants (db9, raw, raw_3btn, *_800x480) + flash images + tarball
 ```
 
 `GT_PAD` (`db9`, `raw`) selects the supported pad ports in `src/mdtang_top.sv`, through
@@ -499,9 +498,13 @@ GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the color mode / brightn
 The raw build has its own handheld pinout; DB9 uses 12 data GPIOs and two TH outputs. The old `GT_PINOUT=breadboard` and `breadboard-rev1` values are deprecated
 aliases for canonical DB9 and print a warning. The DualShock (`GT_PAD=ds`) build has
 been removed.
+`GT_3BTN=1` is for the single-player three-button handheld: player 1 reads as a 3-button
+pad (Mode, X, Y and Z are not passed to games), port 2 reads as unplugged, and Mode alone
+(held 20 ms) opens the menu instead of Mode+Start. The firmware reads it from bit 18 of
+the core ID register. Output names get a `_3btn` suffix.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
 to leave logic headroom: with it the design fits with only 9 spare CLS. `GT_PICTURE`
-(`0`/`1`) adds the color mode and brightness options to the HDMI scaler; it defaults to
+(`0`/`1`) adds the brightness option to the HDMI scaler; it defaults to
 `1` for `GT_PAD=raw` and `0` for DB9, which cannot fit it. The firmware reads the choice
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
