@@ -127,6 +127,9 @@ md20k_core #(.FREQ(FREQ),
 `ifdef PICTURE_OPTS
     .PICTURE_OPTS(1),
 `endif
+`ifdef GT_3BTN
+    .THREE_BUTTON(1),
+`endif
 `ifdef GT_PAD_RAW
     .P2_SIX_BUTTON(0)
 `else

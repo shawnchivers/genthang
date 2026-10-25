@@ -23,6 +23,8 @@ if {[info exists ::env(GT_SERIAL_UPLOAD)] && $::env(GT_SERIAL_UPLOAD) eq "1"} {
 }
 if {$video eq "800x480"} { puts $f "`define VIDEO_800X480" }
 if {$picture} { puts $f "`define PICTURE_OPTS" }
+# GT_3BTN=1: single-player 3-button handheld; no player 2, Mode alone opens the menu
+if {$three_btn} { puts $f "`define GT_3BTN" }
 close $f
 
 # board layer

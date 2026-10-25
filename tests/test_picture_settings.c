@@ -102,7 +102,7 @@ int main(void) {
         assert(color_mode == mode && picture_dim == dimming);
         assert(strcmp(cur_rom, rom) == 0);
         assert(applied_video == (unsigned)(scan | bl << 2 | output << 4 |
-                                          display << 5 | mode << 6 | dimming << 8));
+                                          display << 5 | dimming << 8));
     }
 
     load_config("21\n/a.md\n");
@@ -133,13 +133,13 @@ int main(void) {
         draw_options(0);
         display_write();
         assert(nopt <= PAGESIZE && nopt <= OPT_COUNT);
-        assert(opt_items[nopt - 2] == OPT_COLOR && opt_items[nopt - 1] == OPT_DIM);
-        assert(strncmp(screen[LIST_ROW + nopt - 2] + 3, "Color mode: ", 12) == 0);
+        assert(opt_items[nopt - 2] == OPT_DISPLAY && opt_items[nopt - 1] == OPT_DIM);
+        for (int i = 0; i < nopt; i++) assert(opt_items[i] != OPT_COLOR);
         assert(strncmp(screen[LIST_ROW + nopt - 1] + 3, "Brightness: ", 12) == 0);
     }
     game_loaded = false;
     draw_options(0);
-    assert(nopt == 8);
+    assert(nopt == 7);
 
     // Builds without GT_PICTURE (DB9): no menu entries and no colour/brightness bits,
     // but the saved values survive for a card moved between builds.

@@ -292,9 +292,9 @@ end
 always @(posedge clk_pixel) begin
     if (PICTURE_OPTS)
         rgb <= !active_r ? 24'h000000 :
-               {picture_chan(picture_rgb_r[23:16], opt_s2[7:6], opt_s2[9:8], 0),
-                picture_chan(picture_rgb_r[15:8], opt_s2[7:6], opt_s2[9:8], 1),
-                picture_chan(picture_rgb_r[7:0], opt_s2[7:6], opt_s2[9:8], 2)};
+               {picture_chan(picture_rgb_r[23:16], 2'd0, opt_s2[9:8], 0),
+                picture_chan(picture_rgb_r[15:8], 2'd0, opt_s2[9:8], 1),
+                picture_chan(picture_rgb_r[7:0], 2'd0, opt_s2[9:8], 2)};
     else
         rgb <= active ? picture_rgb : 24'h000000;
 end

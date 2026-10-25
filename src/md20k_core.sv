@@ -11,7 +11,10 @@ module md20k_core #(
     parameter FIRMWARE_SIZE = 256*1024,
     parameter SDRAM_PIPELINE = 1,
     parameter P2_SIX_BUTTON = 1,
-    parameter PICTURE_OPTS = 0          // colour mode / brightness menu (GT_PICTURE builds)
+    parameter PICTURE_OPTS = 0,         // brightness menu (GT_PICTURE builds)
+    // 1: single-player 3-button handheld (GT_3BTN). P1 reads as a 3-button pad, player 2's
+    // port reads as empty, and Mode alone (debounced) opens the menu (not passed to the game).
+    parameter THREE_BUTTON = 0
 ) (
     input             clk_sys,
     input             clk_z80,          // clk_sys / 2 from the same PLL
@@ -89,9 +92,15 @@ end
 function [11:0] genesis_pad(input [11:0] p);
     genesis_pad = {p[11], p[9], p[10], p[2], p[3], p[8], p[0], p[1], p[4], p[5], p[6], p[7]};
 endfunction
-wire [11:0] joy1 = genesis_pad(pad);
-wire [11:0] joy2 = genesis_pad(pad2);
-wire        menu_key = pad[3] & (pad[2] | (pad[1] & pad[0] & pad[8]));
+wire [11:0] joy1 = THREE_BUTTON ? genesis_pad(pad) & 12'h0FF : genesis_pad(pad);
+wire [11:0] joy2 = THREE_BUTTON ? 12'd0 : genesis_pad(pad2);
+// THREE_BUTTON: Mode must be held a steady 20 ms before it counts as the menu key
+localparam MODE_DEBOUNCE = FREQ / 50;
+reg [$clog2(MODE_DEBOUNCE+1)-1:0] mode_cnt = 0;
+always @(posedge clk_sys)
+    if (!THREE_BUTTON || !pad[2]) mode_cnt <= 0;
+    else if (mode_cnt != MODE_DEBOUNCE) mode_cnt <= mode_cnt + 1'd1;
+wire        menu_key = THREE_BUTTON ? mode_cnt == MODE_DEBOUNCE : pad[3] & (pad[2] | (pad[1] & pad[0] & pad[8]));
 
 wire sdram_ready, vram_clear_done;
 
@@ -107,11 +116,11 @@ wire [31:0] rom_word;
 reg         rom_ack;
 wire [3:0]  ss_ctrl_z;
 
-iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .PICTURE_OPTS(PICTURE_OPTS), .FIRMWARE_SIZE(FIRMWARE_SIZE)) iosys (
+iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .PICTURE_OPTS(PICTURE_OPTS), .MENU_MODE_ONLY(THREE_BUTTON), .FIRMWARE_SIZE(FIRMWARE_SIZE)) iosys (
     .clk(clk_z80), .hclk(hclk), .resetn(~reset),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
     .video_opt(video_opt), .ss_ctrl(ss_ctrl_z),
-    .joy1(pad), .joy2(pad2),
+    .joy1(pad), .joy2(THREE_BUTTON ? 12'd0 : pad2),
     .rom_loading(rom_loading_z), .rom_sram_reg(rom_sram_reg_z), .core_ready(md_on), .rom_word(rom_word), .rom_req(rom_req_z), .rom_ack(rom_ack),
     .rv_valid(rv_valid), .rv_ready(rv_ready_z), .rv_addr(rv_addr), .rv_wdata(rv_wdata),
     .rv_wstrb(rv_wstrb), .rv_rdata(rv_dout), .ram_busy(~sdram_ready),
@@ -250,7 +259,7 @@ wire [15:0] core_audio_left, core_audio_right;
 assign audio_left  = overlay_s[1] ? 16'd0 : core_audio_left;
 assign audio_right = overlay_s[1] ? 16'd0 : core_audio_right;
 
-system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
+system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BUTTON)) megadrive (
     .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on), .SOFT_RESET(reset_btn),
     .LPF_MODE(2'b11), .ENABLE_FM(1'b1), .ENABLE_PSG(1'b1), .DAC_LDATA(core_audio_left), .DAC_RDATA(core_audio_right),
     .LOADING(loading), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
@@ -260,7 +269,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) megadrive (
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),
     .BORDER(1'b0), .CRAM_DOTS(1'b0), .INTERLACE(interlace), .FIELD(), .RESOLUTION(resolution),
-    .J3BUT(1'b0), .JOY_1(joy1), .JOY_2(joy2), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
+    .J3BUT(THREE_BUTTON != 0), .JOY_1(joy1), .JOY_2(joy2), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
     .MOUSE(25'd0), .MOUSE_OPT(3'd0), .GUN_OPT(1'b0), .GUN_TYPE(1'b0), .GUN_SENSOR(1'b0), .GUN_A(1'b0),
     .GUN_B(1'b0), .GUN_C(1'b0), .GUN_START(1'b0),
     .SERJOYSTICK_IN(8'd0), .SERJOYSTICK_OUT(), .SER_OPT(2'd0),

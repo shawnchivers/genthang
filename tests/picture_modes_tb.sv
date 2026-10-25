@@ -58,9 +58,10 @@ module picture_modes_tb;
         force plain.mem_portB_rdata = sample;
         force plain.left_px = left_sample;
         force plain.scan = scan_test;
-        expected_rgb = {reference_channel(int'(source[23:16]), mode, dimming, 0),
-                        reference_channel(int'(source[15:8]), mode, dimming, 1),
-                        reference_channel(int'(source[7:0]), mode, dimming, 2)};
+        // Color mode was removed: video_opt[7:6] are ignored, only brightness applies
+        expected_rgb = {reference_channel(int'(source[23:16]), 0, dimming, 0),
+                        reference_channel(int'(source[15:8]), 0, dimming, 1),
+                        reference_channel(int'(source[7:0]), 0, dimming, 2)};
         // PICTURE_OPTS=0 has one register stage, PICTURE_OPTS=1 two
         @(posedge clk);
         #1;

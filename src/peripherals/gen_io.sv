@@ -303,7 +303,8 @@ end
 endmodule
 
 module gen_io_minimal #(
-	parameter P2_SIX_BUTTON = 1
+	parameter P2_SIX_BUTTON = 1,
+	parameter P2_CONNECTED = 1	// 0: port 2 reads as an empty port (pull-ups)
 )
 (
 	input            RESET,
@@ -371,7 +372,7 @@ always @(posedge RESET or posedge CLK) begin
 				case (A)
 					0: DO <= {EXPORT, PAL, 1'b1, 5'd0};
 					1: DO <= (control_reg_a & data_reg_a) | (~control_reg_a & pad_a_do);
-					2: DO <= (control_reg_b & data_reg_b) | (~control_reg_b & pad_b_do);
+					2: DO <= (control_reg_b & data_reg_b) | (~control_reg_b & (P2_CONNECTED ? pad_b_do : 8'h7F));
 					3: DO <= 8'h7F;
 					4: DO <= control_reg_a;
 					5: DO <= control_reg_b;

@@ -41,6 +41,7 @@ module iosys_picorv32 #(
     parameter [14:0] COLOR_LOGO=15'b00000_10101_00000,
     parameter [15:0] CORE_ID=1,     // inherited core identifier; unused by Gen Thang
     parameter PICTURE_OPTS = 0,     // reported to the firmware in bit 16 of the core ID register
+    parameter MENU_MODE_ONLY = 0,   // Mode alone opens the menu (GT_3BTN), bit 18 of the core ID register
     parameter FIRMWARE_SIZE = 256*1024
 )
 (
@@ -206,7 +207,7 @@ assign mem_rdata = ram_ready ? ram_rdata :
         simpleuart_reg_dat_sel ? simpleuart_reg_dat_do : 
         time_reg_sel ? {8'd0, time_reg} :
         cycle_reg_sel ? 32'd0 :
-        id_reg_sel ? {15'b0, PICTURE_OPTS != 0, CORE_ID} :
+        id_reg_sel ? {13'b0, MENU_MODE_ONLY != 0, 1'b0, PICTURE_OPTS != 0, CORE_ID} :
         (simplespimaster_reg_byte_sel | simplespimaster_reg_word_sel) ? simplespimaster_reg_do : 
         spiflash_reg_byte_sel ? spiflash_reg_do :
         32'h 0000_0000;

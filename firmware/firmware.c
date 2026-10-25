@@ -70,6 +70,7 @@ static int lcd;                     // 4:3 LCD controller squeezes the full 720p
 static int color_mode;              // 0 original, 1 warm, 2 cool, 3 vivid
 static int picture_dim;             // brightness: 0 100%, 1 75%, 2 50%, 3 25%
 static bool has_picture;            // core built with GT_PICTURE (bit 16 of the core ID register)
+static bool mode_menu;              // GT_3BTN core: Mode alone opens the menu (bit 18)
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -125,7 +126,7 @@ static void help(const char *s) {
 
 // ---- video options ---------------------------------------------------------------
 static void apply_options() {
-    int picture = has_picture ? (color_mode << 6 | picture_dim << 8) : 0;
+    int picture = has_picture ? (picture_dim << 8) : 0;
     td_reg(1, scanlines | blend << 2 | dvi << 4 | lcd << 5 | picture);
     ss_reg(0);
 }
@@ -187,6 +188,7 @@ static int joy() {
 
 // Select+Start (6-button: Mode+Start) or Start+A+B+C; matches menu_key in md20k_core
 static bool menu_combo(int j) {
+    if (mode_menu) return j & J_SELECT;
     return (j & J_START) && ((j & J_SELECT) || (j & (J_Y | J_B | J_A)) == (J_Y | J_B | J_A));
 }
 
@@ -805,7 +807,6 @@ static void draw_options(int active) {
     opt_items[nopt++] = OPT_OUTPUT;
     opt_items[nopt++] = OPT_DISPLAY;
     if (has_picture) {
-        opt_items[nopt++] = OPT_COLOR;
         opt_items[nopt++] = OPT_DIM;
     }
     for (int i = 0; i < PAGESIZE; i++) {
@@ -1031,6 +1032,7 @@ static void menu() {
 
 int main() {
     has_picture = (reg_core_id >> 16) & 1;
+    mode_menu = (reg_core_id >> 18) & 1;
     overlay(1);
     cursor(0, 31);                  // print() from FatFs glue lands off screen
     reg_uart_clkdiv = 234;          // 115200 baud from the 27MHz iosys clock

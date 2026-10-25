@@ -24,4 +24,6 @@ if {[lsearch -exact {0 1} $picture] < 0} { error "GT_PICTURE must be 0 or 1" }
 
 set pad_cst "src/boards/nano20k_$pad.cst"
 set output_base "genthang_nano20k_$pad"
+set three_btn [expr {[info exists ::env(GT_3BTN)] && $::env(GT_3BTN) eq "1"}]
+if {$three_btn} { append output_base "_3btn" }
 if {$video ne "720p"} { append output_base "_$video" }

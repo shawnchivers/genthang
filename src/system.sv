@@ -50,7 +50,8 @@
 // 5. Two 3/6-button pads; no multitap/mouse/gun/serial/J-Cart.
 
 module system #(
-	parameter P2_SIX_BUTTON = 1
+	parameter P2_SIX_BUTTON = 1,
+	parameter P2_CONNECTED = 1
 )
 (
 	input         RESET_N,
@@ -548,7 +549,7 @@ reg         JCART_SEL;
 wire [15:0] JCART_DO;
 wire        JCART_DTACK_N;
 
-gen_io_minimal #(.P2_SIX_BUTTON(P2_SIX_BUTTON)) io
+gen_io_minimal #(.P2_SIX_BUTTON(P2_SIX_BUTTON), .P2_CONNECTED(P2_CONNECTED)) io
 (
 	.RESET(hard_reset),
 	.CLK(MCLK),
