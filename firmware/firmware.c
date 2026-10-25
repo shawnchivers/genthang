@@ -361,9 +361,16 @@ static int load_rom(const char *path, uint32_t size) {
     }
     td_reg(0, 31);
     core_ctrl(1);                   // loading: holds the Genesis in reset
+    bool sram_reg = false;
     do {
         if (f_read(&f, load_buf, sizeof load_buf, &br) != FR_OK)
             break;
+        // "RA" (backup RAM) in the header, or in the locked-on game's header of a Sonic &
+        // Knuckles lock-on image: only then does the cartridge have the $A130F1 SRAM switch
+        for (uint32_t h = 0x1B0; h <= 0x2001B0; h += 0x200000)
+            if (h >= total && h + 1 < total + br && load_buf[h - total] == 'R' &&
+                load_buf[h - total + 1] == 'A')
+                sram_reg = true;
         if (br & 3) {               // pad the last word
             memset(load_buf + br, 0xFF, 4 - (br & 3));
             br = (br + 3) & ~3u;
@@ -381,7 +388,7 @@ static int load_rom(const char *path, uint32_t size) {
         }
     } while (br == sizeof load_buf);
     f_close(&f);
-    core_ctrl(0);                   // done: starts the game
+    core_ctrl(sram_reg ? 0x100 : 0); // done: starts the game; bit 8 enables the SRAM switch
     uart_printf("loaded %s: %d bytes\n", path, total);
     return 0;
 }

@@ -7,7 +7,9 @@
   every such write as "map cartridge SRAM over `$200000-$3FFFFF`" and executed SRAM. That
   register only exists on cartridges with backup RAM, so the core now honours it only when
   the loaded ROM declares backup RAM (`RA` at `$1B0`) or, for S&K lock-on images, the
-  locked-on game does (`RA` at `$2001B0`, which Sonic 3 has and Sonic 2 lacks). This matches
+  locked-on game does (`RA` at `$2001B0`, which Sonic 3 has and Sonic 2 lacks). The menu
+  firmware checks this while loading and passes it with the end-of-load write, which costs
+  the FPGA almost no logic (a comparator version did not fit the DB9 build). This matches
   BlastEm. Among the test ROMs only Sonic & Knuckles (alone and with Sonic 2) changes
   behaviour; Sonic 3 & Knuckles still saves through `$A130F1`.
 

@@ -59,7 +59,7 @@ extern int sd_readsector(uint32_t sector, uint8_t* buffer, uint32_t sector_count
 extern int sd_writesector(uint32_t sector, const uint8_t* buffer, uint32_t sector_count); /* 1:success, 0:failure*/
 
 // communication with the core
-extern void core_ctrl(uint32_t ctrl);   // write: 1 start loading, 0 finish; read bit 0: game ready
+extern void core_ctrl(uint32_t ctrl);   // write: 1 start loading, 0 finish (bit 8: ROM has backup RAM); read bit 0: game ready
 extern void core_data(uint32_t data);   // 3 word (12-byte) header, followed by 4-byte data words
                                         // header #0: map_ctrl, rom_size, ram_size
                                         // header #1: rom_mask
