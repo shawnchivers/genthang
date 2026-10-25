@@ -73,6 +73,8 @@ system megadrive (
     .LOADING(~md_on), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
     .EEPROM_QUIRK(1'b0), .NORAM_QUIRK(1'b0), .PIER_QUIRK(1'b0), .SVP_QUIRK(1'b0), .FMBUSY_QUIRK(1'b0),
     .SCHAN_QUIRK(1'b0), .TURBO(2'b00),
+    // as md20k_core: "RA" backup-RAM header at $1B0 or, for S&K lock-on images, at $2001B0
+    .SRAM_REG(mem.rom[24'h0000D8] == 16'h5241 || mem.rom[24'h1000D8] == 16'h5241),
     .GG_RESET(1'b0), .GG_EN(1'b0), .GG_CODE(129'd0), .GG_AVAILABLE(),
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),

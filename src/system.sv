@@ -76,6 +76,7 @@ module system #(
 	input         SVP_QUIRK, 
 	input         FMBUSY_QUIRK,
 	input         SCHAN_QUIRK,
+	input         SRAM_REG,		// cartridge (or the locked-on one) declares backup RAM: $A130F1 maps SRAM over ROM
 
 	input   [1:0] TURBO,		// Turbo mode: None,Medium,High
 
@@ -1058,7 +1059,9 @@ always @(posedge MCLK) begin
 							else if (~PIER_QUIRK) begin // SRAM control only in the first register on SSF2 mapper
 							   BANK_SRAM <= {MBUS_DO[0]};
 							end
-						end else begin
+						end else if (SRAM_REG) begin
+							// Without backup RAM the cartridge has no such register. Sonic & Knuckles
+							// writes 1 here before jumping to the locked-on Sonic 2 code at $300000.
 							BANK_SRAM <= {MBUS_DO[0]};
 						end
 					end else if (PIER_QUIRK && MBUS_A[3:1] == 'h5) begin
