@@ -101,7 +101,7 @@ wire [3:0]  red, green, blue;
 wire        hsync, hblank, vblank, ce_pix, pause_core, md_on, loading, overlay;
 wire [7:0]  overlay_x, overlay_y;
 wire [14:0] overlay_color;
-wire [5:0]  video_opt;
+wire [9:0]  video_opt;
 wire [1:0]  resolution;
 wire        transp, interlace;
 wire [15:0] audio_left, audio_right;
@@ -124,6 +124,9 @@ assign pad2 = 12'd0;
 `endif
 
 md20k_core #(.FREQ(FREQ),
+`ifdef PICTURE_OPTS
+    .PICTURE_OPTS(1),
+`endif
 `ifdef GT_PAD_RAW
     .P2_SIX_BUTTON(0)
 `else
@@ -215,6 +218,9 @@ end
 framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)
 `ifdef VIDEO_800X480
     , .LCD800(1)
+`endif
+`ifdef PICTURE_OPTS
+    , .PICTURE_OPTS(1)
 `endif
 ) fb (
     .clk(clk_sys), .resetn(md_on), .clk_pixel(hclk), .clk_5x_pixel(hclk5),

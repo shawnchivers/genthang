@@ -2,11 +2,12 @@
 #   ./build.sh                -> impl/pnr/genthang_nano20k_db9.fs, two Genesis pads
 #   GT_PAD=raw ./build.sh     -> 12 direct buttons, handheld pinout + speaker amp
 #   GT_VIDEO=800x480 ./build.sh -> native 800x480 DVI for a bare TFT on a TFP401 board (*_800x480.fs)
+#   GT_PICTURE=0|1            -> colour mode / brightness menu (default: 1 for raw, 0 for db9)
 
 set_device GW2AR-LV18QN88C8/I7 -device_version C
 
 source build_config.tcl
-puts "GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout CST=$pad_cst OUTPUT=$output_base"
+puts "GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout GT_PICTURE=$picture CST=$pad_cst OUTPUT=$output_base"
 # selects the pad ports in mdtang_top.sv (the checked-in default is GT_PAD_DB9)
 set f [open src/pad_config.vh w]
 puts $f "`define GT_PAD_[string toupper $pad]"
@@ -21,6 +22,7 @@ if {[info exists ::env(GT_SERIAL_UPLOAD)] && $::env(GT_SERIAL_UPLOAD) eq "1"} {
     puts "GT_SERIAL_UPLOAD=1: USB serial upload included"
 }
 if {$video eq "800x480"} { puts $f "`define VIDEO_800X480" }
+if {$picture} { puts $f "`define PICTURE_OPTS" }
 close $f
 
 # board layer

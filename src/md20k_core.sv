@@ -10,7 +10,8 @@ module md20k_core #(
     parameter FREQ = 54_000_000,
     parameter FIRMWARE_SIZE = 256*1024,
     parameter SDRAM_PIPELINE = 1,
-    parameter P2_SIX_BUTTON = 1
+    parameter P2_SIX_BUTTON = 1,
+    parameter PICTURE_OPTS = 0          // colour mode / brightness menu (GT_PICTURE builds)
 ) (
     input             clk_sys,
     input             clk_z80,          // clk_sys / 2 from the same PLL
@@ -69,7 +70,7 @@ module md20k_core #(
     input       [7:0] overlay_x,
     input       [7:0] overlay_y,
     output     [14:0] overlay_color,
-    output      [5:0] video_opt,        // clk_z80 domain, quasi-static
+    output      [9:0] video_opt,        // clk_z80 domain, quasi-static
 
     output reg        md_on,
     output            loading,
@@ -106,7 +107,7 @@ wire [31:0] rom_word;
 reg         rom_ack;
 wire [3:0]  ss_ctrl_z;
 
-iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .FIRMWARE_SIZE(FIRMWARE_SIZE)) iosys (
+iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .PICTURE_OPTS(PICTURE_OPTS), .FIRMWARE_SIZE(FIRMWARE_SIZE)) iosys (
     .clk(clk_z80), .hclk(hclk), .resetn(~reset),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
     .video_opt(video_opt), .ss_ctrl(ss_ctrl_z),

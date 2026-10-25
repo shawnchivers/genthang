@@ -38,7 +38,7 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 # the board DUT keeps the iosys UART so the firmware's debug log reaches the console
 DUT_VFLAGS = +define+SERIAL_UPLOAD
 
-.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io
+.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings
 
 hex: rom8.hex fw8.hex sd.img
 rom8.hex: mkhex.py
@@ -85,6 +85,18 @@ gen-io:
 		--Mdir obj_gen_io $D/peripherals/gen_io.sv tb_gen_io.cpp -o tb_gen_io
 	./obj_gen_io/tb_gen_io
 
+picture-modes:
+	$(VERILATOR) --binary --timing -j 4 -Wno-fatal -Wno-TIMESCALEMOD \
+		--top-module picture_modes_tb --Mdir obj_picture_modes \
+		../tests/picture_modes_tb.sv $D/framebuffer_sync.sv $D/frame_sync.sv
+	./obj_picture_modes/Vpicture_modes_tb
+
+picture-settings:
+	mkdir -p obj_picture_settings
+	$(CC) -std=c11 -O2 -ffunction-sections -fdata-sections -Wl,--gc-sections \
+		-Wno-int-to-pointer-cast ../tests/test_picture_settings.c -o obj_picture_settings/test_picture_settings
+	./obj_picture_settings/test_picture_settings
+
 run-ref: ref run/ref
 	cd run/ref && ../../$(REF_MDIR)/tb_ref $(ARGS)
 
@@ -93,4 +105,4 @@ run-dut: dut run/dut
 
 clean:
 	rm -rf obj_ref obj_dut obj_ref_* obj_dut_* obj_refdbg obj_dutdbg obj_ymclk obj_textdisp obj_genesis_pad obj_gen_io run rom8.hex rom16.hex rom32.hex \
-		fw8.hex sd.img
+		obj_picture_modes obj_picture_settings fw8.hex sd.img

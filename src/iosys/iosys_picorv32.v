@@ -40,6 +40,7 @@ module iosys_picorv32 #(
     parameter FREQ=21_477_000,
     parameter [14:0] COLOR_LOGO=15'b00000_10101_00000,
     parameter [15:0] CORE_ID=1,     // inherited core identifier; unused by Gen Thang
+    parameter PICTURE_OPTS = 0,     // reported to the firmware in bit 16 of the core ID register
     parameter FIRMWARE_SIZE = 256*1024
 )
 (
@@ -53,7 +54,7 @@ module iosys_picorv32 #(
     input [7:0] overlay_x,          // 0-255
     input [7:0] overlay_y,          // 0-223
     output [14:0] overlay_color,    // BGR5
-    output reg [5:0] video_opt,     // [1:0] scanlines, [3:2] blend, [4] DVI output, [5] 4:3 LCD
+    output reg [9:0] video_opt,     // scanlines [1:0], blend [3:2], DVI [4], LCD [5], color [7:6], dim [9:8]
     output reg [3:0] ss_ctrl,       // save state: [0] window/hooks on, [1] 68K NMI, [2] Z80 freeze; [3] game reset
     input [11:0] joy1,              // joystick 1: (R L X A RT LT DN UP START SELECT Y B)
     input [11:0] joy2,              // joystick 2
@@ -205,7 +206,7 @@ assign mem_rdata = ram_ready ? ram_rdata :
         simpleuart_reg_dat_sel ? simpleuart_reg_dat_do : 
         time_reg_sel ? {8'd0, time_reg} :
         cycle_reg_sel ? 32'd0 :
-        id_reg_sel ? {16'b0, CORE_ID} :
+        id_reg_sel ? {15'b0, PICTURE_OPTS != 0, CORE_ID} :
         (simplespimaster_reg_byte_sel | simplespimaster_reg_word_sel) ? simplespimaster_reg_do : 
         spiflash_reg_byte_sel ? spiflash_reg_do :
         32'h 0000_0000;
@@ -240,14 +241,14 @@ assign overlay = overlay_buf;
 always @(posedge clk) begin
     if (~resetn) begin
         overlay_buf <= 1;
-        video_opt <= 6'd0;
+        video_opt <= 10'd0;
         ss_ctrl <= 4'd0;
     end else begin
         if (textdisp_reg_char_sel && mem_wstrb[0]) begin
             case (mem_wdata[25:24])
             2'd1: overlay_buf <= 1;
             2'd2: overlay_buf <= 0;
-            2'd3: if (mem_wdata[23:16] == 8'd1) video_opt <= mem_wdata[5:0];
+            2'd3: if (mem_wdata[23:16] == 8'd1) video_opt <= mem_wdata[9:0];
                   else if (mem_wdata[23:16] == 8'd2) ss_ctrl <= mem_wdata[3:0];
             default: ;
             endcase
@@ -394,4 +395,3 @@ module picosoc_regs (
 	// rv32 runs with ENABLE_REGS_DUALPORT=0 and never reads this port; tie it off so no RAM copy is built
 	assign rdata2 = 32'd0;
 endmodule
-

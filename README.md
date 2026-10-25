@@ -350,6 +350,8 @@ The Options page opens first when you call up the menu during a game:
 - **Composite blend**: off, on, adaptive
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
 - **Display**: TV (default), or 4:3 LCD
+- **Color mode**: Original (default), Warm, Cool, Vivid (raw build only)
+- **Brightness**: 100 % (default), 75 %, 50 %, 25 % (raw build only)
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
 
@@ -357,7 +359,7 @@ Opening the menu pauses the game and mutes HDMI audio. **Reset game** pulses the
 console reset input without clearing work RAM, like the physical Genesis reset
 button (this is the reset X-Men's Mojo level expects). Display settings are saved
 to `GENTHANG.CFG` on the card. Scanlines and composite blend never affect the menu
-itself; the video output and display settings apply to the menu too.
+itself; video output, display, color mode and brightness apply to the menu too.
 
 ### Display options
 
@@ -371,6 +373,18 @@ post-processing options are applied by the HDMI scaler:
   dither patterns many games use for transparency and shading the way a composite
   cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
   dither, leaving the rest of the picture sharp.
+
+**Color mode** and **Brightness** exist only in builds with `GT_PICTURE=1`, which is
+the default for the raw (handheld) build; the DB9 build leaves them out because the
+FPGA has no logic to spare, and its menu does not show them. Color mode adjusts both
+the game and menu after blending and scanlines: **Original** leaves colors unchanged,
+**Warm** reduces green slightly and blue more, **Cool** reduces green slightly and red
+more, and **Vivid** increases contrast around mid-grey with clipping at black and white.
+**Brightness** then scales the RGB picture to 75 %, 50 % or 25 % (approximately, rounded
+to 8-bit channel values). This is software dimming, not LCD backlight control: it does
+not reduce backlight power or improve the panel's black level, and dark detail can be
+lost. Both settings are saved to `GENTHANG.CFG` (older files default to Original and
+100 %) and are kept, unused, when the card moves to a DB9 board.
 
 **Video output** chooses HDMI (default, with audio) or DVI. DVI sends the same
 720p60 picture without HDMI data islands, so the display gets no audio; use the
@@ -476,6 +490,7 @@ cd genthang
 ./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
+GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the color mode / brightness options
 ./release.sh                      # all variants (db9, raw, *_800x480) + flash images + tarball
 ```
 
@@ -485,7 +500,10 @@ The raw build has its own handheld pinout; DB9 uses 12 data GPIOs and two TH out
 aliases for canonical DB9 and print a warning. The DualShock (`GT_PAD=ds`) build has
 been removed.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
-to leave logic headroom: with it the design fits with only 9 spare CLS. The default build also runs
+to leave logic headroom: with it the design fits with only 9 spare CLS. `GT_PICTURE`
+(`0`/`1`) adds the color mode and brightness options to the HDMI scaler; it defaults to
+`1` for `GT_PAD=raw` and `0` for DB9, which cannot fit it. The firmware reads the choice
+from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
 Gowin runs share intermediate files
@@ -541,6 +559,7 @@ make dut ROM=/path/to/game.md              # whole board core + firmware + FAT32
 make run-dut ARGS="-T 1700 -O 900"         # boot the menu and dump the overlay (run/dut/overlay_900.ppm)
 make textdisp                              # the menu overlay alone -> run/textdisp/*.ppm
 make genesis-pad gen-io                    # unit tests for the DB9 pad reader and the I/O block
+make picture-modes picture-settings        # RGB pipeline and saved/menu picture settings (no ROM needed)
 make ref ROM=/path/to/game.md && make run-ref ARGS="-n 300 -d 100,200"   # golden model
 ```
 

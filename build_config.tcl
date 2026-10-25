@@ -17,6 +17,11 @@ set video 720p
 if {[info exists ::env(GT_VIDEO)] && $::env(GT_VIDEO) ne ""} { set video $::env(GT_VIDEO) }
 if {[lsearch -exact {720p 800x480} $video] < 0} { error "GT_VIDEO must be 720p or 800x480" }
 
+# Colour mode and brightness menu: on for the raw handheld build, off for DB9 (no room left)
+set picture [expr {$pad eq "raw" ? 1 : 0}]
+if {[info exists ::env(GT_PICTURE)] && $::env(GT_PICTURE) ne ""} { set picture $::env(GT_PICTURE) }
+if {[lsearch -exact {0 1} $picture] < 0} { error "GT_PICTURE must be 0 or 1" }
+
 set pad_cst "src/boards/nano20k_$pad.cst"
 set output_base "genthang_nano20k_$pad"
 if {$video ne "720p"} { append output_base "_$video" }
