@@ -117,9 +117,9 @@ if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
                 self.assertIn('RUN=all',result.stdout)
                 vh=(root/'src/pad_config.vh').read_text().split('\n')
                 self.assertEqual(vh[0],f'`define GT_PAD_{pad.upper()}')
-                self.assertEqual('`define PICTURE_OPTS' in vh, pad == 'raw')
+                self.assertNotIn('`define PICTURE_OPTS', vh)
 
-    def test_picture_options_raw_only_by_default(self):
+    def test_picture_options_off_by_default(self):
         def picture(pad, value=None):
             env={k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_PICTURE')}
             env['GT_PAD']=pad
@@ -127,7 +127,7 @@ if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
             return subprocess.run(['tclsh'],cwd=ROOT,env=env,text=True,capture_output=True,
                 input='if {[catch {source build_config.tcl} err]} {puts stderr $err; exit 1}\n'
                       'puts $picture\n')
-        for pad,value,want in [('raw',None,'1'),('db9',None,'0'),('raw','','1'),('db9','','0'),
+        for pad,value,want in [('raw',None,'0'),('db9',None,'0'),('raw','','0'),('db9','','0'),
                                ('raw','0','0'),('db9','1','1')]:
             result=picture(pad,value)
             self.assertEqual(result.returncode,0,result.stderr)

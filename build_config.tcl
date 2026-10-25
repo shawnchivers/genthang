@@ -18,7 +18,9 @@ if {[info exists ::env(GT_VIDEO)] && $::env(GT_VIDEO) ne ""} { set video $::env(
 if {[lsearch -exact {720p 800x480} $video] < 0} { error "GT_VIDEO must be 720p or 800x480" }
 
 # Colour mode and brightness menu: on for the raw handheld build, off for DB9 (no room left)
-set picture [expr {$pad eq "raw" ? 1 : 0}]
+# Off by default: on the raw build the picture stage left the FPGA so full that X-Men
+# audio broke and some games (Aladdin) white-screened on hardware, despite timing passing.
+set picture 0
 if {[info exists ::env(GT_PICTURE)] && $::env(GT_PICTURE) ne ""} { set picture $::env(GT_PICTURE) }
 if {[lsearch -exact {0 1} $picture] < 0} { error "GT_PICTURE must be 0 or 1" }
 
