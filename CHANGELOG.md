@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Fixed: games of exactly 4 MB showed a white screen and never started** (Toy Story,
+  Sonic 3 & Knuckles, Ultimate Mortal Kombat 3, Sonic 3D Blast, ...). The loader counts
+  32-bit words in a 21-bit counter, but `md20k_core.sv` passed only its low 20 bits to the
+  core as the ROM size. A full 4 MB ROM (0x100000 words) therefore wrapped to size 0, and
+  every cartridge read, including the reset vectors, returned 0. ROMs smaller than 4 MB
+  were not affected. genthangverify did not catch it because its testbench supplies the
+  ROM size directly instead of going through the board loader.
+
 - New **`GT_VIDEO=800x480`** build (`genthang_nano20k_<pad>_800x480.fs`) for bare TFT
   panels behind a scaler-less DVI decoder such as the Adafruit TFP401 with an 800x480
   40-pin panel, which cannot display 720p. It outputs 800x480 at 59.9 Hz (CVT timing,
