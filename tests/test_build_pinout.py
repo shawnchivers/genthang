@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def select(pad=None, pinout=None):
-    env = {k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_SERIAL_UPLOAD')}
+    env = {k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_SERIAL_UPLOAD','GT_PICTURE')}
     if pad is not None: env['GT_PAD'] = pad
     if pinout is not None: env['GT_PINOUT'] = pinout
     return subprocess.run(['tclsh'], cwd=ROOT, env=env, text=True, capture_output=True,
@@ -107,7 +107,7 @@ proc run {args} {puts "RUN=$args"}
 if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
 '''
                 result=subprocess.run(['tclsh'],cwd=root,text=True,input=script,capture_output=True,
-                                      env={**{k:v for k,v in os.environ.items() if k != 'GT_SERIAL_UPLOAD'},
+                                      env={**{k:v for k,v in os.environ.items() if k not in ('GT_SERIAL_UPLOAD','GT_PICTURE')},
                                            'GT_PAD':pad,'GT_PINOUT':pinout})
                 self.assertEqual(result.returncode,0,result.stderr)
                 self.assertIn(f'CST=src/boards/nano20k_{pad}.cst',result.stdout)
@@ -115,7 +115,24 @@ if {[catch {source build.tcl} err]} {puts stderr $err; exit 1}
                 self.assertIn('PLACE=2',result.stdout)
                 self.assertIn('ROUTE=1',result.stdout)
                 self.assertIn('RUN=all',result.stdout)
-                self.assertEqual((root/'src/pad_config.vh').read_text().strip(),f'`define GT_PAD_{pad.upper()}')
+                vh=(root/'src/pad_config.vh').read_text().split('\n')
+                self.assertEqual(vh[0],f'`define GT_PAD_{pad.upper()}')
+                self.assertEqual('`define PICTURE_OPTS' in vh, pad == 'raw')
+
+    def test_picture_options_raw_only_by_default(self):
+        def picture(pad, value=None):
+            env={k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_PICTURE')}
+            env['GT_PAD']=pad
+            if value is not None: env['GT_PICTURE']=value
+            return subprocess.run(['tclsh'],cwd=ROOT,env=env,text=True,capture_output=True,
+                input='if {[catch {source build_config.tcl} err]} {puts stderr $err; exit 1}\n'
+                      'puts $picture\n')
+        for pad,value,want in [('raw',None,'1'),('db9',None,'0'),('raw','','1'),('db9','','0'),
+                               ('raw','0','0'),('db9','1','1')]:
+            result=picture(pad,value)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(result.stdout.strip(),want,(pad,value))
+        self.assertNotEqual(picture('raw','yes').returncode,0)
 
 
 if __name__=='__main__':

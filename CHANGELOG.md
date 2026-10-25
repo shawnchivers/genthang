@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Raw build: Color mode and Brightness options.** The handheld build adds saved
+  **Color mode: Original / Warm / Cool / Vivid** and **Brightness: 100% / 75% / 50% / 25%**
+  menu options, applied to games and menus after scanlines and blending (software
+  dimming, not the LCD backlight). They are behind the new `GT_PICTURE` build flag, on by
+  default for `GT_PAD=raw` and off for DB9, whose build has no logic to spare. The core
+  reports the flag in bit 16 of the core ID register, so the shared menu firmware only
+  shows the options on builds that have them. Older settings files still load.
+
 - **Fixed: Sonic & Knuckles + Sonic 2 (lock-on) showed a white/black screen.** S&K writes 1
   to `$A130F1` and then jumps to the locked-on Sonic 2 code at `$300000`. The core took
   every such write as "map cartridge SRAM over `$200000-$3FFFFF`" and executed SRAM. That

@@ -67,6 +67,9 @@ static int scanlines;               // 0 off, 1 25%, 2 50%
 static int blend;                   // composite blend 0 off, 1 on, 2 adaptive
 static int dvi;                     // video output 0 HDMI, 1 DVI (no HDMI data islands; audio only on the line-out jack)
 static int lcd;                     // 4:3 LCD controller squeezes the full 720p input onto its panel
+static int color_mode;              // 0 original, 1 warm, 2 cool, 3 vivid
+static int picture_dim;             // brightness: 0 100%, 1 75%, 2 50%, 3 25%
+static bool has_picture;            // core built with GT_PICTURE (bit 16 of the core ID register)
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -122,13 +125,14 @@ static void help(const char *s) {
 
 // ---- video options ---------------------------------------------------------------
 static void apply_options() {
-    td_reg(1, scanlines | blend << 2 | dvi << 4 | lcd << 5);
+    int picture = has_picture ? (color_mode << 6 | picture_dim << 8) : 0;
+    td_reg(1, scanlines | blend << 2 | dvi << 4 | lcd << 5 | picture);
     ss_reg(0);
 }
 
 static void load_options() {
     FIL f;
-    char c[5];
+    char c[7];
     unsigned br;
     if (f_open(&f, CFG_PATH, FA_READ) == FR_OK) {
         if (f_read(&f, c, sizeof c, &br) == FR_OK && br >= 2) {
@@ -140,6 +144,8 @@ static void load_options() {
             if (header < br) {
                 if (header >= 3 && c[2] >= '0' && c[2] <= '1') dvi = c[2] - '0';
                 if (header >= 4 && c[3] >= '0' && c[3] <= '1') lcd = c[3] - '0';
+                if (header >= 5 && c[4] >= '0' && c[4] <= '3') color_mode = c[4] - '0';
+                if (header >= 6 && c[5] >= '0' && c[5] <= '3') picture_dim = c[5] - '0';
                 prefix = br - header - 1;
                 memcpy(cur_rom, c + header + 1, prefix);
                 if (f_read(&f, cur_rom + prefix, sizeof cur_rom - 1 - prefix, &br) == FR_OK) {
@@ -156,7 +162,8 @@ static void load_options() {
 
 static void save_options() {
     FIL f;
-    char c[5] = {'0' + scanlines, '0' + blend, '0' + dvi, '0' + lcd, '\n'};
+    char c[7] = {'0' + scanlines, '0' + blend, '0' + dvi, '0' + lcd,
+                 '0' + color_mode, '0' + picture_dim, '\n'};
     unsigned bw;
     if (sd_init() != 0 || f_open(&f, CFG_PATH, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK) {
         status("Cannot save settings");
@@ -773,12 +780,14 @@ static int receive_upload() {
 }
 
 // ---- menu --------------------------------------------------------------------------
-enum { OPT_RESTORE, OPT_RESUME, OPT_SAVE, OPT_LOAD, OPT_RESET, OPT_GAMES, OPT_CORES, OPT_SCAN, OPT_BLEND, OPT_OUTPUT, OPT_DISPLAY };
-static int opt_items[11], nopt;
+enum { OPT_RESTORE, OPT_RESUME, OPT_SAVE, OPT_LOAD, OPT_RESET, OPT_GAMES, OPT_CORES, OPT_SCAN, OPT_BLEND, OPT_OUTPUT, OPT_DISPLAY, OPT_COLOR, OPT_DIM, OPT_COUNT };
+static int opt_items[OPT_COUNT], nopt;
 
 static void draw_options(int active) {
     static const char *const sl[] = {"OFF", "25%", "50%"};
     static const char *const bl[] = {"OFF", "ON", "ADAPTIVE"};
+    static const char *const cm[] = {"ORIGINAL", "WARM", "COOL", "VIVID"};
+    static const char *const pd[] = {"100%", "75%", "50%", "25%"};
     char buf[33];
     nopt = 0;
     if (!game_loaded && saved_state_available())
@@ -795,6 +804,10 @@ static void draw_options(int active) {
     opt_items[nopt++] = OPT_BLEND;
     opt_items[nopt++] = OPT_OUTPUT;
     opt_items[nopt++] = OPT_DISPLAY;
+    if (has_picture) {
+        opt_items[nopt++] = OPT_COLOR;
+        opt_items[nopt++] = OPT_DIM;
+    }
     for (int i = 0; i < PAGESIZE; i++) {
         int row = LIST_ROW + i;
         fill(0, row, 32);
@@ -811,6 +824,8 @@ static void draw_options(int active) {
         case OPT_BLEND:  strcpy(buf, "Composite blend: "); strcat(buf, bl[blend]); break;
         case OPT_OUTPUT: strcpy(buf, dvi ? "Video output: DVI+LINE OUT" : "Video output: HDMI"); break;
         case OPT_DISPLAY: strcpy(buf, lcd ? "Display: 4:3 LCD" : "Display: TV"); break;
+        case OPT_COLOR: strcpy(buf, "Color mode: "); strcat(buf, cm[color_mode]); break;
+        case OPT_DIM: strcpy(buf, "Brightness: "); strcat(buf, pd[picture_dim]); break;
         }
         text(3, row, buf);
     }
@@ -925,6 +940,18 @@ static void menu() {
                     save_options();
                     redraw = true;
                     break;
+                case OPT_COLOR:
+                    color_mode = (color_mode + ((k & J_LEFT) ? 3 : 1)) % 4;
+                    apply_options();
+                    save_options();
+                    redraw = true;
+                    break;
+                case OPT_DIM:
+                    picture_dim = (picture_dim + ((k & J_LEFT) ? 3 : 1)) % 4;
+                    apply_options();
+                    save_options();
+                    redraw = true;
+                    break;
                 }
             }
             continue;
@@ -1003,6 +1030,7 @@ static void menu() {
 }
 
 int main() {
+    has_picture = (reg_core_id >> 16) & 1;
     overlay(1);
     cursor(0, 31);                  // print() from FatFs glue lands off screen
     reg_uart_clkdiv = 234;          // 115200 baud from the 27MHz iosys clock

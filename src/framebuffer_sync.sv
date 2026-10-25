@@ -16,7 +16,8 @@ module framebuffer #(
     parameter HEIGHT = 240,         // max frame height (<=720)
     parameter COLOR_BITS = 4,       // bits per RGB color channel
     parameter BUFFER_LINES = 32,    // power-of-two line ring, must exceed core lead over HDMI
-    parameter LCD800 = 0            // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
+    parameter LCD800 = 0,           // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
+    parameter PICTURE_OPTS = 0      // 1 = colour mode and brightness (video_opt[9:6]), GT_PICTURE builds
 )(
 	input clk,                      // megadrive clock
 	input resetn,
@@ -44,7 +45,7 @@ module framebuffer #(
     output [7:0] overlay_x,
     output [7:0] overlay_y,
     input [14:0] overlay_color,     // BGR5
-    input [5:0] video_opt,          // [1:0] scanlines, [3:2] blend, [4] DVI output, [5] 4:3 LCD
+    input [9:0] video_opt,          // scanlines [1:0], blend [3:2], DVI [4], LCD [5], color [7:6], dim [9:8]
 
     input [15:0] audio_left,        // audio sample
     input [15:0] audio_right,
@@ -201,7 +202,7 @@ end
 // Game pixels go through MiSTer's measured Genesis DAC table. Blend averages each pixel
 // with the one to its left (composite dither blending; adaptive = only where the VDP
 // flags transparency dither). Scanlines dim the lower half of each Genesis line.
-reg [5:0] opt_s1, opt_s2;
+reg [9:0] opt_s1, opt_s2;
 reg il_s1, il_s2;
 reg [$clog2(WIDTH)-1:0] xx_r, xx_px;
 reg [COLOR_WIDTH-1:0] rdata_r, prev_px;
@@ -240,20 +241,62 @@ function automatic [7:0] chan(input [COLOR_BITS-1:0] a, input [COLOR_BITS-1:0] b
     endcase
 endfunction
 
+function automatic [7:0] picture_chan(input [7:0] v, input [1:0] mode,
+                                      input [1:0] dimming, input integer channel);
+    reg [7:0] c;
+    c = v;
+    case (mode)
+    2'd1: begin
+        if (channel == 1) c = v - (v >> 4);
+        if (channel == 2) c = v - (v >> 3);
+    end
+    2'd2: begin
+        if (channel == 0) c = v - (v >> 3);
+        if (channel == 1) c = v - (v >> 4);
+    end
+    2'd3: begin
+        // Contrast around mid-grey, clamped rather than wrapping at black/white.
+        if (v < 8'd26) c = 8'd0;
+        else if (v > 8'd229) c = 8'd255;
+        else c = v - 8'd32 + (v >> 2);
+    end
+    default: ;
+    endcase
+    case (dimming)
+    2'd1: picture_chan = c - (c >> 2);
+    2'd2: picture_chan = {1'b0, c[7:1]};
+    2'd3: picture_chan = {2'b00, c[7:2]};
+    default: picture_chan = c;
+    endcase
+endfunction
+
 wire [1:0] dim = scan ? opt_s2[1:0] : 2'd0;
 wire do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && mem_portB_rdata[COLOR_WIDTH]);
+wire [23:0] picture_rgb = overlay
+    ? {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
+       overlay_color[14:10], overlay_color[14:12]}
+    : {chan(mem_portB_rdata[COLOR_BITS*2 +: COLOR_BITS], left_px[COLOR_BITS*2 +: COLOR_BITS], do_blend, dim),
+       chan(mem_portB_rdata[COLOR_BITS   +: COLOR_BITS], left_px[COLOR_BITS   +: COLOR_BITS], do_blend, dim),
+       chan(mem_portB_rdata[0            +: COLOR_BITS], left_px[0            +: COLOR_BITS], do_blend, dim)};
+
+// GT_PICTURE builds apply colour mode and brightness in a second stage: blend + scanlines
+// + colour + brightness in one hclk cycle missed 74.25MHz. This delays the picture by one
+// 720p pixel; both the TV and the LCD window stay inside the visible line.
+reg [23:0] picture_rgb_r;
+reg        active_r;
+always @(posedge clk_pixel) begin
+    picture_rgb_r <= picture_rgb;
+    active_r <= active;
+end
 
 always @(posedge clk_pixel) begin
-    if (active) begin
-        if (overlay)
-            rgb <= {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
-                    overlay_color[14:10], overlay_color[14:12]};                      // BGR5 to RGB8
-        else
-            rgb <= {chan(mem_portB_rdata[COLOR_BITS*2 +: COLOR_BITS], left_px[COLOR_BITS*2 +: COLOR_BITS], do_blend, dim),
-                    chan(mem_portB_rdata[COLOR_BITS   +: COLOR_BITS], left_px[COLOR_BITS   +: COLOR_BITS], do_blend, dim),
-                    chan(mem_portB_rdata[0            +: COLOR_BITS], left_px[0            +: COLOR_BITS], do_blend, dim)};
-    end else
-        rgb <= 24'h000000;
+    if (PICTURE_OPTS)
+        rgb <= !active_r ? 24'h000000 :
+               {picture_chan(picture_rgb_r[23:16], opt_s2[7:6], opt_s2[9:8], 0),
+                picture_chan(picture_rgb_r[15:8], opt_s2[7:6], opt_s2[9:8], 1),
+                picture_chan(picture_rgb_r[7:0], opt_s2[7:6], opt_s2[9:8], 2)};
+    else
+        rgb <= active ? picture_rgb : 24'h000000;
 end
 
 // HDMI output.
