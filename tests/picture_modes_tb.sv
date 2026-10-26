@@ -81,14 +81,14 @@ module picture_modes_tb;
                 end
                 expect_rgb(want, want_plain, "game");
             end
-            // The menu is never dimmed, blended or scanlined.
+            // The menu is a fixed 50% with PICTURE_OPTS, full otherwise; never blended or scanlined.
             overlay = 1;
             for (int level = 0; level < 32; level++) begin
                 reg [23:0] menu;
                 overlay_color = {5'(31 - level), 5'((level + 11) % 32), 5'(level)};
                 menu = {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
                         overlay_color[14:10], overlay_color[14:12]};
-                expect_rgb(menu, menu, "menu");
+                expect_rgb({1'b0, menu[23:17], 1'b0, menu[15:9], 1'b0, menu[7:1]}, menu, "menu");
             end
             active_test = 0;
             expect_rgb(24'd0, 24'd0, "blanking");

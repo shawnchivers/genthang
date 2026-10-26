@@ -159,9 +159,9 @@ module T80_ALU(
       reg [7:0]    Q_t;
       reg [8:0]    DAA_Q;
 
-      Q_t = 8'bxxxxxxxx;
+      Q_t = 8'b00000000;
       F_Out <= F_In;
-      DAA_Q = 9'bxxxxxxxxx;
+      DAA_Q = 9'b000000000;
       case (ALU_Op)
          4'b0000, 4'b0001, 4'b0010, 4'b0011, 4'b0100, 4'b0101, 4'b0110, 4'b0111 :
             begin

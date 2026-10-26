@@ -867,7 +867,7 @@ module T80(
                   else
                      BusB <= 8'b00000000;
                default :
-                  BusB <= 8'bxxxxxxxx;
+                  BusB <= 8'b00000000;
             endcase
             
             case (Set_BusA_To)
@@ -887,7 +887,7 @@ module T80(
                4'b1010 :
                   BusA <= 8'b00000000;
                default :
-                  BusA <= 8'bxxxxxxxx;
+                  BusA <= 8'b00000000;
             endcase
             if (XYbit_undoc) begin
                BusA <= DI_Reg;

@@ -243,14 +243,16 @@ function automatic [7:0] chan(input [COLOR_BITS-1:0] a, input [COLOR_BITS-1:0] b
 endfunction
 
 // Brightness (GT_PICTURE, video_opt[9:8]: 100/75/50/25%) shares the scanline dimmer:
-// on scanline rows the two levels add, capped at 25%. Games only; the menu stays full.
+// on scanline rows the two levels add, capped at 25%. Games only.
 wire [2:0] dim_sum = (scan ? {1'b0, opt_s2[1:0]} : 3'd0) + {1'b0, opt_s2[9:8]};
 wire [1:0] dim = !PICTURE_OPTS ? (scan ? opt_s2[1:0] : 2'd0)    // exactly the pre-brightness dimmer
                : dim_sum[2] ? 2'd3 : dim_sum[1:0];
 wire do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && mem_portB_rdata[COLOR_WIDTH]);
+// Handheld (PICTURE_OPTS) builds draw the menu at a fixed 50% so it is not harsh on the LCD.
+wire [23:0] menu_rgb = {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
+                        overlay_color[14:10], overlay_color[14:12]};
 wire [23:0] picture_rgb = overlay
-    ? {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
-       overlay_color[14:10], overlay_color[14:12]}
+    ? (PICTURE_OPTS ? {1'b0, menu_rgb[23:17], 1'b0, menu_rgb[15:9], 1'b0, menu_rgb[7:1]} : menu_rgb)
     : {chan(mem_portB_rdata[COLOR_BITS*2 +: COLOR_BITS], left_px[COLOR_BITS*2 +: COLOR_BITS], do_blend, dim),
        chan(mem_portB_rdata[COLOR_BITS   +: COLOR_BITS], left_px[COLOR_BITS   +: COLOR_BITS], do_blend, dim),
        chan(mem_portB_rdata[0            +: COLOR_BITS], left_px[0            +: COLOR_BITS], do_blend, dim)};

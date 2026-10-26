@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.9.2 - 2026-10-25
+
+- **Handheld menu at a fixed 50 %.** Raw (`GT_PICTURE=1`) builds draw the menu at half
+  brightness, so it is no longer harsh on the LCD. Brightness still applies to games
+  only. DB9 builds are unchanged.
+- **Fixed: sound and loading breaking after unrelated changes.** X-Men and Gargoyles
+  played only a rumble (and Aladdin could white-screen) whenever unrelated logic changed,
+  even though timing passed. Synthesis optimizes the whole chip, so it resolved the `x`
+  don't-care values in the 68K (fx68k) and Z80 (T80) cores differently in each build.
+  They are now fixed at `0`. Found by step-by-step hardware tests that ruled out the JT12
+  and Z80 timing exceptions, the SDRAM clock phase and the Z80 clock phase.
+
 ## 1.9.1 - 2026-10-25
 
 - **Raw build: sound and game loading fixed.** The 1.9.0 Color mode / Brightness stage

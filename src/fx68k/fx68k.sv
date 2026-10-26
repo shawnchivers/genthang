@@ -1257,17 +1257,17 @@ localparam REG_DT = 17;
 		if( Nanod.ssp) begin
 			rxMux = REG_SSP;
 			rxIsSp = 1'b1;
-			rxReg = 1'bX;
+			rxReg = 1'b0;
 		end
 		else if( Irdecod.rxIsUsp) begin
 			rxMux = REG_USP;
 			rxIsSp = 1'b1;
-			rxReg = 1'bX;
+			rxReg = 1'b0;
 		end
 		else if( Irdecod.rxIsDt & !Irdecod.implicitSp) begin
 			rxMux = REG_DT;
 			rxIsSp = 1'b0;
-			rxReg = 1'bX;
+			rxReg = 1'b0;
 		end
 		else begin
 			if( Irdecod.implicitSp)
@@ -1291,7 +1291,7 @@ localparam REG_DT = 17;
 		if( Irdecod.ryIsDt & !Nanod.rz) begin
 			ryMux = REG_DT;
 			ryIsSp = 1'b0;
-			ryReg = 'X;
+			ryReg = '0;
 		end
 		else begin
 			ryReg = Nanod.rz ? Irc[15:12] : {Irdecod.ryIsAreg, Irdecod.ry};
@@ -1347,7 +1347,7 @@ localparam REG_DT = 17;
 		Nanod.dbin2Dbd:			dbdMux = dbin;
 		Nanod.alu2Dbd:			dbdMux = aluOut;
 		Nanod.dcr2Dbd:			dbdMux = dcrOutput;
-		default: begin			dbdMux = 'X;	dbdIdle = 1'b1;				end
+		default: begin			dbdMux = '0;	dbdIdle = 1'b1;				end
 		endcase
 	
 		unique case( 1'b1)
@@ -1357,7 +1357,7 @@ localparam REG_DT = 17;
 		Nanod.au2Db:			dblMux = auReg[15:0];
 		Nanod.atl2Dbl:			dblMux = Atl;
 		Pcl2Dbl:				dblMux = PcL;
-		default: begin			dblMux = 'X;	dblIdle = 1'b1;				end
+		default: begin			dblMux = '0;	dblIdle = 1'b1;				end
 		endcase
 			
 		unique case( 1'b1)
@@ -1366,7 +1366,7 @@ localparam REG_DT = 17;
 		Nanod.au2Db:			dbhMux = auReg[31:16];
 		Nanod.ath2Dbh:			dbhMux = Ath;
 		Pch2Dbh:				dbhMux = PcH;
-		default: begin			dbhMux = 'X;	dbhIdle = 1'b1;				end
+		default: begin			dbhMux = '0;	dbhIdle = 1'b1;				end
 		endcase
 
 		unique case( 1'b1)
@@ -1374,7 +1374,7 @@ localparam REG_DT = 17;
 		rxl2Abd:				abdMux = regs68L[ actualRx];
 		Nanod.dbin2Abd:			abdMux = dbin;
 		Nanod.alu2Abd:			abdMux = aluOut;
-		default: begin			abdMux = 'X;	abdIdle = 1'b1;				end
+		default: begin			abdMux = '0;	abdIdle = 1'b1;				end
 		endcase
 
 		unique case( 1'b1)
@@ -1385,7 +1385,7 @@ localparam REG_DT = 17;
 		Nanod.au2Ab:			ablMux = auReg[15:0];
 		Nanod.aob2Ab:			ablMux = aob[15:0];
 		Nanod.atl2Abl:			ablMux = Atl;
-		default: begin			ablMux = 'X;	ablIdle = 1'b1;				end
+		default: begin			ablMux = '0;	ablIdle = 1'b1;				end
 		endcase
 			
 		unique case( 1'b1)		
@@ -1395,7 +1395,7 @@ localparam REG_DT = 17;
 		Nanod.au2Ab:			abhMux = auReg[31:16];
 		Nanod.aob2Ab:			abhMux = aob[31:16];
 		Nanod.ath2Abh:			abhMux = Ath;
-		default: begin			abhMux = 'X;	abhIdle = 1'b1;				end
+		default: begin			abhMux = '0;	abhIdle = 1'b1;				end
 		endcase
 			
 	end
@@ -1500,7 +1500,7 @@ localparam REG_DT = 17;
 		3'b101:		auInpMux = 4;
 		3'b110:		auInpMux = -2;
 		3'b111:		auInpMux = byteNotSpAlign | Nanod.noSpAlign ? -1 : -2;	// -1/-2
-		default:	auInpMux = 'X;
+		default:	auInpMux = '0;
 		endcase
 	end
 
@@ -1682,7 +1682,7 @@ localparam REG_DT = 17;
 		NANO_DOB_ADB:		dobInput = Abd;
 		NANO_DOB_DBD:		dobInput = Dbd;
 		NANO_DOB_ALU:		dobInput = aluOut;
-		default:			dobInput = 'X;
+		default:			dobInput = '0;
 		endcase
 	end
 
@@ -2078,7 +2078,7 @@ module sequencer( input s_clks Clks, input enT3,
 					c0c1 = { 1'b0, microLatch[ 6]};
 			endcase
 			
-		default: 				c0c1 = 'X;
+		default: 				c0c1 = '0;
 		endcase
 	end
 	
@@ -2649,7 +2649,7 @@ module microToNanoAddr(
 'hFB: orgBase = 7'h53 ;
 
 			default:
-				orgBase = 'X;
+				orgBase = '0;
 		endcase
 	end
 

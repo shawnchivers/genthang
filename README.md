@@ -383,7 +383,8 @@ post-processing options are applied by the HDMI scaler:
 (handheld) build; the DB9 build leaves it out because the FPGA has no logic to spare,
 and its menu does not show it. It dims the game picture to 75 %, 50 % or 25 % using the
 scanline dimmer: on scanline rows the scanline and brightness levels add, down to 25 %.
-The menu stays at full brightness. This is software dimming, not LCD backlight control:
+On handheld (`GT_PICTURE=1`) builds the menu is always drawn at a fixed 50 % so it is
+not harsh on the LCD; Brightness does not change it. This is software dimming, not LCD backlight control:
 it does not reduce backlight power or improve the panel's black level, and dark detail
 can be lost. The setting is saved to `GENTHANG.CFG` and kept, unused, when the card
 moves to a DB9 board. (1.9.0 also had a Color mode; it was removed in 1.9.1 because that

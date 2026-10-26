@@ -155,7 +155,7 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
 			2'b01:				dOperand = 'h0000;
 			2'b11:				dOperand = 'hffff;
 			// 2'b10:				dOperand = bcdResult;
-			2'b10:				dOperand = 'X;
+			2'b10:				dOperand = '0;
 		endcase
 	end
 	
@@ -194,7 +194,7 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
 			OP_SUB0:          addCin = 1'b1;			// NOT = 0 - op - 1
 			OP_ADDC,OP_SUBC:  addCin = ccrCore[ CF];
 			OP_ADDX,OP_SUBX:  addCin = pswCcr[ XF];
-			default: addCin = 1'bX;
+			default: addCin = 1'b0;
 		endcase
 	end
    	
@@ -203,7 +203,7 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
 		case( oper)
 		OP_LSL, OP_ASL, OP_ROL, OP_ROXL, OP_SLAA:   shftRight = 1'b0;
 		OP_LSR, OP_ASR, OP_ROR, OP_ROXR:            shftRight = 1'b1;
-		default:									shftRight = 1'bX;
+		default:									shftRight = 1'b0;
 		endcase
 		
 		case( oper)
@@ -221,7 +221,7 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
 				shftCin = pswCcr[ XF];
 				
 		OP_SLAA:	shftCin = aluColumn[1];   // col4 -> 0, col 6-> 1
-		default:	shftCin = 'X;
+		default:	shftCin = '0;
 		endcase
 	end
 	
@@ -260,9 +260,9 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
 		OP_SUBX:	result = subResult;
 		
 		OP_ABCD,
-		OP_SBCD:	result = { 8'hXX, bcdLatch};
+		OP_SBCD:	result = { 8'h00, bcdLatch};
 
-		default:	result = 'X;
+		default:	result = '0;
 		endcase	   
 	end
 	
@@ -535,7 +535,7 @@ module aluGetOp( input [15:0] row, input [2:0] col, input isCorf,
 	output logic [4:0] aluOp);
 	
 	always_comb begin
-		aluOp = 'X;
+		aluOp = '0;
 		unique case( col)  
 		1:   aluOp = OP_AND;
 		5:   aluOp = OP_EXT;
@@ -791,7 +791,7 @@ module ccrTable(
 		XNKVC	= 5'b11011,	// Used by BCD instructions. Don't modify Z at all at the binary operation. Only at the BCD correction cycle
 		
 		CUPDALL = 5'b11111,
-		CUNUSED = 5'bxxxxx;
+		CUNUSED = 5'b00000;
     
 
 	logic [MASK_NBITS-1:0] ccrMask1;
