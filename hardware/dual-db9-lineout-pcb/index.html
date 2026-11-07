@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A colorful GenThang L3 dual-DB9 line-out build guide, with simple capacitor choices, soldering steps, GPIO17 firmware and electrical checks.">
+<title>GenThang L3 · Stereo line-out build guide</title>
+<style>
+  :root { color-scheme: light; --bg: #fffcf7; --panel: #fff; --text: #273a35; --muted: #54655e; --line: #d6ddd7; --green: #246447; --blue: #225987; --purple: #654188; --coral: #a24332; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+  body { margin: 0; color: var(--text); background: var(--bg); font: 17px/1.65 system-ui, sans-serif; overflow-wrap: anywhere; }
+  a { color: var(--green); text-underline-offset: .2em; }
+  a:hover { color: #163e2c; }
+  a:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+  h1 { font-size: clamp(2.5rem, 5vw, 4.3rem); line-height: 1.08; letter-spacing: -.04em; margin: .7rem 0 1.5rem; }
+  h1 span { color: var(--coral); }
+  h2 { font-size: clamp(1.7rem, 3vw, 2.3rem); line-height: 1.2; margin: .5rem 0 1.2rem; }
+  h3 { font-size: 1.18rem; margin: 1rem 0 .6rem; }
+  p { margin: .8rem 0; }
+  .skip { position: absolute; top: -5rem; left: 1rem; }
+  .skip:focus { top: 1rem; z-index: 3; background: white; padding: .5rem; }
+  nav { position: sticky; top: 0; z-index: 2; background: #fffcf7f5; border-bottom: 1px solid var(--line); }
+  .nav-inner { max-width: 1180px; margin: auto; padding: .85rem 1.5rem; display: flex; align-items: center; gap: 2rem; }
+  .brand { font-weight: 800; text-decoration: none; white-space: nowrap; }
+  .nav-links { display: flex; gap: 1rem; overflow-x: auto; font-size: .88rem; }
+  .nav-links a { white-space: nowrap; }
+  header, main, footer { max-width: 1180px; margin: auto; padding: 0 1.5rem; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 3rem; align-items: center; padding-top: 3rem; padding-bottom: 3rem; }
+  .eyebrow, .step-number { color: var(--green); font-weight: 800; font-size: .82rem; text-transform: uppercase; letter-spacing: .12em; }
+  .lede, figcaption, footer { color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: .7rem; margin: 1.4rem 0; }
+  .button { padding: .6rem 1rem; border: 1px solid var(--line); border-radius: .65rem; text-decoration: none; font-weight: 750; background: white; }
+  .button.primary { color: white; background: var(--green); border-color: var(--green); }
+  .button:hover { border-color: var(--green); }
+  .specs { display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding: 1.2rem; background: #e7f4ed; border-radius: .8rem; }
+  .specs span { color: var(--muted); font-size: .88rem; }
+  .notice { border-left: 5px solid var(--blue); background: #edf4fc; padding: 1rem 1.2rem; margin: 1.4rem 0; border-radius: 0 .7rem .7rem 0; }
+  .warning { border-color: #a86509; background: #fff2d5; }
+  .warning-sign { display: inline-block; width: 1.4rem; height: 1.4rem; vertical-align: text-bottom; margin-right: .3rem; }
+  section { padding: 2.8rem 0; border-bottom: 1px solid var(--line); }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+  .choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.4rem 0; }
+  .choice { padding: 1.2rem; border: 2px solid; border-radius: .9rem; }
+  .choice.stock { background: #e9f5ee; border-color: var(--green); }
+  .choice.warm { background: #fff0e9; border-color: var(--coral); }
+  .choice.dark { background: #f4edfa; border-color: var(--purple); }
+  .choice strong { font-size: 1.6rem; }
+  .choice .label { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; }
+  .choice p { margin: .5rem 0; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: .6rem; margin: 1.2rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+  caption { text-align: left; font-weight: 750; padding: .8rem 1rem; background: #edf4fc; }
+  th, td { padding: .7rem .9rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+  th { background: #edf4fc; }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { white-space: nowrap; }
+  figure { margin: 0; border: 1px solid var(--line); background: white; border-radius: .8rem; overflow: hidden; }
+  img { display: block; width: 100%; height: auto; }
+  .technical { padding: 1rem; }
+  figcaption { padding: .8rem 1rem; font-size: .88rem; }
+  ol, ul { padding-left: 1.4rem; }
+  li { margin: .6rem 0; }
+  code { font-size: .9em; background: #edf2ee; padding: .1em .3em; border-radius: .2rem; overflow-wrap: anywhere; }
+  footer { padding-top: 2rem; padding-bottom: 2.5rem; font-size: .9rem; }
+  @media (max-width: 760px) {
+    html { scroll-padding-top: 9rem; }
+    .hero, .split, .choices { grid-template-columns: minmax(0, 1fr); }
+    .hero { padding-top: 2rem; gap: 1.5rem; }
+    .hero figure { max-width: 440px; margin: auto; }
+    .nav-inner { display: block; padding: .6rem 1rem; }
+    .brand { white-space: normal; }
+    .nav-links { margin-top: .4rem; }
+    header, main, footer { padding-left: 1rem; padding-right: 1rem; }
+    section { padding: 2rem 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media print {
+    body { background: white; font-size: 11pt; }
+    nav, .skip, .actions { display: none; }
+    header, main, footer { max-width: none; padding: 0; }
+    .hero, section { padding: 1rem 0; }
+    .table-wrap { overflow: visible; }
+    h2, h3 { break-after: avoid; }
+    figure, tr, .notice, .choice { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#caps">Skip to the capacitor chooser</a>
+<nav aria-label="L3 build guide">
+  <div class="nav-inner">
+    <a class="brand" href="#top">GenThang / L3 Line-out</a>
+    <div class="nav-links">
+      <a href="#parts">Parts</a><a href="#caps">Choose caps</a><a href="#solder">Solder</a>
+      <a href="#check">Check</a><a href="#flash">Flash</a><a href="#listen">Listen</a><a href="#downloads">Files</a>
+    </div>
+  </div>
+</nav>
+<header class="hero" id="top">
+  <div>
+    <p class="eyebrow">L3 build guide · two-player Genesis · stereo line-out</p>
+    <h1>Build your L3.<br><span>Choose your sound.</span></h1>
+    <p class="lede">Build the GenThang L3 carrier: two Genesis controller ports,
+      a removable Tang Nano 20K and a 3.5 mm stereo output for powered speakers.
+      Everything you solder is through-hole.</p>
+    <div class="actions">
+      <a class="button primary" href="#caps">Help me choose capacitors</a>
+      <a class="button" href="dual-db9-lineout-L3-OSHPARK.zip" download>Order the L3 PCB</a>
+    </div>
+    <p>The author confirms the GPIO17 audio move works and has submitted L3 to
+      OSH Park. <a href="TEST-STATUS.md">Test scope and limits</a>.</p>
+  </div>
+  <figure>
+    <img class="technical" src="board-top.svg" width="1000" height="700" alt="L3 carrier top view showing the rear stereo audio circuit and front DB9 controller ports">
+    <figcaption>L3 carrier: stereo audio at the rear, two DB9 controller ports at the front.</figcaption>
+  </figure>
+</header>
+<main>
+  <div class="specs" aria-label="Board specifications">
+    <div><b>100 x 70 mm</b><br><span>2-layer, 1.6 mm PCB</span></div>
+    <div><b>13 soldered parts</b><br><span>All through-hole</span></div>
+    <div><b>Left 31 / Right 17</b><br><span>FPGA GPIO numbers</span></div>
+    <div><b>2 controller ports</b><br><span>Canonical DB9 pinouts</span></div>
+  </div>
+  <aside class="notice warning">
+    <svg class="warning-sign" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M24 4L46 43H2Z" fill="#ffd46b" stroke="#273a35" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M24 16v13" stroke="#273a35" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="24" cy="36" r="2.5" fill="#273a35"/>
+    </svg>
+    <b>Power off before building or changing connections.</b> Controller pin 5 is
+    <b>3.3 V only, never 5 V</b>. There are no port fuses, level shifters or ESD
+    protection. Leave the Nano's LCD and speaker connectors empty.
+    Line-out is for <b>powered speakers or an amplifier, not direct headphones</b>.
+  </aside>
+
+  <section id="parts">
+    <p class="step-number">Step 1</p><h2>Gather the parts for one L3 board</h2>
+    <div class="table-wrap">
+      <table>
+        <caption>Shopping list</caption>
+        <thead><tr><th scope="col">Qty</th><th scope="col">Part</th><th scope="col">What matters</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>L3 carrier PCB</td><td><a href="dual-db9-lineout-L3-OSHPARK.zip" download>OSH Park ZIP</a>; do not order an old L1/L2 archive.</td></tr>
+          <tr><td>1</td><td>Tang Nano 20K</td><td>Two downward 1x20 male headers; Harwin M20-9992046 is the documented socket mate.</td></tr>
+          <tr><td>2</td><td>Harwin M20-7822046 female sockets</td><td>J5/J6: 1x20, 2.54 mm pitch, <b>8.5 mm tall</b>. <a href="https://www.digikey.com/en/products/detail/harwin-inc/M20-7822046/1905">Source</a></td></tr>
+          <tr><td>2</td><td>Kycon K22X-E9P-N male DB9</td><td>J1/J2: right angle, boardlocks, recessed #4-40 inserts. <b>Not NJ.</b> <a href="https://www.digikey.com/en/products/detail/kycon-inc/K22X-E9P-N/2596805">Source</a></td></tr>
+          <tr><td>1</td><td>CUI / Same Sky SJ1-3523N</td><td>J3: exact <b>3-pin</b> stereo jack. Not the 5-pin PJ-307. <a href="reference/cui-SJ1-352XN.pdf">Drawing</a></td></tr>
+          <tr><td>2</td><td>1 kOhm resistors</td><td>R1/R2: 1/4 W axial, 7.62 mm lead spacing.</td></tr>
+          <tr><td>2</td><td>47 kOhm resistors</td><td>R3/R4: 1/4 W axial, 7.62 mm lead spacing.</td></tr>
+          <tr><td>2</td><td>Nonpolarized filter caps</td><td>C1/C2: <a href="#caps">choose 10, 47 or 56 nF below</a>; 50 V, 5.0 mm lead spacing.</td></tr>
+          <tr><td>2</td><td>10 uF radial electrolytics</td><td>C3/C4: 25 V, 5 mm body diameter, 2.0 mm lead spacing. <b>Polarized.</b></td></tr>
+          <tr><td>1 each</td><td>TF card, USB-C cable, HDMI cable/display</td><td>FAT32/exFAT card with your own ROMs; USB-C supplies the Nano.</td></tr>
+          <tr><td>1-2</td><td>Wired Genesis controllers</td><td>Canonical 3.3 V-only DB9 wiring; keep power off when connecting pads.</td></tr>
+          <tr><td>1</td><td>Powered speakers / amplifier + stereo TRS cable</td><td>3.5 mm tip = left, ring = right, sleeve = ground. Start with volume at zero.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>Tools:</b> soldering iron and solder, flush cutters, multimeter, a small
+      screwdriver if mounting the board, and a computer with Gowin Programmer.</p>
+    <p><b>PCB order:</b> standard 2-layer, 1 oz copper, 1.6 mm board. In the OSH Park
+      preview, check the L3 marking, 100 x 70 mm outline, rear jack notch and three
+      <b>0.60 x 1.40 mm plated jack slots</b>. No stencil or SMT assembly is needed.</p>
+  </section>
+
+  <section id="caps">
+    <p class="step-number">Step 2 · The easy capacitor chooser</p>
+    <h2>Pick your sound. Buy two matching filter caps.</h2>
+    <p><b>C1 and C2</b> set the analog low-pass response. Choose <b>one</b> card below
+      and buy <b>two capacitors of that value</b>: one for the left channel, one for the right.
+      If unsure, start with the green stock option.</p>
+    <div class="choices">
+      <article class="choice stock" data-cap-nf="10">
+        <p class="label">Stock · start here</p><h3>More treble detail</h3>
+        <strong>10 nF</strong><p>Marking: <code>103</code><br>Also written: <b>0.01 uF</b></p>
+        <p><b>Buy 2.</b> Nominal cutoff: 15.9 kHz. Matches the stock BOM and schematic.</p>
+      </article>
+      <article class="choice warm" data-cap-nf="47">
+        <p class="label">Optional · darker</p><h3>Model 1 VA0-VA2-style</h3>
+        <strong>47 nF</strong><p>Marking: <code>473</code><br>Also written: <b>0.047 uF</b></p>
+        <p><b>Buy 2.</b> Nominal cutoff: 3.39 kHz. Less high-frequency content.</p>
+      </article>
+      <article class="choice dark" data-cap-nf="56">
+        <p class="label">Optional · darker still</p><h3>Model 1 VA3-VA6-style</h3>
+        <strong>56 nF</strong><p>Marking: <code>563</code><br>Also written: <b>0.056 uF</b></p>
+        <p><b>Buy 2.</b> Nominal cutoff: 2.84 kHz. A good starting point for the darker Model 1-style option.</p>
+      </article>
+    </div>
+    <div class="split">
+      <div>
+        <h3>How to shop without getting lost</h3>
+        <ol>
+          <li>Search for your chosen value, followed by <b>“50 V through-hole film
+            capacitor 5 mm pitch”</b>. A nonpolarized ceramic disc also works.
+            Prefer 5% tolerance for a matched filter pair.</li>
+          <li>Check <b>5.0 mm lead spacing</b> and the body dimensions in the listing.
+            A film body must clear nearby parts and your enclosure; the stock footprint
+            is for a 5 mm ceramic disc.</li>
+          <li>Buy two identical parts. <b>Do not put 10 nF on one channel and 56 nF on the other.</b></li>
+          <li>Still buy <b>two 10 uF, 25 V radial electrolytics</b> for C3/C4,
+            regardless of your filter choice. Their job is to block DC, not select the tone.</li>
+        </ol>
+        <aside class="notice warning"><b>nF is not uF!</b> A 10 nF filter cap is
+          <b>0.01 uF</b>, not 10 uF. C1/C2 and C3/C4 are not interchangeable.</aside>
+      </div>
+      <figure>
+        <img src="assets/capacitors.svg" width="780" height="330" loading="lazy"
+          alt="Nonpolarized C1/C2 filter caps beside polarized C3/C4 electrolytics, showing plus to the square pad and the minus stripe toward the jack">
+        <figcaption>Filter caps: either direction. Electrolytics: plus to the square
+          <b>+</b> pad; stripe/minus toward the jack.</figcaption>
+      </figure>
+    </div>
+    <p><b>Keep R1/R2 = 1 kOhm, R3/R4 = 47 kOhm, C3/C4 = 10 uF.</b>
+      Only C1/C2 change. No PCB or firmware changes are required for these choices.
+      Power off and unplug USB before replacing parts.</p>
+    <p>The cutoff numbers use <code>fc = 1 / (2 * pi * R * C)</code> with a 1 kOhm
+      resistor. Real loading shifts the response. These options approximate one
+      analog filter corner, not a complete original Genesis audio circuit.
+      The optional responses have not been measured on L3.
+      <a href="README.md#optional-model-1-style-low-pass-filter">Detailed filter notes</a>.</p>
+  </section>
+
+  <section id="solder">
+    <p class="step-number">Step 3</p><h2>Low parts first. All parts on top.</h2>
+    <div class="split">
+      <div>
+        <p>Parts go on the <b>silkscreen side</b>; solder underneath. With DB9 ports
+          at the front/bottom: <b>USB-C faces left, HDMI right, audio jack rear/top</b>.
+          J5 is the rear socket; J6 is the front. Socket pin 1 is at the left/USB-C end.</p>
+        <ol>
+          <li><b>R1/R2, 1 kOhm:</b> bend to 7.62 mm spacing, seat flat, solder and trim.
+            R3/R4 are <b>47 kOhm</b>. Resistors work either direction.</li>
+          <li><b>C1/C2:</b> fit your selected matching pair (10, 47 or 56 nF).
+            They are nonpolarized and can face either way.</li>
+          <li><b>C3/C4, 10 uF:</b> positive lead into the <b>square + pad</b>;
+            the can's stripe marks the negative lead. The longer lead is positive
+            on an untrimmed new part. Follow the board's polarity marks, not the jack's orientation.</li>
+          <li><b>J3, SJ1-3523N:</b> fit all three flat pins into the plated slots
+            and locating pegs into their holes. Tack one pin, check it is seated,
+            then solder the rest. <b>Do not substitute the 5-pin PJ-307.</b></li>
+          <li><b>J5/J6 sockets:</b> hold parallel, flush, 20.32 mm apart.
+            An unpowered Nano can align the sockets while you tack their end pins.
+            Remove the Nano before soldering all remaining socket contacts; never solder it into the carrier.</li>
+          <li><b>J1/J2 DB9:</b> noses face out over the front edge.
+            Solder all nine pins and both boardlocks on each port.</li>
+        </ol>
+        <p>Inspect for bridges and trim sharp leads. Count <b>13 fitted parts</b>
+          and four empty mounting holes. <a href="ASSEMBLY.md">Detailed assembly notes</a>.</p>
+      </div>
+      <figure>
+        <img class="technical" src="assembly-top.svg" loading="lazy" alt="L3 top-side assembly drawing with the rotated Nano sockets, rear audio filter and front DB9 ports">
+        <figcaption><a href="assembly-top.svg">Open the full assembly drawing</a>.
+          For mechanical checks, print <a href="fit-1to1.svg">the fit sheet</a> at
+          actual size and verify its scale with a ruler.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="check">
+    <p class="step-number">Step 4 · Unpowered, Nano removed</p>
+    <h2>Check the board before applying power</h2>
+    <p>Use <a href="net-test.csv" download>the continuity checklist</a> for every DB9
+      contact. Number contacts from the USB-C/left end, not from the front edge.
+      DB9 mating-face and solder-side views are mirrored: use molded pin numbers.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Controller continuity, unchanged from canonical GenThang</caption>
+        <thead><tr><th scope="col">DB9 pin</th><th scope="col">Signal</th><th scope="col">P1 / J1 to J6 contact</th><th scope="col">P2 / J2 to J5 contact</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Up / D0</td><td>1</td><td>5</td></tr>
+          <tr><td>2</td><td>Down / D1</td><td>2</td><td>6</td></tr>
+          <tr><td>3</td><td>Left / D2</td><td>5</td><td>9</td></tr>
+          <tr><td>4</td><td>Right / D3</td><td>8</td><td>10</td></tr>
+          <tr><td>5</td><td><b>3.3 V supply</b></td><td>19</td><td>16</td></tr>
+          <tr><td>6</td><td>TL / B, A</td><td>9</td><td>12</td></tr>
+          <tr><td>7</td><td>TH select</td><td>12</td><td>17</td></tr>
+          <tr><td>8</td><td>Ground</td><td>20</td><td>15</td></tr>
+          <tr><td>9</td><td>TR / C, Start</td><td>13</td><td>18</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <caption>Audio and isolation checks</caption>
+        <thead><tr><th scope="col">Check</th><th scope="col">Required result</th></tr></thead>
+        <tbody>
+          <tr><td>J6.14 / GPIO31 to R1 pad 1</td><td>Continuity: left audio input.</td></tr>
+          <tr><td>J6.15 / GPIO17 to R2 pad 1</td><td>Continuity: right audio input. No jumper required on L3.</td></tr>
+          <tr><td>TRS plug tip to C3 minus</td><td>Continuity with the plug inserted: left output, J3 pin 2.</td></tr>
+          <tr><td>TRS plug ring to C4 minus</td><td>Continuity with the plug inserted: right output, J3 pin 3.</td></tr>
+          <tr><td>TRS plug sleeve / J3 pin 1</td><td>Continuity to ground, as are the DB9 shells and boardlocks.</td></tr>
+          <tr><td>C3/C4 positive leads</td><td>Connect to the R1/R2 filter side, not directly to the jack.</td></tr>
+          <tr><td>3V3 to GND</td><td>No short; this should read open with the Nano removed.</td></tr>
+          <tr><td>J5.1 (5 V) and J5.7 (old GPIO56)</td><td>Unconnected on the carrier. Do not bridge old and new audio outputs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="notice warning"><b>If a check fails, stop.</b> Repair the bridge,
+      wrong part or bad joint and repeat the test. Do not plug in the Nano to
+      "see if it works".</aside>
+  </section>
+
+  <section id="flash">
+    <p class="step-number">Step 5</p><h2>Flash the GPIO17 image, not an old DB9 image</h2>
+    <p>The GPIO17 change is already in GenThang main. The older releases through
+      1.9.2 use GPIO56 for right audio and will leave L3's right channel without the
+      intended audio signal.</p>
+    <ol>
+      <li>Download <a href="https://raw.githubusercontent.com/shawnchivers/genthang/main/builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin" download><code>genthang_nano20k_db9_gpio17_flash.bin</code></a>
+        and <a href="https://raw.githubusercontent.com/shawnchivers/genthang/main/builds/db9-gpio17/SHA256SUMS">its SHA256SUMS</a>.
+        Keep them in the same folder and verify with
+        <code>sha256sum -c SHA256SUMS --ignore-missing</code>. Do not use the raw handheld or bitstream-only image.</li>
+      <li>Connect the Nano separately by USB-C. In Gowin Programmer choose
+        <b>GW2AR / GW2AR-18C</b>, <b>External Flash Mode</b>,
+        <b>exFlash Erase, Program thru GAO-bridge</b>, and start address
+        <b>0x000000</b>. Program the complete <code>_flash.bin</code> and wait for success.</li>
+      <li>Disconnect USB. Prepare a TF card with an MBR partition table and FAT32
+        or exFAT; formatting erases existing data. Copy your own <code>.md</code>,
+        <code>.bin</code> or <code>.gen</code> ROMs, up to 4 MB each.</li>
+      <li>Insert the card <b>before</b> seating the Nano: its slot is underneath.
+        Plug the Nano into both sockets with USB-C left and HDMI right. Check all
+        40 pins are aligned, with no one-position offset. Press evenly.</li>
+    </ol>
+    <p><a href="https://github.com/shawnchivers/genthang#1-flash-the-board">Full flashing instructions</a>
+      · <a href="https://github.com/shawnchivers/genthang#2-prepare-the-tf-card">TF card setup</a>.
+      Standard builds do not support USB ROM upload; lift the Nano out to update the card.</p>
+  </section>
+
+  <section id="listen">
+    <p class="step-number">Step 6</p><h2>Power up, then listen</h2>
+    <ol>
+      <li>Place the board on a nonconductive surface, with no controller attached.
+        Connect HDMI, then USB-C power. Measure about <b>3.3 V between DB9 pins 5
+        and 8 on each port</b>. Avoid shorting adjacent pins with the probes.</li>
+      <li>Power off. Connect a pad to J1/player 1, power on and launch a game.
+        Test directions, A/B/C and Start. Test the second port in a two-player game,
+        changing controller connections only while unpowered.</li>
+      <li>Power off. Connect the powered speakers with their volume at zero,
+        then power on. Launch a game and raise volume slowly.
+        Verify left and right with a known stereo passage or channel test.</li>
+      <li>On a display that dislikes HDMI audio/data islands, choose
+        <b>Video output: DVI+LINE OUT</b> in the options menu.
+        The analog jack works in HDMI mode too. Audio is muted while the game menu is open.</li>
+      <li>Open the in-game menu with <b>Start+A+B+C</b> on a 3-button pad or
+        <b>Mode+Start</b> on a 6-button pad. Menu navigation uses player 1.</li>
+    </ol>
+    <p><b>If one channel is quiet or hums:</b> first check the exact SJ1-3523N jack,
+      its solder joints, plug-to-cap continuity, cable and speaker channel.
+      Changing filter caps changes the tonal response; it is not a fix for a broken joint
+      or incorrect jack. GPIO17 still carries an on-board LED load.</p>
+    <p><b>Standalone mounting:</b> use the four M2.5 holes with nonconductive supports,
+      keeping underside joints off the desk or metal. L3 retains L2 geometry, not
+      O1's Nano orientation: <b>the O1 biomechanical case is not its matching enclosure</b>.
+      Check real cable overmolds before selecting an enclosure.</p>
+  </section>
+
+  <section id="downloads">
+    <p class="step-number">Bench files</p><h2>Everything for this L3 carrier</h2>
+    <ul>
+      <li><b>Order:</b> <a href="dual-db9-lineout-L3-OSHPARK.zip" download>OSH Park ZIP</a>,
+        <a href="dual-db9-lineout-L3-gerbers.zip" download>generic Gerber ZIP</a>,
+        <a href="SHA256SUMS">hardware checksums</a>.</li>
+      <li><b>Assemble:</b> <a href="BOM.csv" download>stock BOM</a>,
+        <a href="ASSEMBLY.md">assembly notes</a>, <a href="net-test.csv" download>continuity checklist</a>,
+        <a href="schematic.pdf">schematic</a>, <a href="fit-1to1.svg">1:1 fit sheet</a>.</li>
+      <li><b>Inspect:</b> <a href="board-top.svg">top copper</a>,
+        <a href="board-bottom.svg">bottom copper</a>, <a href="dual-db9-lineout-pcb.kicad_pcb" download>KiCad PCB</a>,
+        <a href="validation.json">CAD report</a>, <a href="TEST-STATUS.md">test status</a>.</li>
+      <li><b>Background:</b> <a href="README.md">L3 design and capacitor notes</a>,
+        <a href="https://github.com/shawnchivers/genthang">GenThang setup and controls</a>.</li>
+    </ul>
+    <p>This page and its SVG illustrations have no external viewer or
+      font dependency. Print it from your browser for a paper or PDF bench copy.
+      Firmware downloads and external references require internet access.</p>
+  </section>
+</main>
+<footer>
+  <p><a href="../README.md">Hardware index</a> · <a href="#top">Back to top</a></p>
+  <p>This is an unprotected hobby build; successful author testing is not ESD or production
+    certification. Build, wire and flash at your own risk. ROMs are not included.</p>
+</footer>
+</body>
+</html>

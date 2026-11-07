@@ -1,5 +1,9 @@
 # Two-player Genesis carrier — O1 (reassigned-pin PCB)
 
+**Building a complete console?** Follow the
+[illustrated DB9 + biomech build guide](index.html), including the printed
+case, firmware setup and pre-power checks.
+
 **PCB version of the canonical two-controller pinout**
 (`GT_PAD=db9`, see the
 [controller wiring guide](../../README.md#3-connect-a-controller)).

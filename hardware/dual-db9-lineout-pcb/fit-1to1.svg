@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="110mm" height="85mm" viewBox="-5 -5 110 85">
+<rect x="-5" y="-5" width="110" height="85" fill="white"/>
+<style>text{font-family:monospace;font-size:1.7px}.line{fill:none;stroke:#111;stroke-width:.15}</style>
+<rect class="line" width="100" height="70"/>
+<rect class="line" x="54.4" y="3.9" width="1.2" height="1.2" rx="0.6"/>
+<rect class="line" x="54.4" y="1.4" width="1.2" height="1.2" rx="0.6"/>
+<rect class="line" x="49.4" y="8.9" width="1.2" height="1.2" rx="0.6"/>
+<rect class="line" x="44.4" y="3.9" width="1.2" height="1.2" rx="0.6"/>
+<rect class="line" x="44.4" y="1.4" width="1.2" height="1.2" rx="0.6"/>
+<rect class="line" x="54.7" y="8.8" width="0.6" height="1.4" rx="0.3"/>
+<rect class="line" x="49.3" y="4.2" width="1.4" height="0.6" rx="0.3"/>
+<text x="51.0" y="3.5">J3.1</text>
+<rect class="line" x="44.7" y="8.8" width="0.6" height="1.4" rx="0.3"/>
+<rect class="line" x="29.6" y="13.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="31.0" y="13.0">R3.1</text>
+<rect class="line" x="37.22" y="13.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="30.6" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="32.0" y="6.0">C3.1</text>
+<rect class="line" x="32.6" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="17.6" y="12.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="19.0" y="12.0">C1.1</text>
+<rect class="line" x="22.6" y="12.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="17.6" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="19.0" y="6.0">R1.1</text>
+<rect class="line" x="25.220000000000002" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="75.6" y="13.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="77.0" y="13.0">R4.1</text>
+<rect class="line" x="83.22" y="13.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="76.6" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="78.0" y="6.0">C4.1</text>
+<rect class="line" x="78.6" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="63.6" y="12.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="65.0" y="12.0">C2.1</text>
+<rect class="line" x="68.6" y="12.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="63.6" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<text x="65.0" y="6.0">R2.1</text>
+<rect class="line" x="71.22" y="6.6" width="0.8" height="0.8" rx="0.4"/>
+<rect class="line" x="88.97" y="58.95" width="3.05" height="3.05" rx="1.525"/>
+<rect class="line" x="63.98" y="58.95" width="3.05" height="3.05" rx="1.525"/>
+<rect class="line" x="81.61" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="78.84" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="76.07" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="73.3" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="82.995" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="80.225" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="77.455" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="74.685" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="71.91499999999999" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<text x="73.46" y="58.08">J2.1</text>
+<rect class="line" x="32.97" y="58.95" width="3.05" height="3.05" rx="1.525"/>
+<rect class="line" x="7.98" y="58.95" width="3.05" height="3.05" rx="1.525"/>
+<rect class="line" x="25.61" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="22.84" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="20.069999999999997" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="17.299999999999997" y="61.375" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="26.994999999999997" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="24.224999999999998" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="21.455" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="18.685" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<rect class="line" x="15.915000000000001" y="58.535" width="1.09" height="1.09" rx="0.545"/>
+<text x="17.46" y="58.08">J1.1</text>
+<rect class="line" x="93.65" y="43.65" width="2.7" height="2.7" rx="1.35"/>
+<rect class="line" x="3.65" y="43.65" width="2.7" height="2.7" rx="1.35"/>
+<rect class="line" x="93.65" y="3.65" width="2.7" height="2.7" rx="1.35"/>
+<rect class="line" x="3.65" y="3.65" width="2.7" height="2.7" rx="1.35"/>
+<rect class="line" x="73.61999999999999" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="71.08" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="68.53999999999999" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="66.0" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="63.46" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="60.92" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="58.38" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="55.84" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="53.300000000000004" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="50.760000000000005" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="48.22" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="45.68" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="43.14" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="40.6" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="38.06" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="35.52" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="32.980000000000004" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="30.439999999999998" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="27.9" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="25.36" y="20.169999999999998" width="1.02" height="1.02" rx="0.51"/>
+<text x="26.87" y="19.68">J5.1</text>
+<rect class="line" x="73.61999999999999" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="71.08" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="68.53999999999999" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="66.0" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="63.46" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="60.92" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="58.38" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="55.84" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="53.300000000000004" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="50.760000000000005" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="48.22" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="45.68" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="43.14" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="40.6" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="38.06" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="35.52" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="32.980000000000004" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="30.439999999999998" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="27.9" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<rect class="line" x="25.36" y="40.49" width="1.02" height="1.02" rx="0.51"/>
+<text x="26.87" y="40.0">J6.1</text>
+<rect class="line" x="22.78" y="19.565" width="54.040000000000006" height="22.55" stroke-dasharray="1,1"/>
+<rect class="line" x="0" y="19.565" width="22.78" height="22.55" stroke-dasharray="1,1"/>
+<rect class="line" x="76.82000000000001" y="19.565" width="23.179999999999993" height="22.55" stroke-dasharray="1,1"/>
+<rect class="line" x="6.595000000000001" y="57.6" width="30.81" height="18.5"/>
+<rect class="line" x="62.595" y="57.6" width="30.81" height="18.5"/>
+<text x="2" y="28">USB-C LEFT</text>
+<text x="80" y="28">HDMI RIGHT</text>
+<text x="50" y="19" text-anchor="middle">AUDIO REAR / NANO ON FEMALE HEADERS</text>
+<text x="1" y="73">100 x 70 mm / TOP VIEW / K22X-E9P-N + SJ1-3523N</text>
+<path class="line" d="M 7,78 h50 M7,76 v4 M57,76 v4"/>
+<text x="7" y="75">50mm ruler: PRINT 100%, NO FIT-TO-PAGE</text>
+</svg>

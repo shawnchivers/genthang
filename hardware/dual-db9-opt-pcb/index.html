@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Build a GenThang two-player Genesis console: solder the O1 dual-DB9 carrier, test it, flash a Tang Nano 20K and assemble the 3D-printed biomechanical case.">
+<title>GenThang DB9 · Biomech console build guide</title>
+<style>
+  :root { color-scheme: light; --bg: #fbfaf7; --panel: #f0f3ef; --line: #cbd3cf; --text: #202a26; --muted: #52615a; --accent: #246447; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 system-ui, sans-serif; overflow-wrap: anywhere; }
+  a { color: var(--accent); text-underline-offset: .2em; }
+  a:hover { color: #163e2c; }
+  a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  .skip { position: absolute; left: 1rem; top: -5rem; }
+  .skip:focus { top: 1rem; z-index: 3; background: var(--bg); padding: .5rem; }
+  nav { position: sticky; top: 0; z-index: 2; background: #fbfaf7f5; border-bottom: 1px solid var(--line); }
+  .nav-inner { max-width: 1200px; margin: auto; padding: .8rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; }
+  .brand { white-space: nowrap; font-weight: 800; text-decoration: none; }
+  .nav-links { display: flex; gap: 1.2rem; overflow-x: auto; font-size: .88rem; }
+  .nav-links a { white-space: nowrap; }
+  header, main, footer { max-width: 1200px; margin: auto; padding: 0 1.5rem; }
+  .hero { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: center; padding-top: 4rem; padding-bottom: 3rem; }
+  h1 { font-size: clamp(2.4rem, 5vw, 4.3rem); line-height: 1.1; letter-spacing: -.04em; margin: .6rem 0 1.5rem; }
+  h1 span { color: var(--accent); }
+  h2 { font-size: clamp(1.7rem, 3vw, 2.3rem); line-height: 1.2; margin: .4rem 0 1.2rem; }
+  h3 { font-size: 1.15rem; margin-top: 1.5rem; }
+  p { margin: .8rem 0; }
+  .eyebrow, .step-number { font-size: .8rem; text-transform: uppercase; letter-spacing: .14em; font-weight: 800; color: var(--accent); }
+  .lede, figcaption { color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: .8rem; margin: 1.5rem 0; }
+  .button { display: inline-block; padding: .65rem 1rem; border: 1px solid var(--line); border-radius: .5rem; text-decoration: none; font-weight: 700; }
+  .button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .button:hover { border-color: var(--accent); }
+  .specs { display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; border-block: 1px solid var(--line); padding: 1.2rem 0; }
+  .specs span { color: var(--muted); font-size: .9rem; }
+  section { padding: 3rem 0; border-bottom: 1px solid var(--line); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: .75rem; overflow: hidden; }
+  img { display: block; width: 100%; height: auto; }
+  .technical { background: white; padding: 1rem; }
+  figcaption { padding: .9rem 1rem; font-size: .88rem; }
+  .notice { padding: 1rem 1.2rem; border-left: 4px solid var(--accent); background: var(--panel); margin: 1.5rem 0; }
+  .warning { border-color: #bd7d1b; background: #fff5df; }
+  .bear-warning { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+  .bear-warning svg { flex: 0 0 48px; }
+  .bear-warning div { flex: 1 1 14rem; }
+  .bear-warning p { margin: .4rem 0 0; }
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0; border: 1px solid var(--line); border-radius: .5rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+  caption { text-align: left; padding: .8rem 1rem; font-weight: 700; background: var(--panel); }
+  th, td { text-align: left; vertical-align: top; padding: .7rem 1rem; border-bottom: 1px solid var(--line); }
+  th { background: var(--panel); }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { white-space: nowrap; }
+  ol, ul { padding-left: 1.4rem; }
+  li { margin: .65rem 0; }
+  code { overflow-wrap: anywhere; font-size: .9em; background: var(--panel); padding: .1em .3em; border-radius: .2rem; }
+  footer { padding-top: 2rem; padding-bottom: 3rem; font-size: .9rem; color: var(--muted); }
+  @media (max-width: 760px) {
+    html { scroll-padding-top: 9rem; }
+    .hero, .split { grid-template-columns: minmax(0, 1fr); }
+    .brand { white-space: normal; }
+    .hero { padding-top: 2rem; }
+    .nav-inner { display: block; padding: .6rem 1rem; }
+    .nav-links { margin-top: .4rem; }
+    header, main, footer { padding-left: 1rem; padding-right: 1rem; }
+    section { padding: 2rem 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media print {
+    :root { color-scheme: light; --bg: white; --panel: #f3f3f3; --line: #ccc; --text: black; --muted: #444; --accent: #185f42; }
+    body { font-size: 11pt; }
+    nav, .skip, .actions { display: none; }
+    header, main, footer { max-width: none; padding: 0; }
+    .hero { padding: 0 0 1rem; }
+    section { padding: 1rem 0; }
+    h2, h3 { break-after: avoid; }
+    figure, tr, .notice { break-inside: avoid; }
+    .table-wrap { overflow: visible; }
+    a, a:hover { color: #185f42; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#parts">Skip to assembly instructions</a>
+<nav aria-label="Build guide">
+  <div class="nav-inner">
+    <a class="brand" href="#top">GenThang / DB9 Biomech</a>
+    <div class="nav-links">
+      <a href="#parts">Parts</a><a href="#print">Print</a><a href="#solder">Solder</a>
+      <a href="#check">Check</a><a href="#firmware">Firmware</a><a href="#test">Test</a>
+      <a href="#case">Case</a><a href="#play">Play</a><a href="#troubleshooting">Help</a>
+    </div>
+  </div>
+</nav>
+<header class="hero" id="top">
+  <div>
+    <p class="eyebrow">Build guide · O1 carrier · Tang Nano 20K</p>
+    <h1>Two controllers.<br><span>One biomech console.</span></h1>
+    <p class="lede">Build a Sega Genesis / Mega Drive FPGA console with the GenThang
+      dual-DB9 carrier and its original, Giger-inspired 3D-printed enclosure.
+      Four through-hole parts, a removable Nano, and a two-piece ribbed shell.</p>
+    <div class="actions">
+      <a class="button primary" href="#parts">Start building</a>
+      <a class="button" href="#downloads">Download files</a>
+    </div>
+    <p class="lede">The O1 PCB has been fabricated and the case printed. SEGA OEM
+      3- and 6-button controllers have been tested; third-party pads are untested.
+      Illustrations here are CAD renders, not assembly photographs.</p>
+  </div>
+  <figure>
+    <img src="../dual-db9-biomech-case/renders/hero.png" width="1600" height="1000"
+      alt="Black biomechanical case with ribbed lid, corner columns and two front controller openings">
+    <figcaption>The completed enclosure. HDMI exits between the controller ports; USB-C is at the back.</figcaption>
+  </figure>
+</header>
+<main>
+  <div class="specs" aria-label="Build specifications">
+    <div><b>2 players</b><br><span>Genesis 3/6-button pads</span></div>
+    <div><b>4 soldered parts</b><br><span>2 sockets + 2 DB9 ports</span></div>
+    <div><b>121.7 × 98.4 × 48.5 mm</b><br><span>Assembled case</span></div>
+    <div><b>HDMI video + audio</b><br><span>USB-C power</span></div>
+  </div>
+  <aside class="notice warning">
+    <b>Read before starting:</b> this is the <b>O1 carrier</b>, not the separate
+    line-out PCB. There is no audio jack on O1. Controller pin 5 is <b>3.3 V only,
+    never 5 V</b>; FPGA inputs are not 5 V tolerant. There are no port fuses,
+    level shifters or ESD protection. Disconnect USB power before soldering,
+    changing connections, inserting the Nano, or plugging/unplugging controllers.
+    Leave the Nano's LCD connector and speaker header empty.
+  </aside>
+  <aside class="notice warning bear-warning" aria-label="Playful disclaimer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"
+      aria-hidden="true" focusable="false">
+      <path d="M24 4 L46 43 H2 Z" fill="#f3c47e" stroke="#111416" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 17 V29" stroke="#111416" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="24" cy="36" r="2.5" fill="#111416"/>
+    </svg>
+    <div>
+      <b>WARNING: Humans only. Not for bears.</b>
+      <p>Built for human hands, not bear paws. Claws are not soldering tools, and honey
+        is not thermal paste. If you are a bear, please hand this project to a human
+        with opposable thumbs.</p>
+    </div>
+  </aside>
+
+  <section id="parts">
+    <p class="step-number">Step 0</p>
+    <h2>Gather parts for one console</h2>
+    <p>The exact socket height and DB9 variant matter: the PCB footprint and case
+      are designed around these parts. The sourcing document lists quantities for
+      <em>three</em> boards; the list below is for <em>one</em>.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Electronics and case hardware</caption>
+        <thead><tr><th scope="col">Qty</th><th scope="col">Part</th><th scope="col">Notes / source</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Tang Nano 20K</td><td><a href="https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-20K/Nano-20K.html">Board documentation</a>; downward-facing male headers required.</td></tr>
+          <tr><td>1</td><td>O1 carrier PCB, 100 × 70 mm</td><td><a href="dual-db9-opt-O1-OSHPARK.zip" download>OSH Park order ZIP</a>; two-layer, 1.6 mm FR-4.</td></tr>
+          <tr><td>2</td><td>Harwin M20-7822046</td><td>1×20 female sockets, 2.54 mm pitch, <b>8.5 mm body height</b>. <a href="https://www.digikey.com/en/products/detail/harwin-inc/M20-7822046/1905">DigiKey</a></td></tr>
+          <tr><td>2</td><td>Kycon K22X-E9P-N</td><td>Male right-angle DB9 with boardlocks and recessed #4-40 inserts. <b>Not K22X-E9P-NJ.</b> <a href="https://www.digikey.com/en/products/detail/kycon-inc/K22X-E9P-N/2596805">DigiKey</a></td></tr>
+          <tr><td>2, if needed</td><td>Harwin M20-9992046</td><td>1×20 male headers, documented socket mate. Only buy if the Nano lacks suitable downward pins. <a href="https://www.digikey.com/en/products/detail/harwin-inc/M20-9992046/1902">DigiKey</a></td></tr>
+          <tr><td>1 each</td><td>Printed base and lid</td><td><a href="#print">STLs and print settings below</a>.</td></tr>
+          <tr><td>4</td><td>M2.5 × 6 mm self-tapping screws</td><td>PCB to the printed floor bosses; 2.1 mm pilot holes, 6 mm deep.</td></tr>
+          <tr><td>4</td><td>M3 × 12 mm screws</td><td>Lid to corner columns; heads ≤ 6.2 mm, 2.5 mm pilots, 15 mm deep.</td></tr>
+          <tr><td>4, optional</td><td>#4-40 × 3/16 inch screws</td><td>Port wall to the DB9 inserts, only if the controller plugs clear the screw heads.</td></tr>
+          <tr><td>4, optional</td><td>10 mm round bump-on feet</td><td>Recesses under the base.</td></tr>
+          <tr><td>1</td><td>microSD / TF card</td><td>FAT32 or exFAT, with your own <code>.md</code>, <code>.bin</code> or <code>.gen</code> ROMs.</td></tr>
+          <tr><td>1–2</td><td>Wired Genesis controllers</td><td>SEGA OEM 3- or 6-button pads are the tested configuration.</td></tr>
+          <tr><td>1 each</td><td>USB-C power cable, HDMI cable and HDMI display</td><td>Check the cable overmolds against the <a href="#cables">case clearances</a>. Use an audio-capable HDMI display for sound.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>Tools:</b> soldering iron, solder, flush cutters, multimeter, small screwdriver,
+      socket-alignment jig or fixture, and a 3D printer. A computer with Gowin Programmer
+      is needed for the initial flash.</p>
+    <p><b>Ordering:</b> OSH Park is recommended within the USA. For another fabricator,
+      use the <a href="dual-db9-opt-O1-KYCON-gerbers.zip" download>generic Gerber ZIP</a>.
+      Review the <a href="MANUFACTURING-RELEASE.md">fabrication checklist</a>:
+      100 × 70 mm, 2 layers, 1.6 mm thickness, 1 oz copper, four <b>nonplated</b>
+      2.7 mm mounting holes. No stencil or SMT assembly is needed.
+      <a href="PARTS-SOURCING.md">More parts sources</a>.</p>
+  </section>
+
+  <section id="print">
+    <p class="step-number">Step 1</p>
+    <h2>Print the biomechanical base and lid</h2>
+    <div class="split">
+      <div>
+        <p>Print at <b>100% scale</b> in the exported orientations. Keep the base's
+          floor on the bed and the lid's flat underside on the bed, with the ribs up.</p>
+        <ul>
+          <li><b>PLA or PETG</b>, 0.2 mm layers, 3 walls, 15–20% infill.</li>
+          <li><b>No supports.</b> Preview the sliced bridges before printing:
+            the longest specified opening bridge is 17.9 mm at the DB9 shells.</li>
+          <li>Base: <b>121.7 × 98.4 × 35.3 mm</b>. Lid: <b>121.0 × 97.7 × 15.0 mm</b>.
+            Leave extra bed room if using a brim.</li>
+          <li>Remove strings and any first-layer lip from the rim, groove and port openings.
+            Dry-fit the empty lid; do not force the locating tongue.</li>
+          <li>Optional finish: black filament with a light silver dry-brush.
+            Finish and let it dry before installing electronics; keep vents and mating surfaces clear.</li>
+        </ul>
+        <div class="actions">
+          <a class="button primary" href="../dual-db9-biomech-case/stl/case_base.stl" download>Base STL</a>
+          <a class="button primary" href="../dual-db9-biomech-case/stl/case_lid.stl" download>Lid STL</a>
+        </div>
+        <p><a href="../dual-db9-biomech-case/README.md">Full print and mechanical notes</a></p>
+      </div>
+      <figure>
+        <img src="../dual-db9-biomech-case/renders/print.png" width="1600" height="1000" loading="lazy"
+          alt="Base on the left with its cavity upward, and lid on the right with its ribs upward, in print orientations">
+        <figcaption>Both exported parts sit flat on the print bed. This is a CAD view, not a slicer preview.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="solder">
+    <p class="step-number">Step 2</p>
+    <h2>Solder the four carrier components</h2>
+    <div class="split">
+      <div>
+        <p>All parts mount on the <b>top / silkscreen side</b>; solder from the bottom.
+          In this top view, the DB9 ports face the front / bottom, USB-C will face
+          the back / top, <b>J6 is left</b> and <b>J5 is right</b>.</p>
+        <ol>
+          <li><b>Inspect the bare PCB.</b> Compare it with the assembly drawing.
+            Check for damage and verify that the supplied parts fit without bending pins.</li>
+          <li><b>J6 and J5: fit the female sockets.</b> Openings face up; square pin-1
+            pads are nearest the USB-C end. Hold both flush and parallel with an
+            alignment fixture at <b>20.32 mm row spacing</b>. Tack the end contacts,
+            recheck seating, then solder all 40 contacts. Do not solder the Nano into the carrier.</li>
+          <li><b>J1 and J2: fit the DB9 ports.</b> J1 is player 1 on the left,
+            J2 player 2 on the right. The noses overhang the front edge.
+            Tack a pin, check each connector sits flat, then solder all nine pins
+            and both boardlocks on each connector.</li>
+          <li><b>Inspect the joints.</b> Remove solder bridges and trim protruding
+            leads as needed. Leave H1–H4 empty: no solder, rivets or metal standoffs.</li>
+        </ol>
+        <p><b>Count:</b> four components, 62 soldered plated holes
+          (40 socket contacts + 18 DB9 pins + 4 boardlocks), four empty mounting holes.
+          No resistors, capacitors or external pull-ups are required.</p>
+        <p>If the Nano needs male headers, fit them separately, pointing down from
+          its underside. Their height must match the specified socket/header stack.</p>
+        <p><a href="ASSEMBLY.md">Engineering assembly notes</a></p>
+      </div>
+      <figure>
+        <img class="technical" src="assembly-top.svg" loading="lazy"
+          alt="Top-side O1 PCB assembly drawing showing the two socket rows and two DB9 footprints">
+        <figcaption>Top-side assembly drawing. Open the
+          <a href="assembly-top.svg">full drawing</a> or
+          <a href="fit-1to1.svg">1:1 fit print</a>.
+          For the latter, print at actual size, not “fit to page”, and check scale with a ruler.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="check">
+    <p class="step-number">Step 3 · No power, Nano removed</p>
+    <h2>Continuity-test before inserting the Nano</h2>
+    <p>Use a multimeter on the <b>empty carrier</b>. Count socket contacts 1–20 from
+      the USB-C / back end. Identify DB9 contacts by their molded numbers or the
+      connector drawing; the solder-side view is mirrored from the mating face.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Each DB9 contact must connect to the corresponding socket contact</caption>
+        <thead><tr><th scope="col">DB9 pin</th><th scope="col">Signal</th><th scope="col">P1 / J1 → J6</th><th scope="col">P2 / J2 → J5</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Up / D0</td><td>1 · GPIO73</td><td>5 · GPIO42</td></tr>
+          <tr><td>2</td><td>Down / D1</td><td>2 · GPIO74</td><td>6 · GPIO41</td></tr>
+          <tr><td>3</td><td>Left / D2</td><td>5 · GPIO77</td><td>9 · GPIO51</td></tr>
+          <tr><td>4</td><td>Right / D3</td><td>8 · GPIO27</td><td>10 · GPIO48</td></tr>
+          <tr><td>5</td><td><b>3.3 V supply</b></td><td>19 · 3V3</td><td>16 · 3V3</td></tr>
+          <tr><td>6</td><td>TL / B, A</td><td>9 · GPIO28</td><td>12 · GPIO49</td></tr>
+          <tr><td>7</td><td>TH select (output)</td><td>12 · GPIO29</td><td>17 · GPIO72</td></tr>
+          <tr><td>8</td><td>Ground</td><td>20 · GND</td><td>15 · GND</td></tr>
+          <tr><td>9</td><td>TR / C, Start</td><td>13 · GPIO30</td><td>18 · GPIO71</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li>Test every row, not just power and ground. Both connector shells and all four
+        boardlocks must connect to ground. Use <a href="net-test.csv" download>net-test.csv</a> as the bench checklist.</li>
+      <li><b>3V3 to GND must not be shorted.</b> On this bare carrier it should read open.</li>
+      <li><b>J5.1 is the Nano's 5 V contact and must be isolated</b> from every other
+        carrier contact. All socket contacts not listed in the table have no carrier connection.</li>
+      <li>Check for unintended continuity between adjacent signal contacts.
+        The two ports share 3V3 and ground, but their controller signals must remain separate.</li>
+    </ul>
+    <aside class="notice warning"><b>Stop if a check fails.</b> Find and repair the bridge,
+      wrong part or damaged joint and repeat the checks. Do not connect power “to see if it works”.</aside>
+  </section>
+
+  <section id="firmware">
+    <p class="step-number">Step 4</p>
+    <h2>Flash GenThang and prepare the card</h2>
+    <ol>
+      <li><b>Download the standard DB9 flash image</b> from the
+        <a href="https://github.com/shawnchivers/genthang/releases">GenThang releases</a>:
+        <code>genthang_nano20k_db9_flash.bin</code>. Verify it against that release's
+        <code>SHA256SUMS</code>. Do not use the <code>raw</code>, deprecated
+        single-DB9, or <code>800x480</code> image for this HDMI build.</li>
+      <li><b>Flash the Nano separately.</b> Connect it by USB-C and open Gowin Programmer.
+        Choose series <b>GW2AR</b>, device <b>GW2AR-18C</b>,
+        access mode <b>External Flash Mode</b>, operation
+        <b>exFlash Erase, Program thru GAO-bridge</b>. Select the complete
+        <code>_flash.bin</code> and start address <code>0x000000</code>.
+        Wait for successful programming. A bitstream-only <code>.fs</code> does not
+        include the menu firmware.</li>
+      <li><b>Prepare a microSD card</b> with an MBR partition table and FAT32 or exFAT
+        filesystem. Formatting erases the card: back up its contents first and verify
+        the selected device. Copy your own <code>.md</code>, <code>.bin</code> or
+        <code>.gen</code> ROMs (up to 4 MB each); folders are supported.</li>
+      <li><b>Disconnect USB, then insert the card.</b> The TF slot is on the Nano's
+        underside and becomes inaccessible once the Nano is in the carrier.</li>
+      <li><b>Insert the Nano into both sockets</b>, component side up, with USB-C toward
+        the back, away from the DB9s. Check that all 40 pins enter their sockets,
+        with no one-position offset. Press evenly; do not force a misaligned row.</li>
+    </ol>
+    <p><a href="../../README.md#1-flash-the-board">Full flashing instructions, including Linux CLI</a>
+      · <a href="../../README.md#2-prepare-the-tf-card">Card preparation</a>
+      · <a href="../../README.md#build-from-source">Build from source</a></p>
+    <aside class="notice">The standard build has <b>USB ROM upload disabled</b>.
+      Plan to lift out the Nano to update the card. Closed-case upload is possible
+      only with a <code>GT_SERIAL_UPLOAD=1</code> firmware build and
+      <a href="../../README.md#uploading-roms-over-usb-serial">genthang-upload</a>.</aside>
+  </section>
+
+  <section id="test">
+    <p class="step-number">Step 5 · Test outside the case</p>
+    <h2>Bring up both controller ports</h2>
+    <ol>
+      <li>Put the assembly on a nonconductive surface. With <b>no controllers attached</b>,
+        connect HDMI, then power the Nano over USB-C.</li>
+      <li>Measure about <b>3.3 V between DB9 pin 5 (+) and pin 8 (GND)</b> on each
+        port. Keep probe tips from shorting adjacent pins. If the supply is wrong,
+        disconnect power and investigate before attaching a pad.</li>
+      <li>Disconnect USB. Connect a controller to <b>J1 / player 1</b>, then power on.
+        Confirm the game browser appears, navigate with the D-pad, launch a game
+        and test directions, A, B, C and Start. Test X, Y, Z and Mode in a game that
+        supports a 6-button pad.</li>
+      <li>Power off and test the second port in a game with player-2 support; its pad
+        controls player 2, not the menu. Finally power off, connect both pads and test
+        a two-player game. Change controller connections only while unpowered.</li>
+      <li>Check HDMI audio during a game. The menu pauses the game and mutes audio.
+        Keep <b>Video output = HDMI</b>: O1 has no line-out jack for DVI audio.</li>
+    </ol>
+    <p>Do not close the case until the flash image, card, both ports and HDMI are working.
+      Keep the Nano's LCD and speaker connectors unused: player-2 inputs GPIO49 and
+      GPIO51 also have LCD/audio side effects on the Nano.</p>
+  </section>
+
+  <section id="case">
+    <p class="step-number">Step 6</p>
+    <h2>Drop back, then slide forward</h2>
+    <div class="split">
+      <div>
+        <p>The port openings capture the DB9 shells. The board cannot simply be pushed
+          straight down in its final position: the cavity has <b>6.9 mm extra length</b>
+          so it can enter behind the openings and slide into place.</p>
+        <ol>
+          <li><b>Unplug everything</b>, including USB-C, HDMI and the pads. Check the
+            TF card is already installed and the Nano is seated correctly.</li>
+          <li>Orient the base with the two controller maws at the front. Lower the
+            populated carrier into the cavity with its <b>back edge against the back wall</b>,
+            USB-C toward the rear opening.</li>
+          <li><b>Slide the whole assembly forward.</b> Guide both DB9 shells through
+            their D-shaped openings until the connector flanges stop against the
+            <b>1.2 mm port wall</b>. Do not lever on the Nano or bend the DB9 pins.</li>
+          <li>Check that H1–H4 line up with the four floor bosses. Fasten with
+            <b>four M2.5 × 6 mm self-tapping screws</b>. Tighten by hand only until
+            the PCB is secure; do not bow it or strip the plastic.</li>
+          <li>Optionally fasten the port wall to the recessed DB9 inserts with the
+            #4-40 screws. Omit them if their heads interfere with your controller plugs.</li>
+        </ol>
+        <p><b>If it binds:</b> stop and check print cleanup, exact connector variant,
+          socket/header height and lead trimming. Never use the screws to pull a
+          misaligned assembly into place.</p>
+      </div>
+      <figure>
+        <img src="../dual-db9-biomech-case/renders/open.png" width="1600" height="1000" loading="lazy"
+          alt="Open biomechanical base showing the carrier, the Nano and the two DB9 shells seated through the front wall">
+        <figcaption>CAD component envelopes show the seated assembly. The real carrier is secured
+          at four floor bosses; the Nano remains removable.</figcaption>
+      </figure>
+    </div>
+    <h3 id="cables">Dry-fit your cables before closing</h3>
+    <ul>
+      <li><b>Controller plugs:</b> face at most <b>32 × 16 mm</b>, within the
+        35 × 19 mm recess. The port wall leaves 4.9 mm of the DB9 shell available for mating.</li>
+      <li><b>HDMI:</b> exits through the channel between the DB9 ports. Plug overmold
+        at most <b>24 mm wide, about 15 mm tall</b>; the Nano's receptacle is
+        10 mm behind the carrier edge.</li>
+      <li><b>USB-C:</b> exits at the rear. Overmold at most <b>13 × 7.5 mm</b>,
+        at least <b>15 mm long</b>; the receptacle sits 14.7 mm inside the back wall.</li>
+    </ul>
+    <p>These are the design's nominal cable envelopes, not a guarantee for every cable.
+      With power disconnected, verify that each plug seats fully without forcing
+      the enclosure or connector. Use a compatible cable rather than pulling the
+      board toward an opening. See the <a href="../dual-db9-biomech-case/README.md#assumptions-and-limits">case limits</a>.</p>
+  </section>
+
+  <section id="play">
+    <p class="step-number">Step 7</p>
+    <h2>Close up and play</h2>
+    <div class="split">
+      <div>
+        <ol>
+          <li>Seat the lid with its locating groove over the base's rim tongue.
+            Align the lid's port markers: <b>one node over player 1, two over player 2</b>.
+            Confirm no cable, component or debris obstructs the seam.</li>
+          <li>Fit <b>four M3 × 12 mm screws</b> through the lid knuckles into the
+            corner columns. Tighten gently and evenly; the lid should sit flush
+            without bending. Add the optional feet underneath.</li>
+          <li>With power off, connect pads and HDMI, then USB-C power. Player 1 is the
+            <b>left port when viewed from the front</b>; player 2 is the right.</li>
+          <li>Launch a game with player 1. Open the in-game menu with
+            <b>Start+A+B+C</b> on a 3-button pad or <b>Mode+Start</b> on a 6-button pad.
+            The Nano's buttons and LEDs are not exposed through this enclosure.</li>
+          <li>Repeat the two-player and HDMI-audio checks with the lid fitted.
+            Keep the side/back vents and lid slits unobstructed.</li>
+        </ol>
+        <p><b>Changing the card later:</b> unplug all cables, remove the lid, then
+          lift the Nano evenly out of its sockets to reach the TF slot. Reinsert
+          it in the same orientation and check both pin rows before restoring power.</p>
+        <p><a href="../../README.md#controls">Controls</a> ·
+          <a href="../../README.md#options-menu">Options and save states</a></p>
+      </div>
+      <figure>
+        <img src="../dual-db9-biomech-case/renders/exploded.png" width="1600" height="1000" loading="lazy"
+          alt="Biomechanical lid lifted above the populated base, with the four corner fastening positions visible">
+        <figcaption>The locating rim aligns the lid; four corner screws retain it.
+          Do not block the ventilation slits between the ribs.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="troubleshooting">
+    <p class="step-number">Bench checklist</p>
+    <h2>If something does not work</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Symptom</th><th scope="col">Check</th></tr></thead>
+        <tbody>
+          <tr><td>No menu / no picture</td><td>USB power, HDMI cable/display, and a complete DB9 flash image including menu firmware. Check Nano orientation and socket seating with power removed.</td></tr>
+          <tr><td>Menu appears, no games</td><td>Card inserted before the Nano; MBR partition table, FAT32/exFAT, supported ROM extensions. The standard build cannot upload ROMs over USB.</td></tr>
+          <tr><td>Wrong or stuck buttons</td><td>Correct canonical <code>db9</code> image, not <code>raw</code> or a legacy pinout. Power off, remove the Nano and repeat every continuity and isolation check.</td></tr>
+          <tr><td>Player 2 cannot navigate menu</td><td>Expected: the menu uses player 1. Verify P2 in a two-player game; leave the LCD and speaker connectors empty.</td></tr>
+          <tr><td>Picture but no audio</td><td>Test during a game, not while paused in the menu. Select HDMI video output, use an audio-capable HDMI display and check its volume. O1 has no analog line-out.</td></tr>
+          <tr><td>Plug will not seat / lid will not close</td><td>Compare cable envelopes, exact Kycon variant, 8.5 mm sockets, header stack and print scale. Clear print residue; do not force plugs or tighten screws to overcome an obstruction.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Disconnect power immediately if a part overheats or the measured supply is wrong.
+      Fix the cause before retrying. See <a href="../../README.md#limitations-and-troubleshooting">firmware limitations and troubleshooting</a>.</p>
+  </section>
+
+  <section id="downloads">
+    <p class="step-number">Files and references</p>
+    <h2>Keep these on the bench</h2>
+    <ul>
+      <li><b>Print:</b> <a href="../dual-db9-biomech-case/stl/case_base.stl" download>base STL</a>,
+        <a href="../dual-db9-biomech-case/stl/case_lid.stl" download>lid STL</a>,
+        <a href="../dual-db9-biomech-case/dual-db9-biomech-case.step" download>editable STEP model</a>.</li>
+      <li><b>PCB:</b> <a href="dual-db9-opt-O1-OSHPARK.zip" download>OSH Park ZIP</a>,
+        <a href="dual-db9-opt-O1-KYCON-gerbers.zip" download>generic Gerbers</a>,
+        <a href="BOM.csv" download>BOM</a>, <a href="SHA256SUMS">fabrication checksums</a>.</li>
+      <li><b>Bench references:</b> <a href="assembly-top.svg">assembly drawing</a>,
+        <a href="schematic.pdf">schematic PDF</a>, <a href="net-test.csv" download>continuity checklist</a>,
+        <a href="fit-1to1.svg">1:1 fit print</a>.</li>
+      <li><b>Engineering notes:</b> <a href="README.md">O1 carrier</a>,
+        <a href="ASSEMBLY.md">PCB assembly</a>,
+        <a href="../dual-db9-biomech-case/README.md">case assembly and print checks</a>,
+        <a href="TEST-STATUS.md">verification scope</a>.</li>
+      <li><b>Software:</b> <a href="https://github.com/shawnchivers/genthang/releases">releases</a>,
+        <a href="../../README.md">GenThang setup and usage</a>.</li>
+    </ul>
+    <p>This guide works offline from a checkout; no viewer library or external fonts are
+      required. Use your browser's Print command for a paper or PDF bench copy.</p>
+  </section>
+</main>
+<footer>
+  <p><a href="../../README.md">GenThang</a> · <a href="../README.md">Hardware index</a> ·
+    <a href="#top">Back to top</a></p>
+  <p>Original parametric biomechanical geometry, inspired by a style rather than copied artwork.
+    GenThang firmware is alpha software. This is an unprotected hobby build, not an
+    ESD-qualified production console; third-party controller compatibility is not established.
+    Build, wire and flash at your own risk. See the
+    <a href="../../README.md#disclaimer">project disclaimer</a>. ROMs are not included.</p>
+</footer>
+</body>
+</html>

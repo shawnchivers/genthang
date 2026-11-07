@@ -1,0 +1,1 @@
+(fp_lib_table (lib (name "DualDB9LineOut") (type KiCad) (uri "${KIPRJMOD}/footprints/DualDB9LineOut.pretty") (options "") (descr "Exact part geometry")))

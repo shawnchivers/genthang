@@ -1,0 +1,339 @@
+{
+  "name": "dual-db9-lineout-pcb",
+  "revision": "L3",
+  "width_mm": 100,
+  "height_mm": 70,
+  "components": [
+    {
+      "ref": "J6",
+      "value": "Nano_socket_1x20",
+      "footprint": "DualDB9LineOut:Harwin_M20-7822046_1x20",
+      "x": 25.87,
+      "y": 41,
+      "rotation": 90,
+      "nets": {
+        "1": "P1_D0",
+        "2": "P1_D1",
+        "3": null,
+        "4": null,
+        "5": "P1_D2",
+        "6": null,
+        "7": null,
+        "8": "P1_D3",
+        "9": "P1_TL",
+        "10": null,
+        "11": null,
+        "12": "P1_TH",
+        "13": "P1_TR",
+        "14": "AUD_L_PWM",
+        "15": "AUD_R_PWM",
+        "16": null,
+        "17": null,
+        "18": null,
+        "19": "3V3",
+        "20": "GND"
+      },
+      "mpn": "Harwin M20-7822046",
+      "labels": {
+        "1": "GPIO73 P1_D0",
+        "2": "GPIO74 P1_D1",
+        "3": "NC 3",
+        "4": "NC 4",
+        "5": "GPIO77 P1_D2",
+        "6": "NC 6",
+        "7": "NC 7",
+        "8": "GPIO27 P1_D3",
+        "9": "GPIO28 P1_TL",
+        "10": "NC 10",
+        "11": "NC 11",
+        "12": "GPIO29 P1_TH",
+        "13": "GPIO30 P1_TR",
+        "14": "GPIO31 AUD_L_PWM",
+        "15": "GPIO17 AUD_R_PWM",
+        "16": "NC 16",
+        "17": "NC 17",
+        "18": "NC 18",
+        "19": "3V3",
+        "20": "GND"
+      }
+    },
+    {
+      "ref": "J5",
+      "value": "Nano_socket_1x20",
+      "footprint": "DualDB9LineOut:Harwin_M20-7822046_1x20",
+      "x": 25.87,
+      "y": 20.68,
+      "rotation": 90,
+      "nets": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": null,
+        "5": "P2_D0",
+        "6": "P2_D1",
+        "7": null,
+        "8": null,
+        "9": "P2_D2",
+        "10": "P2_D3",
+        "11": null,
+        "12": "P2_TL",
+        "13": null,
+        "14": null,
+        "15": "GND",
+        "16": "3V3",
+        "17": "P2_TH",
+        "18": "P2_TR",
+        "19": null,
+        "20": null
+      },
+      "mpn": "Harwin M20-7822046",
+      "labels": {
+        "1": "NC 1",
+        "2": "NC 2",
+        "3": "NC 3",
+        "4": "NC 4",
+        "5": "GPIO42 P2_D0",
+        "6": "GPIO41 P2_D1",
+        "7": "NC 7",
+        "8": "NC 8",
+        "9": "GPIO51 P2_D2",
+        "10": "GPIO48 P2_D3",
+        "11": "NC 11",
+        "12": "GPIO49 P2_TL",
+        "13": "NC 13",
+        "14": "NC 14",
+        "15": "GND",
+        "16": "3V3",
+        "17": "GPIO72 P2_TH",
+        "18": "GPIO71 P2_TR",
+        "19": "NC 19",
+        "20": "NC 20"
+      }
+    },
+    {
+      "ref": "H1",
+      "value": "M2.5_clearance",
+      "footprint": "DualDB9LineOut:Mount_M2_5",
+      "x": 5,
+      "y": 5,
+      "rotation": 0,
+      "nets": {},
+      "mpn": "M2.5 nonconductive standoff; enclosure TBD",
+      "labels": {}
+    },
+    {
+      "ref": "H2",
+      "value": "M2.5_clearance",
+      "footprint": "DualDB9LineOut:Mount_M2_5",
+      "x": 95,
+      "y": 5,
+      "rotation": 0,
+      "nets": {},
+      "mpn": "M2.5 nonconductive standoff; enclosure TBD",
+      "labels": {}
+    },
+    {
+      "ref": "H3",
+      "value": "M2.5_clearance",
+      "footprint": "DualDB9LineOut:Mount_M2_5",
+      "x": 5,
+      "y": 45,
+      "rotation": 0,
+      "nets": {},
+      "mpn": "M2.5 nonconductive standoff; enclosure TBD",
+      "labels": {}
+    },
+    {
+      "ref": "H4",
+      "value": "M2.5_clearance",
+      "footprint": "DualDB9LineOut:Mount_M2_5",
+      "x": 95,
+      "y": 45,
+      "rotation": 0,
+      "nets": {},
+      "mpn": "M2.5 nonconductive standoff; enclosure TBD",
+      "labels": {}
+    },
+    {
+      "ref": "J1",
+      "value": "GENESIS_3V3_PLAYER1",
+      "footprint": "DualDB9LineOut:Kycon_K22X-E9P-N",
+      "x": 16.46,
+      "y": 59.08,
+      "rotation": 0,
+      "nets": {
+        "0": "GND",
+        "1": "P1_D0",
+        "2": "P1_D1",
+        "3": "P1_D2",
+        "4": "P1_D3",
+        "6": "P1_TL",
+        "7": "P1_TH",
+        "9": "P1_TR",
+        "5": "3V3",
+        "8": "GND"
+      },
+      "mpn": "Kycon K22X-E9P-N",
+      "labels": {}
+    },
+    {
+      "ref": "J2",
+      "value": "GENESIS_3V3_PLAYER2",
+      "footprint": "DualDB9LineOut:Kycon_K22X-E9P-N",
+      "x": 72.46,
+      "y": 59.08,
+      "rotation": 0,
+      "nets": {
+        "0": "GND",
+        "1": "P2_D0",
+        "2": "P2_D1",
+        "3": "P2_D2",
+        "4": "P2_D3",
+        "6": "P2_TL",
+        "7": "P2_TH",
+        "9": "P2_TR",
+        "5": "3V3",
+        "8": "GND"
+      },
+      "mpn": "Kycon K22X-E9P-N",
+      "labels": {}
+    },
+    {
+      "ref": "R2",
+      "value": "1k",
+      "footprint": "DualDB9LineOut:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+      "x": 64.0,
+      "y": 7.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_R_PWM",
+        "2": "AUD_R_FLT"
+      },
+      "mpn": "1 kOhm 1/4 W axial, 7.62 mm (0.3 in) pitch",
+      "labels": {}
+    },
+    {
+      "ref": "C2",
+      "value": "10nF",
+      "footprint": "DualDB9LineOut:C_Disc_D5.0mm_W2.5mm_P5.00mm",
+      "x": 64.0,
+      "y": 13.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_R_FLT",
+        "2": "GND"
+      },
+      "mpn": "10 nF 50 V ceramic disc, 5.0 mm pitch",
+      "labels": {}
+    },
+    {
+      "ref": "C4",
+      "value": "10uF",
+      "footprint": "DualDB9LineOut:CP_Radial_D5.0mm_P2.00mm",
+      "x": 77.0,
+      "y": 7.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_R_FLT",
+        "2": "AUD_R_OUT"
+      },
+      "mpn": "10 uF 25 V radial electrolytic, 5 mm dia, 2.0 mm pitch",
+      "labels": {
+        "1": "+",
+        "2": "-"
+      }
+    },
+    {
+      "ref": "R4",
+      "value": "47k",
+      "footprint": "DualDB9LineOut:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+      "x": 76.0,
+      "y": 14.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_R_OUT",
+        "2": "GND"
+      },
+      "mpn": "47 kOhm 1/4 W axial, 7.62 mm pitch",
+      "labels": {}
+    },
+    {
+      "ref": "R1",
+      "value": "1k",
+      "footprint": "DualDB9LineOut:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+      "x": 18.0,
+      "y": 7.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_L_PWM",
+        "2": "AUD_L_FLT"
+      },
+      "mpn": "1 kOhm 1/4 W axial, 7.62 mm (0.3 in) pitch",
+      "labels": {}
+    },
+    {
+      "ref": "C1",
+      "value": "10nF",
+      "footprint": "DualDB9LineOut:C_Disc_D5.0mm_W2.5mm_P5.00mm",
+      "x": 18.0,
+      "y": 13.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_L_FLT",
+        "2": "GND"
+      },
+      "mpn": "10 nF 50 V ceramic disc, 5.0 mm pitch",
+      "labels": {}
+    },
+    {
+      "ref": "C3",
+      "value": "10uF",
+      "footprint": "DualDB9LineOut:CP_Radial_D5.0mm_P2.00mm",
+      "x": 31.0,
+      "y": 7.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_L_FLT",
+        "2": "AUD_L_OUT"
+      },
+      "mpn": "10 uF 25 V radial electrolytic, 5 mm dia, 2.0 mm pitch",
+      "labels": {
+        "1": "+",
+        "2": "-"
+      }
+    },
+    {
+      "ref": "R3",
+      "value": "47k",
+      "footprint": "DualDB9LineOut:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+      "x": 30.0,
+      "y": 14.0,
+      "rotation": 0,
+      "nets": {
+        "1": "AUD_L_OUT",
+        "2": "GND"
+      },
+      "mpn": "47 kOhm 1/4 W axial, 7.62 mm pitch",
+      "labels": {}
+    },
+    {
+      "ref": "J3",
+      "value": "LINE_OUT_3.5mm",
+      "footprint": "DualDB9LineOut:Jack_3.5mm_CUI_SJ1-3523N_Horizontal",
+      "x": 50.0,
+      "y": 4.5,
+      "rotation": 180,
+      "nets": {
+        "1": "GND",
+        "2": "AUD_L_OUT",
+        "3": "AUD_R_OUT"
+      },
+      "mpn": "CUI / Same Sky SJ1-3523N",
+      "labels": {
+        "1": "SLEEVE",
+        "2": "TIP_L",
+        "3": "RING_R"
+      }
+    }
+  ]
+}
