@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="A colorful GenThang L3 dual-DB9 line-out build guide, with a cartoon bear, simple capacitor choices, soldering steps, GPIO17 firmware and electrical checks.">
-<title>GenThang L3 · The bear's guide to stereo line-out</title>
+<meta name="description" content="A colorful GenThang L3 dual-DB9 line-out build guide, with simple capacitor choices, soldering steps, GPIO17 firmware and electrical checks.">
+<title>GenThang L3 · Stereo line-out build guide</title>
 <style>
   :root { color-scheme: light; --bg: #fffcf7; --panel: #fff; --text: #273a35; --muted: #54655e; --line: #d6ddd7; --green: #246447; --blue: #225987; --purple: #654188; --coral: #a24332; }
   * { box-sizing: border-box; }
@@ -37,7 +37,6 @@
   .specs span { color: var(--muted); font-size: .88rem; }
   .notice { border-left: 5px solid var(--blue); background: #edf4fc; padding: 1rem 1.2rem; margin: 1.4rem 0; border-radius: 0 .7rem .7rem 0; }
   .warning { border-color: #a86509; background: #fff2d5; }
-  .bear-note { border-color: var(--coral); background: #fff0e9; }
   .warning-sign { display: inline-block; width: 1.4rem; height: 1.4rem; vertical-align: text-bottom; margin-right: .3rem; }
   section { padding: 2.8rem 0; border-bottom: 1px solid var(--line); }
   .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
@@ -101,7 +100,7 @@
 <header class="hero" id="top">
   <div>
     <p class="eyebrow">L3 build guide · two-player Genesis · stereo line-out</p>
-    <h1>Big games.<br><span>Little caps.<br>Bear-sized enthusiasm.</span></h1>
+    <h1>Build your L3.<br><span>Choose your sound.</span></h1>
     <p class="lede">Build the GenThang L3 carrier: two Genesis controller ports,
       a removable Tang Nano 20K and a 3.5 mm stereo output for powered speakers.
       Everything you solder is through-hole.</p>
@@ -113,8 +112,8 @@
       OSH Park. <a href="TEST-STATUS.md">Test scope and limits</a>.</p>
   </div>
   <figure>
-    <img src="assets/bear.svg" width="480" height="440" alt="Bramble, a smiling cartoon bear in blue overalls, holding two matching filter capacitors">
-    <figcaption>Bramble's big rule: pick one filter value, then buy a matching pair.</figcaption>
+    <img class="technical" src="board-top.svg" width="1000" height="700" alt="L3 carrier top view showing the rear stereo audio circuit and front DB9 controller ports">
+    <figcaption>L3 carrier: stereo audio at the rear, two DB9 controller ports at the front.</figcaption>
   </figure>
 </header>
 <main>
@@ -134,10 +133,6 @@
     <b>3.3 V only, never 5 V</b>. There are no port fuses, level shifters or ESD
     protection. Leave the Nano's LCD and speaker connectors empty.
     Line-out is for <b>powered speakers or an amplifier, not direct headphones</b>.
-  </aside>
-  <aside class="notice bear-note">
-    <b>Humans assemble. Cartoon bears supervise.</b> Claws are not soldering tools,
-    and honey is not thermal paste. Real bears: please find a human with opposable thumbs.
   </aside>
 
   <section id="parts">
@@ -375,15 +370,14 @@
       <li><b>Background:</b> <a href="README.md">L3 design and capacitor notes</a>,
         <a href="https://github.com/shawnchivers/genthang">GenThang setup and controls</a>.</li>
     </ul>
-    <p>This page and its original cartoon/SVG illustrations have no external viewer or
+    <p>This page and its SVG illustrations have no external viewer or
       font dependency. Print it from your browser for a paper or PDF bench copy.
       Firmware downloads and external references require internet access.</p>
   </section>
 </main>
 <footer>
   <p><a href="../README.md">Hardware index</a> · <a href="#top">Back to top</a></p>
-  <p>Bramble is an original cartoon mascot, not a qualified technician. This is an
-    unprotected hobby build; successful author testing is not ESD or production
+  <p>This is an unprotected hobby build; successful author testing is not ESD or production
     certification. Build, wire and flash at your own risk. ROMs are not included.</p>
 </footer>
 </body>

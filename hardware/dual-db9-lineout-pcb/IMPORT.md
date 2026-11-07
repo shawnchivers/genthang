@@ -1,7 +1,7 @@
 # Standalone L3 carrier in GenThang
 
 This fabrication/assembly package is imported from
-[genthang-hw commit 3821f5d](https://github.com/shawnchivers/genthang-hw/commit/3821f5ddea4697ffd93e5d038287d4379023c5a5),
+[genthang-hw commit bd668d5](https://github.com/shawnchivers/genthang-hw/commit/bd668d50ced8a0a2459f6cb4045c1e72196a27a5),
 which includes the L3 GPIO17 PCB revision and its colorful build guide.
 
 The ordered L3 OSH Park and generic Gerber archives are unchanged. The stock BOM

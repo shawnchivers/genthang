@@ -31,7 +31,7 @@ class LineoutLayoutTests(unittest.TestCase):
 
     def test_checksums_include_guide_and_assets(self):
         files = ['README.md', 'TEST-STATUS.md', 'index.html',
-                 'assets/bear.svg', 'assets/capacitors.svg']
+                 'assets/capacitors.svg']
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in files:

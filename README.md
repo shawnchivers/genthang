@@ -173,7 +173,7 @@ with a 3.5" IPS screen, with 3D renders, an interactive viewer, wiring diagrams 
 **Standalone stereo line-out:** the [L3 carrier](hardware/dual-db9-lineout-pcb/README.md)
 adds a 3.5 mm output for powered speakers, with GPIO31 left and GPIO17 right.
 Its [colorful build guide](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/)
-includes a cartoon bear, a simple capacitor chooser, soldering and electrical
+includes a simple capacitor chooser, soldering and electrical
 checks. The author confirms the GPIO17 audio move works and has submitted L3 to
 OSH Park. Use the [L3 order ZIP](hardware/dual-db9-lineout-pcb/dual-db9-lineout-L3-OSHPARK.zip)
 and the [matching GPIO17 image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin).

@@ -14,7 +14,7 @@ for parts, printing, soldering, electrical checks, firmware setup and complete
 case assembly. The page works offline and can be printed as a bench reference.
 
 For powered-speaker audio, use the separate
-[L3 line-out build guide](dual-db9-lineout-pcb/index.html), with a cartoon bear,
+[L3 line-out build guide](dual-db9-lineout-pcb/index.html), with
 simple [capacitor choices](dual-db9-lineout-pcb/index.html#caps) and electrical
 checks. L3 uses GPIO31 left / GPIO17 right and is not the O1 biomech carrier.
 
