@@ -23,6 +23,13 @@ set picture [expr {$pad eq "raw" ? 1 : 0}]
 if {[info exists ::env(GT_PICTURE)] && $::env(GT_PICTURE) ne ""} { set picture $::env(GT_PICTURE) }
 if {[lsearch -exact {0 1} $picture] < 0} { error "GT_PICTURE must be 0 or 1" }
 
+foreach feature {GT_LADDER GT_NO_ADAPTIVE GT_NO_CORE_SWITCH} {
+    set value 1
+    if {[info exists ::env($feature)] && $::env($feature) ne ""} { set value $::env($feature) }
+    if {[lsearch -exact {0 1} $value] < 0} { error "$feature must be 0 or 1" }
+    set [string tolower $feature] $value
+}
+
 set pad_cst "src/boards/nano20k_$pad.cst"
 set output_base "genthang_nano20k_$pad"
 set three_btn [expr {[info exists ::env(GT_3BTN)] && $::env(GT_3BTN) eq "1"}]

@@ -385,9 +385,8 @@ is enough. Player 1 drives the menu; player 2 only plays.
 The Options page opens first when you call up the menu during a game:
 
 - **Resume game**, **Save state**, **Load state**, **Reset game**, **Load another game**
-- **Switch core**: choose a complete `.bin` image from `/cores` (see below; omitted with `GT_NO_CORE_SWITCH=1`)
 - **Scanlines**: off, 25 %, 50 %
-- **Composite blend**: off, on, adaptive (off/on only with `GT_NO_ADAPTIVE=1`)
+- **Composite blend**: off, on
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
 - **Display**: TV (default), or 4:3 LCD
 - **Brightness**: 100 % (default), 75 %, 50 %, 25 % (raw build only)
@@ -410,10 +409,9 @@ post-processing options are applied by the HDMI scaler:
   skipped in interlaced modes.
 - **Composite blend** averages each pixel with its left neighbour, which melts the
   dither patterns many games use for transparency and shading the way a composite
-  cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
-  dither, leaving the rest of the picture sharp.
-  `GT_NO_ADAPTIVE=1` removes the dither detector and flag storage, while retaining
-  normal blending and scanlines. A saved adaptive setting becomes normal blend ON.
+  cable does. Version 1.9.3 removes adaptive blending to make room for the YM2612
+  ladder effect; a saved adaptive setting becomes normal blend ON. Custom builds
+  can restore adaptive with `GT_NO_ADAPTIVE=0`, subject to FPGA fit and timing.
 
 **Brightness** exists only in builds with `GT_PICTURE=1`, the default for the raw
 (handheld) build; the DB9 build leaves it out because the FPGA has no logic to spare,
@@ -454,7 +452,7 @@ shows a centred 640x480 4:3 window; 4:3 LCD mode fills the full 800 width.
 </p>
 
 <p align="center"><sub>The same spotlight scene with composite blending off, on
-and adaptive, cropped to show how each mode affects the light, character and floor
+and adaptive in earlier releases, cropped to show how each mode affects the light, character and floor
 dither.</sub></p>
 
 ### Save states
@@ -476,8 +474,8 @@ made from.
 ### Uploading ROMs over USB serial
 
 **Not in the default build or releases.** The serial UART is only built with
-`GT_SERIAL_UPLOAD=1 ./build.sh`. That build currently fits, but with only 9 spare CLS
-(the default build leaves 98), so it may stop placing after further core changes.
+`GT_SERIAL_UPLOAD=1 ./build.sh`. Its fit is not certified with the 1.9.3 ladder
+configuration; the default DB9 build already has very little logic headroom.
 Without it the menu ignores the serial port; copy ROMs and core images to the card in
 a card reader instead.
 
@@ -502,12 +500,14 @@ corrected debugger firmware. On Linux your user needs access to the serial devic
 
 ### Switching cores
 
-`GT_NO_CORE_SWITCH=1` removes the runtime flash interface and hides this menu entry.
+Official 1.9.3 builds use `GT_NO_CORE_SWITCH=1`, which removes the runtime flash
+interface and hides this menu entry to make room for ladder audio.
 It also rejects serial core-image uploads; normal ROM loading and firmware bootstrap
 from flash are unchanged. The FPGA reports this omission in core-ID bit 20 and the
 adaptive omission in bit 19, so use the matching menu firmware from this worktree.
 
-*Switch core* lists complete SPI-flash images (`.bin`) in `/cores`, programs the one
+Custom builds with `GT_NO_CORE_SWITCH=0` can restore this feature, subject to FPGA
+fit and timing. In those builds, *Switch core* lists complete SPI-flash images (`.bin`) in `/cores`, programs the one
 you pick into the board's flash and asks you to power-cycle. Copy one to `/cores` on
 the card (or, in a `GT_SERIAL_UPLOAD=1` build, upload it with
 `./upload/genthang-upload /dev/ttyUSB0 other_flash.bin --core`). It must be up to 8 MB, a full flash
@@ -533,8 +533,7 @@ recovery with Gowin Programmer over USB.
 git clone https://github.com/shawnchivers/genthang.git
 cd genthang
 ./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
-GT_LADDER=1 ./build.sh            # DB9 with the YM2612 Model 1 ladder effect
-GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 ./build.sh  # trimmed ladder experiment
+GT_LADDER=0 ./build.sh            # custom clean-output audio build
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
 GT_PAD=raw GT_3BTN=1 ./build.sh   # 3-button handheld (*_3btn): no player 2, Mode alone opens the menu
@@ -552,16 +551,18 @@ pad (Mode, X, Y and Z are not passed to games), port 2 reads as unplugged, and M
 (held 20 ms) opens the menu instead of Mode+Start. The firmware reads it from bit 18 of
 the core ID register. Output names get a `_3btn` suffix.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
-to leave logic headroom: with it the design fits with only 9 spare CLS. `GT_PICTURE`
+to leave logic headroom; its fit is not certified for 1.9.3. `GT_PICTURE`
 (`0`/`1`) adds the brightness option to the HDMI scaler; it defaults to
 `1` for `GT_PAD=raw` and `0` for DB9, which cannot fit it. The firmware reads the choice
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
-`GT_LADDER=1` enables JT12's YM2612 Model 1 DAC ladder distortion instead of the
-default clean output. It uses the usual output filenames, so build it in a separate
-worktree to preserve a clean-output bitstream. Check placement and timing before
-using it: the GPIO17 DB9 build has very little spare logic.
+The 1.9.3 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
+JT12's YM2612 Model 1 DAC ladder distortion is enabled, while adaptive blending and
+runtime core switching are omitted. Normal blend OFF/ON and scanlines remain.
+Each flag accepts `0` or `1` for custom builds; changing the feature set requires a
+fresh placement and timing check. `release.sh` explicitly fixes the official
+feature set for every variant regardless of caller environment.
 The earlier GPIO17/L3 ladder experiment with adaptive and core switching retained
 did not fit the Nano 20K. The initial
 build left 218 equivalent LUTs unplaced. Sharing a 10-bit ladder sum between the
@@ -576,7 +577,7 @@ keeps normal blend OFF/ON, scanlines, game loading, reset and save states. It al
 sizes the flash-bootstrap counter to the firmware length; the flash test checks
 both 4-byte and full 256 KiB loads, with and without runtime flash access.
 
-**GPIO17/L3 trimmed ladder test build:** placement and routing pass, with
+**Historical 1.9.2 GPIO17/L3 ladder prerelease:** placement and routing pass, with
 20,608/20,736 logic slots and 10,359/10,368 CLS used (128 logic slots and 9 CLS spare).
 `clk_sys` reaches 63.534 MHz, `clk_z80` 44.117 MHz and `hclk` 76.879 MHz; all exceed
 their targets, with zero negative setup/hold slack.
@@ -621,10 +622,13 @@ The design nearly fills the Nano 20K's FPGA. Release builds use timing-priority
 placement and timing-directed routing. Post-route timing for this release has zero
 negative setup and hold slack:
 
-| Variant | `clk_sys` Fmax (needs 54.0 MHz) | `clk_z80` Fmax (needs 27.0 MHz) | `hclk` Fmax (needs 74.25 MHz) |
+| Variant | `clk_sys` Fmax (needs 54.0 MHz) | `clk_z80` Fmax (needs 27.0 MHz) | `hclk` Fmax (720p needs 74.25 MHz; 800x480 needs 29.7 MHz) |
 |---|---|---|---|
-| `db9` | 62.634 MHz | 46.562 MHz | 81.836 MHz |
-| `raw` | 61.397 MHz | 46.781 MHz | 82.836 MHz |
+| `db9` | 63.534 MHz | 44.117 MHz | 76.879 MHz |
+| `raw` | 57.783 MHz | 50.044 MHz | 82.740 MHz |
+| `raw_3btn` | 62.023 MHz | 47.732 MHz | 80.840 MHz |
+| `db9_800x480` | 65.307 MHz | 46.219 MHz | 71.688 MHz |
+| `raw_800x480` | 63.952 MHz | 45.457 MHz | 82.323 MHz |
 
 Every release build is rejected if a clock misses its target or the timing report
 contains negative setup or hold slack.
@@ -741,8 +745,9 @@ handheld audio pins are unchanged. This pin change is not a guarantee of noise-f
   [build provenance and timing results](builds/db9-gpio17/build-info.json).
 
 These are the main-based PR builds, not the earlier `168d244` audio-pin test
-image. The firmware version remains 1.9.2; use the GPIO17-labelled files above,
-not the existing 1.9.2 release downloads, with the L3 carrier.
+image. Those prerelease files have menu version 1.9.2. Official 1.9.3 DB9 images
+also use GPIO17 and are the recommended downloads for the L3 carrier; do not use
+the older standard 1.9.2 DB9 images with that carrier.
 
 On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to
 **a19**, sleeve to **j19**.

@@ -21,15 +21,11 @@ if {[info exists ::env(GT_SERIAL_UPLOAD)] && $::env(GT_SERIAL_UPLOAD) eq "1"} {
     puts $f "`define SERIAL_UPLOAD"
     puts "GT_SERIAL_UPLOAD=1: USB serial upload included"
 }
-if {[info exists ::env(GT_LADDER)] && $::env(GT_LADDER) eq "1"} {
-    puts $f "`define GT_LADDER"
-    puts "GT_LADDER=1: YM2612 ladder effect on"
-}
-foreach feature {GT_NO_ADAPTIVE GT_NO_CORE_SWITCH} {
-    if {[info exists ::env($feature)] && $::env($feature) eq "1"} {
+foreach feature {GT_LADDER GT_NO_ADAPTIVE GT_NO_CORE_SWITCH} {
+    if {[set [string tolower $feature]]} {
         puts $f "`define $feature"
-        puts "$feature=1"
     }
+    puts "$feature=[set [string tolower $feature]]"
 }
 if {$video eq "800x480"} { puts $f "`define VIDEO_800X480" }
 if {$picture} { puts $f "`define PICTURE_OPTS" }

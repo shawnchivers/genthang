@@ -27,7 +27,12 @@ for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480}; do
     esac
     echo "== $variant (GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout)"
     three=0; [ "$variant" = raw_3btn ] && three=1
-    GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout GT_3BTN=$three ./build.sh > "$OUT/build_$name.log" 2>&1
+    picture=0; [ "$pad" = raw ] && picture=1
+    GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout GT_3BTN=$three GT_PICTURE=$picture \
+        GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 GT_SERIAL_UPLOAD=0 GT_NO_SOUND=0 \
+        ./build.sh > "$OUT/build_$name.log" 2>&1
+    install -m 644 "impl/pnr/$base.rpt.txt" "$OUT/$base.rpt.txt"
+    install -m 644 "impl/pnr/${base}_tr_content.html" "$OUT/${base}_tr_content.html"
     install -m 644 "impl/pnr/$base.fs" "$OUT/genthang_nano20k_$name.fs"   # Gowin writes it read-only
     python3 merge_flash.py "impl/pnr/$base.bin" firmware/firmware.bin \
         "$OUT/genthang_nano20k_${name}_flash.bin"
@@ -43,14 +48,18 @@ for clk, want, got in clocks:
     failed |= miss
     print(f"   {clk}: {got} MHz (needs {want})" + ("  FAILS TIMING" if miss else ""))
 tns = t.split('Total Negative Slack Summary:', 1)[1].split('Timing Details', 1)[0]
-for _, kind, value, count in re.findall(r'(\S+) (Setup|Hold) (-?[\d.]+) (\d+)', tns):
+slack = re.findall(r'(\S+) (Setup|Hold) (-?[\d.]+) (\d+)', tns)
+if {kind for _, kind, _, _ in slack} != {"Setup", "Hold"}:
+    print("   timing report is missing setup/hold slack")
+    failed = True
+for _, kind, value, count in slack:
     if float(value) != 0 or int(count) != 0:
         print(f"   negative {kind} slack {value} ({count} endpoints)")
         failed = True
 sys.exit(failed)
 EOF
 done
-printf '`define GT_PAD_DB9\n' > src/pad_config.vh     # back to the checked-in default
+printf '`define GT_PAD_DB9\n`define GT_LADDER\n`define GT_NO_ADAPTIVE\n`define GT_NO_CORE_SWITCH\n' > src/pad_config.vh
 fi
 
 (cd "$OUT" && sha256sum genthang_nano20k_*.fs genthang_nano20k_*_flash.bin > SHA256SUMS)

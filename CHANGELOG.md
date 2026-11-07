@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.9.3 - 2026-11-07
+
+- **Official ladder-audio builds:** YM2612 Model 1 DAC distortion is enabled for
+  every release variant. Adaptive blending and runtime core switching are removed
+  to fit the Nano 20K; normal composite blending, scanlines, game loading/reset,
+  save states and handheld brightness remain. Existing adaptive settings become
+  normal blend ON. Combined flash images include matching 1.9.3 menu firmware.
+- The DB9 GPIO17/L3 ladder implementation was hardware-tested before release:
+  flash programming/verification and reboot passed, and the user confirmed
+  working operation and sound closer to the original. Other variants are checked
+  by synthesis, placement/routing, timing and targeted regression tests.
+
 - **GPIO17/L3 ladder audio build:** enables YM2612 Model 1 DAC distortion, with
   shared 10-bit JT12 output arithmetic verified against all 4,096 input/mode/pan
   combinations. Adaptive blending and runtime core switching are omitted to fit;
