@@ -618,11 +618,11 @@
 <line x1="690" y1="578" x2="650" y2="578" stroke="#d53f8c" stroke-width="3"/>
 <rect x="420" y="564" width="230" height="26" rx="5" fill="#d53f8c"/>
 <text x="642" y="583" text-anchor="end" style="fill:white;font:bold 14px Arial">a18 → TIP (L) · GPIO31 · J6.14</text>
-<circle cx="998" cy="410" r="13" fill="none" stroke="#3182ce" stroke-width="4"/>
-<circle cx="998" cy="410" r="6" fill="#3182ce"/>
-<line x1="998" y1="410" x2="1038" y2="410" stroke="#3182ce" stroke-width="3"/>
-<rect x="1038" y="396" width="230" height="26" rx="5" fill="#3182ce"/>
-<text x="1046" y="415" text-anchor="start" style="fill:white;font:bold 14px Arial">j11 → RING (R) · GPIO56 · J5.7</text>
+<circle cx="690" cy="602" r="13" fill="none" stroke="#3182ce" stroke-width="4"/>
+<circle cx="690" cy="602" r="6" fill="#3182ce"/>
+<line x1="690" y1="602" x2="650" y2="602" stroke="#3182ce" stroke-width="3"/>
+<rect x="420" y="588" width="230" height="26" rx="5" fill="#3182ce"/>
+<text x="642" y="607" text-anchor="end" style="fill:white;font:bold 14px Arial">a19 → RING (R) · GPIO17 · J6.15</text>
 <circle cx="998" cy="602" r="13" fill="none" stroke="#111111" stroke-width="4"/>
 <circle cx="998" cy="602" r="6" fill="#111111"/>
 <line x1="998" y1="602" x2="1038" y2="602" stroke="#111111" stroke-width="3"/>
@@ -631,7 +631,7 @@
 <rect x="1040" y="140" width="360" height="240" rx="10" fill="white" stroke="#3182ce" stroke-width="2"/>
 <text x="1055" y="170" style="font:bold 16px Arial">3.5 mm LINE-OUT TEST (DVI audio)</text>
 <text x="1055" y="194" style="font:14px Arial">a18 → jack TIP (left)</text>
-<text x="1055" y="218" style="font:14px Arial">j11 → jack RING (right)</text>
+<text x="1055" y="218" style="font:14px Arial">a19 → jack RING (right)</text>
 <text x="1055" y="242" style="font:14px Arial">j19 → jack SLEEVE (ground)</text>
 <text x="1055" y="266" style="font:14px Arial">Powered speaker / soundbar ONLY,</text>
 <text x="1055" y="290" style="font:14px Arial">volume at zero first.</text>

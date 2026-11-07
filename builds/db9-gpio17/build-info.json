@@ -1,0 +1,57 @@
+{
+  "source_commit": "22db9ed5cb29f7b0e027b4749bb21eb0ffc9295d",
+  "compiler": "Gowin V1.9.11.03 Education Linux",
+  "firmware_version": "1.9.2",
+  "controller_variant": "db9",
+  "video": "720p",
+  "hardware_revision": "L3",
+  "audio": {
+    "left": {
+      "gpio": 31,
+      "contact": "J6.14"
+    },
+    "right": {
+      "gpio": 17,
+      "contact": "J6.15"
+    }
+  },
+  "controller_gpio": {
+    "db9_d[0]": 73,
+    "db9_d[1]": 74,
+    "db9_d[2]": 77,
+    "db9_d[3]": 27,
+    "db9_d[4]": 28,
+    "db9_d[5]": 30,
+    "db9_th": 29,
+    "db9b_d[0]": 42,
+    "db9b_d[1]": 41,
+    "db9b_d[2]": 51,
+    "db9b_d[3]": 48,
+    "db9b_d[4]": 49,
+    "db9b_d[5]": 71,
+    "db9b_th": 72
+  },
+  "flash_program_address": 0,
+  "menu_flash_offset": 5242880,
+  "fpga_payload_bytes": 907418,
+  "menu_payload_bytes": 71336,
+  "negative_setup_hold_slack": false,
+  "timing_mhz": {
+    "clk_sys": {
+      "required": 54.002,
+      "achieved": 62.624
+    },
+    "clk_z80": {
+      "required": 27.001,
+      "achieved": 42.741
+    },
+    "hclk": {
+      "required": 74.25,
+      "achieved": 78.743
+    }
+  },
+  "sha256": {
+    "genthang_nano20k_db9_gpio17.fs": "39fc26581c647b1710b34b17a098bbc6510a41fd2b5c14f41cc0cb0907bef60f",
+    "genthang_nano20k_db9_gpio17_flash.bin": "17914b6d4de865d5196d15f26362345eec206ed9561400950b01982786267d63"
+  }
+}
