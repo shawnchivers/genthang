@@ -163,6 +163,34 @@ int main(void) {
     reset_options();
     load_options();
     assert(color_mode == 2 && picture_dim == 3 && applied_video == 0);
+
+    for (int adaptive_off = 0; adaptive_off < 2; adaptive_off++)
+    for (int core_switch_off = 0; core_switch_off < 2; core_switch_off++) {
+        no_adaptive = adaptive_off;
+        no_core_switch = core_switch_off;
+        load_config("020000\n/a.md\n");
+        assert(blend == (adaptive_off ? 1 : 2));
+        assert(applied_video == (unsigned)(blend << 2));
+        draw_options(0);
+        display_write();
+        assert(nopt == 6 - core_switch_off);
+        bool found_core = false;
+        for (int i = 0; i < nopt; i++) {
+            if (opt_items[i] == OPT_CORES) found_core = true;
+            if (opt_items[i] == OPT_BLEND)
+                assert(strncmp(screen[LIST_ROW + i] + 3,
+                               adaptive_off ? "Composite blend: ON" : "Composite blend: ADAPTIVE",
+                               adaptive_off ? 19 : 25) == 0);
+        }
+        assert(found_core == !core_switch_off);
+        save_options();
+        assert(config[1] == (adaptive_off ? '1' : '2'));
+        load_config("210000\n/a.md\n");
+        assert(scanlines == 2 && blend == 1 && applied_video == (2 | 1 << 2));
+        load_config("000000\n");
+        assert(blend == 0 && applied_video == 0);
+    }
+    no_adaptive = no_core_switch = false;
     has_picture = true;
 
     short_write = true;

@@ -111,12 +111,13 @@ jt12_single_acc #(.win(9),.wout(9)) u_acc(
 //     right <= pre_right + { {2{pre_right[11]}}, pre_right[11:2] };
 // end
 
-wire signed [15:0] acc_expand = {{7{acc_out[8]}}, acc_out};
+// The panned sample is shared by both outputs and fits in 10 bits (-256..262).
+wire signed [9:0] acc_expand = {acc_out[8], acc_out};
+wire signed [9:0] ladder_sample = acc_expand + (ladder && !acc_out[8] ? 10'sd7 : 10'sd0);
+wire signed [15:0] panned_sample = ladder_sample;
+wire signed [15:0] unpanned_sample = !ladder ? 16'sd0 : (acc_out[8] ? -16'sd6 : 16'sd7);
 
 reg [1:0] rl_latch, rl_old;
-
-wire signed [4:0] ladder_left = ~ladder ? 5'd0 : (acc_expand >= 0 ? 5'd7 : (rl_old[1] ? 5'd0 : -5'd6));
-wire signed [4:0] ladder_right = ~ladder ? 5'd0 : (acc_expand >= 0 ? 5'd7 : (rl_old[0] ? 5'd0 : -5'd6));
 
 always @(posedge clk) if(clk_en) begin
     if (channel_en)
@@ -124,8 +125,8 @@ always @(posedge clk) if(clk_en) begin
     if (zero)
         rl_old <= rl_latch;
 
-    left  <= rl_old[1] ? acc_expand + ladder_left : ladder_left;
-    right <= rl_old[0] ? acc_expand + ladder_right : ladder_right;
+    left  <= rl_old[1] ? panned_sample : unpanned_sample;
+    right <= rl_old[0] ? panned_sample : unpanned_sample;
 end
 
 endmodule

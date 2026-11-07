@@ -103,6 +103,17 @@ module iosys_picorv32 #(
 /* verilator lint_off PINMISSING */
 /* verilator lint_off WIDTHTRUNC */
 
+`ifdef GT_NO_CORE_SWITCH
+localparam CORE_SWITCH = 0;
+`else
+localparam CORE_SWITCH = 1;
+`endif
+`ifdef GT_NO_ADAPTIVE
+localparam ADAPTIVE_BLEND = 0;
+`else
+localparam ADAPTIVE_BLEND = 1;
+`endif
+
 reg flash_loaded;
 reg flash_loading;
 reg [20:0] flash_addr = {21{1'b1}};
@@ -190,8 +201,8 @@ wire        cycle_reg_sel = mem_valid && (mem_addr == 32'h0200_0054);       // c
 
 wire        id_reg_sel = mem_valid && (mem_addr == 32'h0200_0060);
 
-wire        spiflash_reg_byte_sel = mem_valid && (mem_addr == 32'h0200_0070);
-wire        spiflash_reg_ctrl_sel = mem_valid && (mem_addr == 32'h0200_0078);
+wire        spiflash_reg_byte_sel = CORE_SWITCH && mem_valid && (mem_addr == 32'h0200_0070);
+wire        spiflash_reg_ctrl_sel = CORE_SWITCH && mem_valid && (mem_addr == 32'h0200_0078);
 
 assign mem_ready = ram_ready || textdisp_reg_char_sel || simpleuart_reg_div_sel || 
             romload_reg_ctrl_sel || (romload_reg_data_sel && !rom_wait) || joystick_reg_sel || time_reg_sel || cycle_reg_sel || id_reg_sel ||
@@ -207,7 +218,7 @@ assign mem_rdata = ram_ready ? ram_rdata :
         simpleuart_reg_dat_sel ? simpleuart_reg_dat_do : 
         time_reg_sel ? {8'd0, time_reg} :
         cycle_reg_sel ? 32'd0 :
-        id_reg_sel ? {13'b0, MENU_MODE_ONLY != 0, 1'b0, PICTURE_OPTS != 0, CORE_ID} :
+        id_reg_sel ? {11'b0, CORE_SWITCH == 0, ADAPTIVE_BLEND == 0, MENU_MODE_ONLY != 0, 1'b0, PICTURE_OPTS != 0, CORE_ID} :
         (simplespimaster_reg_byte_sel | simplespimaster_reg_word_sel) ? simplespimaster_reg_do : 
         spiflash_reg_byte_sel ? spiflash_reg_do :
         32'h 0000_0000;
@@ -337,7 +348,7 @@ end
 
 // SPI flash @ 0x02000_0070
 // Load the firmware from flash address 0x500000 into RV memory at address 0x0
-spiflash #(.ADDR(24'h500000), .LEN(FIRMWARE_SIZE)) flash (
+spiflash #(.ADDR(24'h500000), .LEN(FIRMWARE_SIZE), .MMIO(CORE_SWITCH)) flash (
     .clk(clk), .resetn(resetn),
     .ncs(flash_spi_cs_n), .miso(flash_spi_miso), .mosi(flash_spi_mosi),
     .sck(flash_spi_clk), 

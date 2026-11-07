@@ -26,6 +26,15 @@ module picture_modes_tb;
         .pause_core(), .overlay_x(), .overlay_y(),
         .tmds_clk_n(), .tmds_clk_p(), .tmds_d_n(), .tmds_d_p()
     );
+    framebuffer #(.PICTURE_OPTS(0), .ADAPTIVE_BLEND(0)) trimmed (
+        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
+        .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
+        .interlace(1'b0), .x(9'd0), .y(8'd0), .width(11'd320), .height(10'd224),
+        .overlay(overlay), .overlay_color(overlay_color), .video_opt(options),
+        .audio_left(16'd0), .audio_right(16'd0),
+        .pause_core(), .overlay_x(), .overlay_y(),
+        .tmds_clk_n(), .tmds_clk_p(), .tmds_d_n(), .tmds_d_p()
+    );
 
     // Expected game channel: blend, then one dimmer whose level is brightness plus the
     // scanline level on scanline rows, capped at 25%. PICTURE_OPTS=0 ignores brightness.
@@ -48,14 +57,19 @@ module picture_modes_tb;
         force dut.mem_portB_rdata = sample; force plain.mem_portB_rdata = sample;
         force dut.left_px = left_sample;  force plain.left_px = left_sample;
         force dut.scan = scan_test;       force plain.scan = scan_test;
+        force trimmed.active = active_test;
+        force trimmed.mem_portB_rdata = sample[11:0];
+        force trimmed.left_px = left_sample;
+        force trimmed.scan = scan_test;
     endtask
 
-    task automatic expect_rgb(input [23:0] want_dut, want_plain, input string what);
+    task automatic expect_rgb(input [23:0] want_dut, want_plain, want_trimmed, input string what);
         drive();
         @(posedge clk);
         #1;
         if (dut.rgb !== want_dut) $fatal(1, "%s: RGB %h expected %h (options %h)", what, dut.rgb, want_dut, options);
         if (plain.rgb !== want_plain) $fatal(1, "%s: PICTURE_OPTS=0 RGB %h expected %h", what, plain.rgb, want_plain);
+        if (trimmed.rgb !== want_trimmed) $fatal(1, "%s: ADAPTIVE_BLEND=0 RGB %h expected %h", what, trimmed.rgb, want_trimmed);
         @(negedge clk);
     endtask
 
@@ -70,7 +84,7 @@ module picture_modes_tb;
             overlay = 0;
             repeat (3) @(negedge clk);
             for (int pixel = 0; pixel < 4096; pixel += (bright == 0 && blend == 0 ? 1 : 7)) begin
-                reg [23:0] want, want_plain;
+                reg [23:0] want, want_plain, want_trimmed;
                 integer do_blend;
                 sample = {1'(flagged), 12'(pixel)};
                 left_sample = 12'(pixel * 5 + 'h3a1);
@@ -78,8 +92,9 @@ module picture_modes_tb;
                 for (int ch = 0; ch < 3; ch++) begin
                     want[ch*8 +: 8] = game_channel(sample[ch*4 +: 4], left_sample[ch*4 +: 4], do_blend, row, scan, bright);
                     want_plain[ch*8 +: 8] = game_channel(sample[ch*4 +: 4], left_sample[ch*4 +: 4], do_blend, row, scan, 0);
+                    want_trimmed[ch*8 +: 8] = game_channel(sample[ch*4 +: 4], left_sample[ch*4 +: 4], blend == 1, row, scan, 0);
                 end
-                expect_rgb(want, want_plain, "game");
+                expect_rgb(want, want_plain, want_trimmed, "game");
             end
             // The menu is a fixed 50% with PICTURE_OPTS, full otherwise; never blended or scanlined.
             overlay = 1;
@@ -88,13 +103,13 @@ module picture_modes_tb;
                 overlay_color = {5'(31 - level), 5'((level + 11) % 32), 5'(level)};
                 menu = {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
                         overlay_color[14:10], overlay_color[14:12]};
-                expect_rgb({1'b0, menu[23:17], 1'b0, menu[15:9], 1'b0, menu[7:1]}, menu, "menu");
+                expect_rgb({1'b0, menu[23:17], 1'b0, menu[15:9], 1'b0, menu[7:1]}, menu, menu, "menu");
             end
             active_test = 0;
-            expect_rgb(24'd0, 24'd0, "blanking");
+            expect_rgb(24'd0, 24'd0, 24'd0, "blanking");
             active_test = 1;
         end
-        $display("Picture modes: brightness x scanlines x blend on game pixels, menu, blanking and PICTURE_OPTS=0 bypass passed");
+        $display("Picture modes: brightness x scanlines x blend, menu, blanking, PICTURE_OPTS=0 and ADAPTIVE_BLEND=0 passed");
         $finish;
     end
 endmodule

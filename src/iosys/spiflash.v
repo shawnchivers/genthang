@@ -13,7 +13,8 @@
 module spiflash #(
     parameter CLK_DIV = 2,
     parameter [23:0] ADDR = 1024*1024,
-    parameter LEN = 1024
+    parameter LEN = 1024,
+    parameter MMIO = 1             // 0 = firmware bootstrap only, no runtime flash writes
 ) (
     input clk,
     input resetn,
@@ -47,9 +48,10 @@ wire [7:0] data_out;
 reg spi_start;
 wire spi_ready;
 
-reg [20:0] cnt;         // transfer byte count, max 2MB
+localparam COUNT_WIDTH = $clog2(LEN + 2) < 3 ? 3 : $clog2(LEN + 2);
+reg [COUNT_WIDTH-1:0] cnt;
 
-assign reg_wait = wait_buf & (reg_byte_we | reg_word_we);
+assign reg_wait = MMIO && wait_buf && (reg_byte_we | reg_word_we);
 reg wait_buf = 1;
 reg reg_byte_we_r, reg_word_we_r;
 reg active, new_request;
@@ -66,13 +68,14 @@ always @(posedge clk) begin
         state <= 0;
         ncs_buf <= 1'b1;
     end else begin
-        reg new_request_t = reg_byte_we && ~reg_byte_we_r || reg_word_we && ~reg_word_we_r;
+        reg new_request_t;
+        new_request_t = MMIO && (reg_byte_we && ~reg_byte_we_r || reg_word_we && ~reg_word_we_r);
         reg_byte_we_r <= reg_byte_we;
         reg_word_we_r <= reg_word_we;
         if (new_request_t)
             new_request <= 1;
 
-        if (reg_ctrl_we)
+        if (MMIO && reg_ctrl_we)
             ncs_buf <= reg_di[0];
 
         spi_start <= 0;
@@ -104,7 +107,7 @@ always @(posedge clk) begin
             endcase
         end
         2'd2: if (~spi_start && spi_ready) begin    // read back LEN bytes
-            cnt <= cnt + 21'd1;
+            cnt <= cnt + 1'b1;
             if (cnt == LEN) begin
                 state <= 2'd3;
                 busy <= 0;
@@ -115,7 +118,7 @@ always @(posedge clk) begin
             dout_strb <= 1'b1;
         end
         2'd3: begin                                 // MMIO
-            if (spi_ready && ~spi_start && (new_request_t || new_request || active)) begin
+            if (MMIO && spi_ready && ~spi_start && (new_request_t || new_request || active)) begin
                 // send
                 if (new_request || new_request_t) begin
                     data_in <= reg_di[7:0];
@@ -142,5 +145,3 @@ always @(posedge clk) begin
 end
 
 endmodule
-
-

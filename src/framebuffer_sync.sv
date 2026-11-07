@@ -17,6 +17,7 @@ module framebuffer #(
     parameter COLOR_BITS = 4,       // bits per RGB color channel
     parameter BUFFER_LINES = 32,    // power-of-two line ring, must exceed core lead over HDMI
     parameter LCD800 = 0,           // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
+    parameter ADAPTIVE_BLEND = 1,   // 0 = composite blend off/on only
     parameter PICTURE_OPTS = 0      // 1 = brightness (video_opt[9:8]) for games, GT_PICTURE builds
 )(
 	input clk,                      // megadrive clock
@@ -72,7 +73,7 @@ wire [9:0] cy  /* xsynthesis syn_keep=1 */;
 //
 localparam FB_DEPTH = WIDTH * BUFFER_LINES;
 localparam COLOR_WIDTH = COLOR_BITS * 3;
-localparam MEM_WIDTH = COLOR_WIDTH + 1;     // {transp, r, g, b}
+localparam MEM_WIDTH = COLOR_WIDTH + ADAPTIVE_BLEND;
 localparam FB_AWIDTH = $clog2(FB_DEPTH);
 localparam LINE_BITS = $clog2(BUFFER_LINES);
 reg [MEM_WIDTH-1:0] mem [0:FB_DEPTH-1];
@@ -88,7 +89,7 @@ assign mem_portA_addr = y[LINE_BITS-1:0] * WIDTH + x;
 always @(posedge clk) begin
     ce_pix_r <= ce_pix;
     if (ce_pix & ~ce_pix_r) 
-        mem[mem_portA_addr] <= {transp, r, g, b};
+        mem[mem_portA_addr] <= MEM_WIDTH'({transp, r, g, b});
 end
 
 // BRAM port B read
@@ -247,7 +248,14 @@ endfunction
 wire [2:0] dim_sum = (scan ? {1'b0, opt_s2[1:0]} : 3'd0) + {1'b0, opt_s2[9:8]};
 wire [1:0] dim = !PICTURE_OPTS ? (scan ? opt_s2[1:0] : 2'd0)    // exactly the pre-brightness dimmer
                : dim_sum[2] ? 2'd3 : dim_sum[1:0];
-wire do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && mem_portB_rdata[COLOR_WIDTH]);
+wire do_blend;
+generate
+    if (ADAPTIVE_BLEND) begin
+        assign do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && mem_portB_rdata[COLOR_WIDTH]);
+    end else begin
+        assign do_blend = opt_s2[2];
+    end
+endgenerate
 // Handheld (PICTURE_OPTS) builds draw the menu at a fixed 50% so it is not harsh on the LCD.
 wire [23:0] menu_rgb = {overlay_color[4:0], overlay_color[4:2], overlay_color[9:5], overlay_color[9:7],
                         overlay_color[14:10], overlay_color[14:12]};

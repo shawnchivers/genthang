@@ -71,6 +71,8 @@ static int color_mode;              // 0 original, 1 warm, 2 cool, 3 vivid
 static int picture_dim;             // brightness: 0 100%, 1 75%, 2 50%, 3 25%
 static bool has_picture;            // core built with GT_PICTURE (bit 16 of the core ID register)
 static bool mode_menu;              // GT_3BTN core: Mode alone opens the menu (bit 18)
+static bool no_adaptive;            // adaptive blend omitted (bit 19)
+static bool no_core_switch;         // runtime flash access omitted (bit 20)
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -126,6 +128,7 @@ static void help(const char *s) {
 
 // ---- video options ---------------------------------------------------------------
 static void apply_options() {
+    if (no_adaptive && blend == 2) blend = 1;
     int picture = has_picture ? (picture_dim << 8) : 0;
     td_reg(1, scanlines | blend << 2 | dvi << 4 | lcd << 5 | picture);
     ss_reg(0);
@@ -607,6 +610,10 @@ flash_error:
 }
 
 static void select_core() {
+    if (no_core_switch) {
+        status("Core switching disabled");
+        return;
+    }
     int active = 0, page = -1;
     char path[NAME_LEN + 16];
     if (load_cores() != 0) {
@@ -704,6 +711,10 @@ static int receive_upload() {
     uint32_t size = get_le32(header + 4);
     uint32_t expected_crc = get_le32(header + 8);
     bool core_image = header[1] & UPLOAD_CORE;
+    if (core_image && no_core_switch) {
+        upload_error(2, "Core switching disabled");
+        return -1;
+    }
     uint32_t max_size = core_image ? FLASH_SIZE : MAX_ROM;
     if (header[0] != UPLOAD_VERSION || header[1] & ~UPLOAD_CORE ||
         name_len == 0 || name_len >= NAME_LEN || size > max_size) {
@@ -801,7 +812,7 @@ static void draw_options(int active) {
         opt_items[nopt++] = OPT_RESET;
     }
     opt_items[nopt++] = OPT_GAMES;
-    opt_items[nopt++] = OPT_CORES;
+    if (!no_core_switch) opt_items[nopt++] = OPT_CORES;
     opt_items[nopt++] = OPT_SCAN;
     opt_items[nopt++] = OPT_BLEND;
     opt_items[nopt++] = OPT_OUTPUT;
@@ -923,12 +934,14 @@ static void menu() {
                     save_options();
                     redraw = true;
                     break;
-                case OPT_BLEND:
-                    blend = (blend + ((k & J_LEFT) ? 2 : 1)) % 3;
+                case OPT_BLEND: {
+                    int count = no_adaptive ? 2 : 3;
+                    blend = (blend + ((k & J_LEFT) ? count - 1 : 1)) % count;
                     apply_options();
                     save_options();
                     redraw = true;
                     break;
+                }
                 case OPT_OUTPUT:
                     dvi = !dvi;
                     apply_options();
@@ -1033,6 +1046,8 @@ static void menu() {
 int main() {
     has_picture = (reg_core_id >> 16) & 1;
     mode_menu = (reg_core_id >> 18) & 1;
+    no_adaptive = (reg_core_id >> 19) & 1;
+    no_core_switch = (reg_core_id >> 20) & 1;
     overlay(1);
     cursor(0, 31);                  // print() from FatFs glue lands off screen
     reg_uart_clkdiv = 234;          // 115200 baud from the 27MHz iosys clock

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **GPIO17/L3 ladder audio build:** enables YM2612 Model 1 DAC distortion, with
+  shared 10-bit JT12 output arithmetic verified against all 4,096 input/mode/pan
+  combinations. Adaptive blending and runtime core switching are omitted to fit;
+  normal blending, scanlines, game loading, reset and save states remain. Legacy
+  adaptive settings map to normal blending. The matching menu detects omitted
+  features through core-ID bits 19/20. A sized flash-bootstrap counter provides
+  the final placement savings. All timing targets pass with zero negative slack,
+  leaving 9 CLS and 128 logic slots. Flashed and verified on hardware; the user
+  reports working operation and sound closer to the original. Published separately
+  from the standard 1.9.2 builds; its menu version remains 1.9.2.
+
 - **DB9 right line-out moved to GPIO17 (J6 contact 15)** for the L3 line-out
   carrier, instead of GPIO56 (J5 contact 7), which is shared with the on-board
   amplifier and FPGA configuration. Left audio, both controller pinouts and raw

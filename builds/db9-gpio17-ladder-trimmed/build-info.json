@@ -1,0 +1,91 @@
+{
+  "built_at_utc": "2026-11-07T18:33:10.021193+00:00",
+  "source_base_commit": "34e45896abe1fdcb1b286a740c37711231de513c",
+  "source_has_uncommitted_changes": true,
+  "source_worktree": "/home/papa/code/tang-fpga/agent-worktrees/genthang-db9-ladder",
+  "source_file_sha256": {
+    "build.tcl": "c661d04a0b5fd82ba32a8ec7e75bdffc91ae4a1aa5f91ed7b38432fd2d3842f0",
+    "src/mdtang_top.sv": "1621c2362f8ae8f421f322bf704210faf6b22b2cd64ff009fc5b90a603f79084",
+    "src/system.sv": "cb0588e85b63672307a0bfb47e8f6e537b05b298467daac51c9c9524fc81e3ca",
+    "src/vdp/vdp.v": "67b3af1475be5bab229921b03e72a6e69c63cc03a1207662d56ed738e4b4e084",
+    "src/framebuffer_sync.sv": "9f272bb9ef29ce242ace0823e27c2c08e6a4aec12a75e20bcdd2c0ea330a9298",
+    "src/iosys/iosys_picorv32.v": "13f25bf8dd1d4a163487e8cfc25a9c495a915b47acffd042173ce11a51e38ad9",
+    "src/iosys/spiflash.v": "cf771fe2f11b73f0959f67dec0fc96408fd5c2c3d24862687cf5a3d48ba2a917",
+    "src/jt12/jt12_acc.v": "91253760d6e1a958f84d8abaab8256dbee84d36993fb4aeeca3b4a7205d78db1",
+    "firmware/firmware.c": "935ea783ed3c27ba8d9d6edc49d38a5a38d67e746aa236db14588866d40e804e"
+  },
+  "compiler": "Gowin V1.9.11.03 Education Linux",
+  "firmware_version": "1.9.2",
+  "menu_firmware_sha256": "e2a4f5330291318fe51064496a7aa62287698fc1c8896b60d162998b19e2c8f4",
+  "controller_variant": "db9",
+  "video": "720p",
+  "hardware_revision": "GPIO17/L3",
+  "build_options": {
+    "GT_LADDER": 1,
+    "GT_NO_ADAPTIVE": 1,
+    "GT_NO_CORE_SWITCH": 1,
+    "GT_PICTURE": 0,
+    "GT_SERIAL_UPLOAD": 0
+  },
+  "retained_features": [
+    "normal composite blend OFF/ON",
+    "scanlines",
+    "game loading",
+    "game reset",
+    "save states"
+  ],
+  "flash_program_address": 0,
+  "menu_flash_offset": 5242880,
+  "fpga_payload_bytes": 907418,
+  "menu_payload_bytes": 71472,
+  "resources": {
+    "Logic": {
+      "used": 20608,
+      "total": 20736,
+      "free": 128
+    },
+    "Register": {
+      "used": 9346,
+      "total": 15915,
+      "free": 6569
+    },
+    "CLS": {
+      "used": 10359,
+      "total": 10368,
+      "free": 9
+    },
+    "BSRAM": {
+      "used": 43,
+      "total": 46,
+      "free": 3
+    }
+  },
+  "timing_mhz": {
+    "clk_sys": {
+      "required": 54.002,
+      "achieved": 63.534
+    },
+    "clk_z80": {
+      "required": 27.001,
+      "achieved": 44.117
+    },
+    "hclk": {
+      "required": 74.25,
+      "achieved": 76.879
+    }
+  },
+  "negative_setup_hold_slack": false,
+  "tests_passed": [
+    "4096 JT12 arithmetic combinations and clock-enable holds",
+    "picture modes with/without adaptive, normal blend, scanlines and menu",
+    "firmware legacy settings migration and core-switch menu gating",
+    "4-byte and 262144-byte flash bootstrap, default MMIO and MMIO disabled"
+  ],
+  "hardware_tested": true,
+  "hardware_validation": "Gowin flash program/verify passed; FPGA rebooted from flash. User confirmed working hardware and audio closer to the original on 2026-11-07.",
+  "sha256": {
+    "genthang_nano20k_db9_gpio17_ladder_trimmed.fs": "4caf43379aa11319e482101e26b8cf8ccc00d31d9af83aa55fbd06cff6c1a226",
+    "genthang_nano20k_db9_gpio17_ladder_trimmed_flash.bin": "412a5923807df79e2a7877f2c3d6a4e80ec1a6db489a3a91f5560813852141fa"
+  },
+  "sram_test_note": "The SRAM bitstream also requires this matching menu firmware in SPI flash. Prefer the combined flash image when upgrading from the previous GPIO17 build."
+}

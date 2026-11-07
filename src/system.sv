@@ -445,7 +445,13 @@ assign VS = ~VDP_vs;
 
 wire HL;
 
-vdp vdp
+vdp #(
+`ifdef GT_NO_ADAPTIVE
+	.ADAPTIVE_BLEND(0)
+`else
+	.ADAPTIVE_BLEND(1)
+`endif
+) vdp
 (
 	.RST_N(~hard_reset),
 	.CLK(MCLK),
@@ -1630,7 +1636,11 @@ jt12 fm
 	.din(ZBUS_DO),
 	.dout(FM_DO),
 	.en_hifi_pcm( EN_HIFI_PCM ),
+`ifdef GT_LADDER
+	.ladder(1'b1),
+`else
 	.ladder(LADDER),
+`endif
 	.snd_left(FM_left),
 	.snd_right(FM_right)
 );

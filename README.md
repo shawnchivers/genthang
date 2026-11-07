@@ -351,9 +351,9 @@ is enough. Player 1 drives the menu; player 2 only plays.
 The Options page opens first when you call up the menu during a game:
 
 - **Resume game**, **Save state**, **Load state**, **Reset game**, **Load another game**
-- **Switch core**: choose a complete `.bin` image from `/cores` (see below)
+- **Switch core**: choose a complete `.bin` image from `/cores` (see below; omitted with `GT_NO_CORE_SWITCH=1`)
 - **Scanlines**: off, 25 %, 50 %
-- **Composite blend**: off, on, adaptive
+- **Composite blend**: off, on, adaptive (off/on only with `GT_NO_ADAPTIVE=1`)
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
 - **Display**: TV (default), or 4:3 LCD
 - **Brightness**: 100 % (default), 75 %, 50 %, 25 % (raw build only)
@@ -378,6 +378,8 @@ post-processing options are applied by the HDMI scaler:
   dither patterns many games use for transparency and shading the way a composite
   cable does. *Adaptive* limits the blend to pixels the VDP flags as transparency
   dither, leaving the rest of the picture sharp.
+  `GT_NO_ADAPTIVE=1` removes the dither detector and flag storage, while retaining
+  normal blending and scanlines. A saved adaptive setting becomes normal blend ON.
 
 **Brightness** exists only in builds with `GT_PICTURE=1`, the default for the raw
 (handheld) build; the DB9 build leaves it out because the FPGA has no logic to spare,
@@ -466,6 +468,11 @@ corrected debugger firmware. On Linux your user needs access to the serial devic
 
 ### Switching cores
 
+`GT_NO_CORE_SWITCH=1` removes the runtime flash interface and hides this menu entry.
+It also rejects serial core-image uploads; normal ROM loading and firmware bootstrap
+from flash are unchanged. The FPGA reports this omission in core-ID bit 20 and the
+adaptive omission in bit 19, so use the matching menu firmware from this worktree.
+
 *Switch core* lists complete SPI-flash images (`.bin`) in `/cores`, programs the one
 you pick into the board's flash and asks you to power-cycle. Copy one to `/cores` on
 the card (or, in a `GT_SERIAL_UPLOAD=1` build, upload it with
@@ -492,6 +499,8 @@ recovery with Gowin Programmer over USB.
 git clone https://github.com/shawnchivers/genthang.git
 cd genthang
 ./build.sh                        # impl/pnr/genthang_nano20k_db9.fs, dual DB9 build
+GT_LADDER=1 ./build.sh            # DB9 with the YM2612 Model 1 ladder effect
+GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 ./build.sh  # trimmed ladder experiment
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
 GT_PAD=raw GT_3BTN=1 ./build.sh   # 3-button handheld (*_3btn): no player 2, Mode alone opens the menu
@@ -515,6 +524,40 @@ to leave logic headroom: with it the design fits with only 9 spare CLS. `GT_PICT
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
+`GT_LADDER=1` enables JT12's YM2612 Model 1 DAC ladder distortion instead of the
+default clean output. It uses the usual output filenames, so build it in a separate
+worktree to preserve a clean-output bitstream. Check placement and timing before
+using it: the GPIO17 DB9 build has very little spare logic.
+The earlier GPIO17/L3 ladder experiment with adaptive and core switching retained
+did not fit the Nano 20K. The initial
+build left 218 equivalent LUTs unplaced. Sharing a 10-bit ladder sum between the
+stereo outputs reduced that to 100, but both timing-priority and balanced placement
+still exhausted all 10,368 CLS. No ladder-enabled bitstream was generated.
+The arithmetic optimization passes `tests/jt12_ladder_tb.sv`, which checks all
+4,096 accumulator/panning/ladder combinations against the original output equations,
+including clock-enable holds. Those full-featured attempts could not proceed to
+hardware testing because placement failed.
+The trimmed experiment removes only adaptive blending and core switching. It
+keeps normal blend OFF/ON, scanlines, game loading, reset and save states. It also
+sizes the flash-bootstrap counter to the firmware length; the flash test checks
+both 4-byte and full 256 KiB loads, with and without runtime flash access.
+
+**GPIO17/L3 trimmed ladder test build:** placement and routing pass, with
+20,608/20,736 logic slots and 10,359/10,368 CLS used (128 logic slots and 9 CLS spare).
+`clk_sys` reaches 63.534 MHz, `clk_z80` 44.117 MHz and `hclk` 76.879 MHz; all exceed
+their targets, with zero negative setup/hold slack.
+- [Combined flash image with matching menu firmware](builds/db9-gpio17-ladder-trimmed/genthang_nano20k_db9_gpio17_ladder_trimmed_flash.bin):
+  program at SPI-flash address 0. GPIO31 left audio, GPIO17 right audio and both
+  DB9 controller pinouts are unchanged.
+- [SRAM bitstream](builds/db9-gpio17-ladder-trimmed/genthang_nano20k_db9_gpio17_ladder_trimmed.fs):
+  use only after the matching menu firmware is installed in SPI flash. The older
+  GPIO17 menu does not know that adaptive and core switching are disabled.
+- [Checksums](builds/db9-gpio17-ladder-trimmed/SHA256SUMS) and
+  [build configuration, source hashes and validation results](builds/db9-gpio17-ladder-trimmed/build-info.json).
+
+This pre-release image was flashed, verified and tested on hardware; the user
+confirmed working operation and audio closer to the original. Its menu version
+remains 1.9.2; identify it by the `gpio17_ladder_trimmed` filenames.
 Gowin runs share intermediate files
 in `impl/`, so do not run two builds concurrently in one checkout.
 

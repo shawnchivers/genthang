@@ -41,7 +41,7 @@
 // TODOs/Known issues (according to http://md.squee.co/VDP)
 // - window has priority over sprites?
 
-module vdp(
+module vdp #(parameter ADAPTIVE_BLEND = 1)(
    input            RST_N,
    input            CLK,
    input            CE,                // nand2mario: CE=0: VDP is paused and no pixels are output
@@ -1028,10 +1028,10 @@ module vdp(
    //--------------------------------------------------------------
    // BACKGROUND B RENDERING
    //--------------------------------------------------------------
-   assign BGB_TRANSP0 = ((BGB_VRAM32_DO[3:0] | BGB_VRAM32_DO[11:8]) == 4'b0000) ? 1'b1 : 1'b0;
-   assign BGB_TRANSP1 = ((BGB_VRAM32_DO[7:4] | BGB_VRAM32_DO[15:12]) == 4'b0000) ? 1'b1 : 1'b0;
-   assign BGB_TRANSP2 = ((BGB_VRAM32_DO[19:16] | BGB_VRAM32_DO[27:24]) == 4'b0000) ? 1'b1 : 1'b0;
-   assign BGB_TRANSP3 = ((BGB_VRAM32_DO[23:20] | BGB_VRAM32_DO[31:28]) == 4'b0000) ? 1'b1 : 1'b0;
+   assign BGB_TRANSP0 = ADAPTIVE_BLEND && ((BGB_VRAM32_DO[3:0] | BGB_VRAM32_DO[11:8]) == 4'b0000);
+   assign BGB_TRANSP1 = ADAPTIVE_BLEND && ((BGB_VRAM32_DO[7:4] | BGB_VRAM32_DO[15:12]) == 4'b0000);
+   assign BGB_TRANSP2 = ADAPTIVE_BLEND && ((BGB_VRAM32_DO[19:16] | BGB_VRAM32_DO[27:24]) == 4'b0000);
+   assign BGB_TRANSP3 = ADAPTIVE_BLEND && ((BGB_VRAM32_DO[23:20] | BGB_VRAM32_DO[31:28]) == 4'b0000);
    
    always @(posedge CLK)
    begin
@@ -1269,10 +1269,10 @@ module vdp(
    //--------------------------------------------------------------
    // BACKGROUND A RENDERING
    //--------------------------------------------------------------
-   assign BGA_TRANSP0 = ((BGA_VRAM32_DO[3:0] | BGA_VRAM32_DO[11:8]) == 4'b0000) ? 1'b1 : 1'b0;
-   assign BGA_TRANSP1 = ((BGA_VRAM32_DO[7:4] | BGA_VRAM32_DO[15:12]) == 4'b0000) ? 1'b1 : 1'b0;
-   assign BGA_TRANSP2 = ((BGA_VRAM32_DO[19:16] | BGA_VRAM32_DO[27:24]) == 4'b0000) ? 1'b1 : 1'b0;
-   assign BGA_TRANSP3 = ((BGA_VRAM32_DO[23:20] | BGA_VRAM32_DO[31:28]) == 4'b0000) ? 1'b1 : 1'b0;
+   assign BGA_TRANSP0 = ADAPTIVE_BLEND && ((BGA_VRAM32_DO[3:0] | BGA_VRAM32_DO[11:8]) == 4'b0000);
+   assign BGA_TRANSP1 = ADAPTIVE_BLEND && ((BGA_VRAM32_DO[7:4] | BGA_VRAM32_DO[15:12]) == 4'b0000);
+   assign BGA_TRANSP2 = ADAPTIVE_BLEND && ((BGA_VRAM32_DO[19:16] | BGA_VRAM32_DO[27:24]) == 4'b0000);
+   assign BGA_TRANSP3 = ADAPTIVE_BLEND && ((BGA_VRAM32_DO[23:20] | BGA_VRAM32_DO[31:28]) == 4'b0000);
    
    always @(posedge CLK)
    begin
@@ -2514,7 +2514,9 @@ module vdp(
                   else
                      col = BGCOL;
                   
-                  if (OBJ_COLINFO2_Q[3:0] != 4'b0000 & OBJ_COLINFO2_Q[6] & (SHI == 1'b0 | OBJ_COLINFO2_Q[5:1] != 5'b11111))
+                  if (!ADAPTIVE_BLEND)
+                     TRANSP_DETECT <= 1'b0;
+                  else if (OBJ_COLINFO2_Q[3:0] != 4'b0000 & OBJ_COLINFO2_Q[6] & (SHI == 1'b0 | OBJ_COLINFO2_Q[5:1] != 5'b11111))
                      TRANSP_DETECT <= 1'b0;
                   else if (BGA_COLINFO_Q_B[6] & BGA_COLINFO_Q_B[7])
                      TRANSP_DETECT <= 1'b1;

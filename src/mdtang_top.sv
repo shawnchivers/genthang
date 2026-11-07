@@ -219,6 +219,9 @@ end
 // 720p reads a 224-line frame ~11% slower than the core writes it, so the core runs
 // up to ~25 lines ahead by the bottom of the frame: the ring needs 32 lines.
 framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)
+`ifdef GT_NO_ADAPTIVE
+    , .ADAPTIVE_BLEND(0)
+`endif
 `ifdef VIDEO_800X480
     , .LCD800(1)
 `endif
