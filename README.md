@@ -654,6 +654,19 @@ for right audio. On an older carrier, use an isolated jumper from **Tang J6.15
 PCB wires GPIO17 directly, with no jumper. Both controller pinouts and the raw
 handheld audio pins are unchanged. This pin change is not a guarantee of noise-free audio.
 
+**Pre-release GPIO17/L3 builds (DB9, 720p):**
+- [Combined flash image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin):
+  program at address `0x000000` for persistent boot; includes the matching menu
+  firmware at `0x500000`.
+- [SRAM bitstream](builds/db9-gpio17/genthang_nano20k_db9_gpio17.fs):
+  temporary FPGA programming only; does not install the menu firmware.
+- [SHA256 checksums](builds/db9-gpio17/SHA256SUMS) and
+  [build provenance and timing results](builds/db9-gpio17/build-info.json).
+
+These are the main-based PR builds, not the earlier `168d244` audio-pin test
+image. The firmware version remains 1.9.2; use the GPIO17-labelled files above,
+not the existing 1.9.2 release downloads, with the L3 carrier.
+
 On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to
 **a19**, sleeve to **j19**.
 
