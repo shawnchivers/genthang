@@ -39,6 +39,7 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 - [Setup](#setup): [flash](#1-flash-the-board) · [TF card](#2-prepare-the-tf-card) · [controllers](#3-connect-a-controller)
 - [Using Gen Thang](#using-gen-thang): [controls](#controls) · [options](#options-menu) · [display options](#display-options) · [save states](#save-states) · [USB upload](#uploading-roms-over-usb-serial) · [core switching](#switching-cores)
 - [Build from source](#build-from-source) · [Simulation and screenshots](#simulation-and-screenshots)
+- [Assembly guides](#assembly-guides)
 - [PCB and printable case](#pcb-and-printable-case)
   · [DB9 + biomech build guide](hardware/dual-db9-opt-pcb/index.html)
 - [Limitations and troubleshooting](#limitations-and-troubleshooting)
@@ -126,6 +127,22 @@ That testbench uses ideal memory and BRAM VRAM rather than the full board's SDRA
 controller and menu firmware; these are simulation captures, not physical HDMI
 captures.</sub>
 
+## Assembly guides
+
+Start here for step-by-step hardware builds, including parts, printing, assembly
+and firmware setup. Choose the guide and firmware that match your hardware.
+
+| Build | Assembly guide | Firmware |
+|---|---|---|
+| Two-player DB9 console with biomechanical case | [Illustrated build guide](https://shawnchivers.github.io/genthang/hardware/dual-db9-opt-pcb/) · [Offline page](hardware/dual-db9-opt-pcb/index.html) | `db9` |
+| Standalone L3 dual-DB9 carrier with stereo line-out | [Colorful build guide and capacitor chooser](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/) · [Offline page](hardware/dual-db9-lineout-pcb/index.html) | [GPIO17 DB9 image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin) |
+| GenThang Modern 3-button handheld (beta) | [Illustrated build guide](https://shawnchivers.github.io/genthang/hardware/modern-3btn-handheld/) · [Offline page](hardware/modern-3btn-handheld/index.html) | `raw` |
+
+**DB9 bench references:** [O1 soldering and pre-power checks](hardware/dual-db9-opt-pcb/ASSEMBLY.md)
+· [Biomechanical case printing and assembly](hardware/dual-db9-biomech-case/README.md)
+· [L3 line-out assembly](hardware/dual-db9-lineout-pcb/ASSEMBLY.md)
+· [L3 capacitor selection](hardware/dual-db9-lineout-pcb/index.html#caps).
+
 ## PCB and printable case
 
 The [hardware directory](hardware/README.md) includes the
@@ -152,6 +169,15 @@ the separate line-out carrier.
 ([source](hardware/modern-3btn-handheld/index.html)) walks through printing and assembling a battery-powered A·B·C handheld
 with a 3.5" IPS screen, with 3D renders, an interactive viewer, wiring diagrams and the three
 [STLs](hardware/modern-3btn-handheld/stl/). It uses the `raw` firmware.
+
+**Standalone stereo line-out:** the [L3 carrier](hardware/dual-db9-lineout-pcb/README.md)
+adds a 3.5 mm output for powered speakers, with GPIO31 left and GPIO17 right.
+Its [colorful build guide](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/)
+includes a cartoon bear, a simple capacitor chooser, soldering and electrical
+checks. The author confirms the GPIO17 audio move works and has submitted L3 to
+OSH Park. Use the [L3 order ZIP](hardware/dual-db9-lineout-pcb/dual-db9-lineout-L3-OSHPARK.zip)
+and the [matching GPIO17 image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin).
+L3 is a separate carrier; it does not fit the O1 biomechanical case above.
 
 **OSH Park is the recommended PCB manufacturer for people within the USA.** Use the [OSH Park order ZIP](hardware/dual-db9-opt-pcb/dual-db9-opt-O1-OSHPARK.zip).
 

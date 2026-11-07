@@ -1,0 +1,26 @@
+{
+  "board": "dual-db9-lineout-pcb",
+  "revision": "L3",
+  "size_mm": [
+    100,
+    70
+  ],
+  "fitted_components": 13,
+  "all_through_hole": true,
+  "electrical_nets": 22,
+  "unique_connected_pad_ids": 59,
+  "drc_findings": {},
+  "pin_geometry_and_firmware_contract": "PASS",
+  "line_out_contract": "PASS",
+  "schematic_pcb_equivalence": "PASS",
+  "nano_orientation": "USB-C left / HDMI right, top-mounted female headers",
+  "connector_layout": "audio rear / DB9 front",
+  "module_and_cable_clearance": "PASS",
+  "oshpark_drill_and_annular_ring_contract": "PASS",
+  "plated_slots": 3,
+  "minimum_slot_width_mm": 0.6,
+  "firmware_pinout": "GT_PAD=db9 (GPIO31 left / GPIO17 right; L3)",
+  "firmware_contract_source": "live checkout",
+  "manufactured_pcb_tested": false,
+  "fabrication_release": "PROTOTYPE_READY"
+}

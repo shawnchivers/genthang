@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="440" viewBox="0 0 480 440" role="img" aria-labelledby="title desc">
+  <title id="title">Bramble the build-guide bear</title>
+  <desc id="desc">A smiling brown cartoon bear in blue overalls holds a card with two matching capacitors labeled C1 equals C2.</desc>
+  <rect width="480" height="440" rx="36" fill="#fff6e3"/>
+  <circle cx="384" cy="93" r="58" fill="#ffd46b"/>
+  <circle cx="76" cy="325" r="64" fill="#bfebdb"/>
+  <path d="M54 92l8-20 8 20 20 8-20 8-8 20-8-20-20-8z" fill="#e87967"/>
+  <path d="M407 296l6-15 6 15 15 6-15 6-6 15-6-15-15-6z" fill="#9f8ac4"/>
+  <ellipse cx="241" cy="406" rx="129" ry="13" fill="#e5d9c0"/>
+  <g stroke="#47342e" stroke-width="5" stroke-linejoin="round">
+    <ellipse cx="204" cy="385" rx="35" ry="21" fill="#a76b45"/>
+    <ellipse cx="280" cy="385" rx="35" ry="21" fill="#a76b45"/>
+    <ellipse cx="240" cy="299" rx="82" ry="97" fill="#a76b45"/>
+    <path d="M166 253q-42-25-59 11q-6 27 43 40" fill="#a76b45"/>
+    <path d="M314 251q46-32 62 3q12 31-47 50" fill="#a76b45"/>
+    <path d="M180 246h25v35h70v-35h25v52q14 38 1 77H180q-14-39 0-77z" fill="#4586b6"/>
+    <circle cx="200" cy="284" r="5" fill="#ffd46b"/>
+    <circle cx="280" cy="284" r="5" fill="#ffd46b"/>
+    <circle cx="157" cy="102" r="35" fill="#a76b45"/>
+    <circle cx="323" cy="102" r="35" fill="#a76b45"/>
+    <circle cx="157" cy="102" r="18" fill="#dfb48c" stroke="none"/>
+    <circle cx="323" cy="102" r="18" fill="#dfb48c" stroke="none"/>
+    <ellipse cx="240" cy="151" rx="99" ry="91" fill="#a76b45"/>
+    <ellipse cx="240" cy="187" rx="48" ry="38" fill="#f4d6aa" stroke="none"/>
+    <path d="M187 133q11-10 22 0M272 133q11-10 22 0" fill="none" stroke-linecap="round"/>
+    <ellipse cx="201" cy="153" rx="7" ry="9" fill="#47342e" stroke="none"/>
+    <ellipse cx="279" cy="153" rx="7" ry="9" fill="#47342e" stroke="none"/>
+    <ellipse cx="171" cy="175" rx="15" ry="9" fill="#e98f79" stroke="none"/>
+    <ellipse cx="309" cy="175" rx="15" ry="9" fill="#e98f79" stroke="none"/>
+    <path d="M226 179q14-8 28 0q-2 16-14 16t-14-16z" fill="#47342e"/>
+    <path d="M240 196v6q-16 15-29-1m29 1q16 15 29-1" fill="none" stroke-linecap="round"/>
+    <rect x="128" y="295" width="224" height="91" rx="14" fill="#fffdf8"/>
+    <ellipse cx="133" cy="322" rx="18" ry="20" fill="#a76b45"/>
+    <ellipse cx="348" cy="322" rx="18" ry="20" fill="#a76b45"/>
+  </g>
+  <g stroke="#47342e" stroke-width="3">
+    <path d="M196 329v18m18-18v18M266 329v18m18-18v18"/>
+    <rect x="188" y="307" width="34" height="24" rx="5" fill="#ffd46b"/>
+    <rect x="258" y="307" width="34" height="24" rx="5" fill="#ffd46b"/>
+  </g>
+  <g fill="#47342e" font-family="system-ui, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="240" y="332" font-size="22">=</text>
+    <text x="240" y="371" font-size="24">C1 = C2</text>
+  </g>
+</svg>

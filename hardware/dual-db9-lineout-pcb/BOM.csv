@@ -1,0 +1,8 @@
+Line,Quantity Per Board,Reference Designator,Manufacturer,Manufacturer Part Number,Description,Package,Type,Substitutions,Source URL
+1,2,J5 J6,Harwin,M20-7822046,1x20 female socket; 2.54mm pitch; 8.5mm body height,1x20 SIL,Through-hole,Any 1x20 2.54 mm female header of similar height,https://www.harwin.com/products/M20-7822046
+2,2,J1 J2,Kycon,K22X-E9P-N,Male DE9 right angle; boardlocks; recessed 4-40 inserts; NOT NJ,DE9 right angle THT,Through-hole,NO - fit of other DB9 parts is not verified,https://www.kycon.com/Pub_Eng_Draw/K22X-E9P-N.pdf
+3,1,J3,CUI / Same Sky,SJ1-3523N,"3.5 mm stereo jack, right angle, 3 conductor",THT slotted pins,Through-hole,Must match SJ1-3523N footprint,https://www.cuidevices.com/product/resource/pdf/sj1-352xn.pdf
+4,2,R1 R2,Any,1 kOhm,"1 kOhm 1/4 W axial, 7.62 mm (0.3 in) pitch",Axial DIN0207,Through-hole,Yes,
+5,2,R3 R4,Any,47 kOhm,"47 kOhm 1/4 W axial, 7.62 mm pitch; 22k-100k fine",Axial DIN0207,Through-hole,Yes,
+6,2,C1 C2,Any,10 nF (103),"10 nF 50 V ceramic disc, 5.0 mm pitch",Disc 5.0 mm pitch,Through-hole,Yes; film capacitor of same pitch also fine,
+7,2,C3 C4,Any,10 uF,"10 uF 25 V radial electrolytic, 5 mm dia, 2.0 mm pitch; POLARIZED",Radial 5 mm dia 2.0 mm pitch,Through-hole,Yes; 2.5 mm pitch leads can be bent,

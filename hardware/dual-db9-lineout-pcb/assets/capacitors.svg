@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="330" viewBox="0 0 780 330" role="img" aria-labelledby="title desc">
+  <title id="title">Two capacitor families, two different jobs</title>
+  <desc id="desc">C1 and C2 are nonpolarized filter capacitors with interchangeable leads. C3 and C4 are polarized 10 microfarad electrolytics: positive to the square plus pad and negative stripe to the round jack-side pad.</desc>
+  <rect width="780" height="330" rx="24" fill="#f0f5fb"/>
+  <g font-family="system-ui, sans-serif" text-anchor="middle" fill="#263b52">
+    <text x="193" y="38" font-size="23" font-weight="800">C1 / C2: choose the tone</text>
+    <text x="585" y="38" font-size="23" font-weight="800">C3 / C4: always 10 uF</text>
+    <text x="193" y="290" font-size="18">Either lead, either direction.</text>
+    <text x="585" y="290" font-size="18">Stripe is minus. Square pad is plus.</text>
+  </g>
+  <path d="M390 62v241" stroke="#cad7e6" stroke-width="2"/>
+  <g stroke="#263b52" stroke-width="4">
+    <path d="M166 167v77m54-77v77" fill="none"/>
+    <rect x="130" y="80" width="126" height="92" rx="18" fill="#ffd46b"/>
+    <path d="M544 190v64m82-64v43" fill="none"/>
+    <rect x="524" y="72" width="122" height="120" rx="14" fill="#225987"/>
+    <rect x="609" y="74" width="34" height="114" rx="6" fill="#e6eef7" stroke="none"/>
+    <rect x="534" y="249" width="20" height="20" fill="#e87967"/>
+    <circle cx="626" cy="251" r="10" fill="#a6d7c4"/>
+  </g>
+  <g font-family="system-ui, sans-serif" text-anchor="middle" font-weight="700">
+    <text x="193" y="118" font-size="19" fill="#263b52">103 / 473 / 563</text>
+    <text x="193" y="149" font-size="19" fill="#263b52">50 V</text>
+    <text x="565" y="123" font-size="23" fill="#fff">10 uF</text>
+    <text x="565" y="157" font-size="20" fill="#fff">25 V</text>
+    <text x="626" y="142" font-size="30" fill="#263b52">-</text>
+    <text x="512" y="263" font-size="26" fill="#a24332">+</text>
+    <text x="651" y="257" font-size="26" fill="#263b52">-</text>
+    <text x="193" y="318" font-size="15" fill="#52615a">Filter value changes; polarity does not apply.</text>
+    <text x="585" y="318" font-size="15" fill="#52615a">Plus toward the filter; minus toward the jack.</text>
+  </g>
+</svg>
