@@ -1,5 +1,8 @@
 # Assembly instructions — dual-db9-opt-pcb O1, KYCON ONLY
 
+For an illustrated end-to-end walkthrough, including firmware and the printed
+enclosure, see the [DB9 + biomech console build guide](index.html).
+
 ## Scope: 4 through-hole components on top
 
 1. J6 and J5: Harwin **M20-7822046**, 20-position female sockets, 8.5 mm body height.

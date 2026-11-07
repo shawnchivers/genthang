@@ -40,6 +40,7 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 - [Using Gen Thang](#using-gen-thang): [controls](#controls) · [options](#options-menu) · [display options](#display-options) · [save states](#save-states) · [USB upload](#uploading-roms-over-usb-serial) · [core switching](#switching-cores)
 - [Build from source](#build-from-source) · [Simulation and screenshots](#simulation-and-screenshots)
 - [PCB and printable case](#pcb-and-printable-case)
+  · [DB9 + biomech build guide](hardware/dual-db9-opt-pcb/index.html)
 - [Limitations and troubleshooting](#limitations-and-troubleshooting)
 - [Credits and tooling](#credits-and-tooling) · [Disclaimer](#disclaimer) · [License](#license)
 
@@ -132,6 +133,13 @@ The [hardware directory](hardware/README.md) includes the
 controllers and an original
 [Giger-inspired biomechanical case](hardware/dual-db9-biomech-case/README.md)
 for the carrier and Tang Nano 20K.
+
+**Build the console:** the [DB9 + biomech assembly guide](https://shawnchivers.github.io/genthang/hardware/dual-db9-opt-pcb/)
+([local page](hardware/dual-db9-opt-pcb/index.html)) walks through parts sourcing,
+printing, soldering, continuity tests, flashing, two-player bring-up and fitting
+the carrier into the biomechanical case. It includes CAD illustrations, direct
+PCB/STL downloads and a printable bench copy. This O1 build uses HDMI audio, not
+the separate line-out carrier.
 
 - **PCB:** KiCad sources, fabrication ZIPs, BOM, assembly instructions and
   continuity-test tables.

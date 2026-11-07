@@ -1,5 +1,8 @@
 # GenThang dual DB9: biomechanical case (Giger-inspired)
 
+For the complete console build, from soldering the carrier to closing this
+enclosure, see the [illustrated DB9 + biomech assembly guide](../dual-db9-opt-pcb/index.html).
+
 A 3D-printable two-part enclosure for the two-player carrier
 [O1, dual-db9-opt-pcb](../dual-db9-opt-pcb/README.md) with its Tang Nano 20K, in the style of
 H. R. Giger's biomechanical art: a spine and rib cage on the lid, the ribs continuing down the

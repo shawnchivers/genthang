@@ -8,6 +8,10 @@ FPGA sources and the wiring illustrations in `docs/hardware/`.
 | [Dual-DB9 carrier, O1](dual-db9-opt-pcb/README.md) | KiCad PCB and schematic, Gerbers, BOM, assembly and continuity-test guides | Fabricated |
 | [Giger-inspired biomechanical case](dual-db9-biomech-case/README.md) | Printable base/lid STLs, editable STEP model, CadQuery source and renders | Printed |
 
+Start with the [illustrated DB9 + biomech console build guide](dual-db9-opt-pcb/index.html)
+for parts, printing, soldering, electrical checks, firmware setup and complete
+case assembly. The page works offline and can be printed as a bench reference.
+
 ## Ordering the PCB
 
 **OSH Park is the recommended PCB manufacturer for people within the USA.** Upload the
