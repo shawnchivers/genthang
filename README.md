@@ -624,7 +624,7 @@ core output, not captures from the physical board's HDMI port. Hardware performa
 ### Line-out jack (DB9 and raw builds)
 
 A stereo 3.5 mm line-out is available on two otherwise unused header pins, in both HDMI
-and DVI modes: left on FPGA pin 31 (J6 row 14), right on pin 56 (J5 row 7), ground on
+and DVI modes: left on FPGA pin 31 (J6 contact 14), right on pin 17 (J6 contact 15), ground on
 J6 row 20 or J5 row 15. The raw build uses its own jack pins; see
 [below](#speaker-and-headphone-jack-raw-build). The pins carry 1-bit (sigma-delta) audio, so each needs a small
 filter:
@@ -641,11 +641,21 @@ it is not meant to drive headphones directly.
 **Not hot-pluggable without the filter.** Wired straight to the pins (no resistor or
 capacitors) the line-out works for a quick test, but plugging or unplugging the jack or
 the speaker while the board is powered gave trouble. Power the board off first, or fit
-the 1 kΩ / 10 nF / 10 µF filter, which isolates the pins. In the DB9 build, pin 56 also reaches the
-Nano's on-board speaker amplifier input, so leave that amplifier's speaker pads empty.
+the 1 kΩ / 10 nF / 10 µF filter, which isolates the pins. GPIO17 is unused by the controller
+ports, but drives the Nano's on-board LED2 through a 510 Ω resistor; the LED can glow
+with the audio. Unlike the old GPIO56 output, it is not a configuration pin or an
+on-board amplifier input. Keep the Nano's speaker and LCD connectors empty.
+
+**Carrier compatibility:** these DB9 builds use the
+[L3 line-out carrier](https://github.com/shawnchivers/genthang-hw/tree/fix/lineout-l3-gpio17/dual-db9-lineout-pcb)
+pinout. Released images through 1.9.2 and L1/L2 carriers use GPIO56 (J5 contact 7)
+for right audio. On an older carrier, use an isolated jumper from **Tang J6.15
+(GPIO17) to PCB J5.7** and do not also connect Tang GPIO56 to that filter. The L3
+PCB wires GPIO17 directly, with no jumper. Both controller pinouts and the raw
+handheld audio pins are unchanged. This pin change is not a guarantee of noise-free audio.
 
 On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to
-**j11**, sleeve to **j19**.
+**a19**, sleeve to **j19**.
 
 ![Line-out jack on the P1 DB9 breadboard](docs/images/line-out-breadboard.svg)
 

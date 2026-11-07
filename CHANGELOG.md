@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **DB9 right line-out moved to GPIO17 (J6 contact 15)** for the L3 line-out
+  carrier, instead of GPIO56 (J5 contact 7), which is shared with the on-board
+  amplifier and FPGA configuration. Left audio, both controller pinouts and raw
+  handheld audio are unchanged. GPIO17 has the Nano's on-board LED2 load.
+  L1/L2 carriers need an isolated right-audio jumper from Tang J6.15 to PCB J5.7;
+  their original GPIO56 connection must not remain connected to that filter.
+
 ## 1.9.2 - 2026-10-25
 
 - **Handheld menu at a fixed 50 %.** Raw (`GT_PICTURE=1`) builds draw the menu at half

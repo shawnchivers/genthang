@@ -63,6 +63,16 @@ class PinoutTests(unittest.TestCase):
             for i in range(6):
                 self.assertIn('PULL_MODE=UP',ports[f'{bus}[{i}]'])
 
+    def test_db9_lineout_pins(self):
+        text=(ROOT/'src/boards/nano20k_db9.cst').read_text()
+        pins=dict(re.findall(r'IO_LOC\s+"([^"]+)"\s+([^;]+);',text))
+        ports=dict(re.findall(r'IO_PORT\s+"([^"]+)"\s+([^;]+);',text))
+        self.assertEqual(int(pins['audio_jack_l']),31)
+        self.assertEqual(int(pins['audio_jack_r']),17)
+        for signal in ('audio_jack_l','audio_jack_r'):
+            for setting in ('IO_TYPE=LVCMOS33','PULL_MODE=NONE','DRIVE=8','BANK_VCCIO=3.3'):
+                self.assertIn(setting,ports[signal])
+
     def test_raw_handheld_pinout(self):
         pattern=r'IO_LOC\s+"([^"]+)"\s+([^;]+);'
         text=(ROOT/'src/boards/nano20k_raw.cst').read_text()
