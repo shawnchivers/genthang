@@ -13,9 +13,8 @@
 
 **Gen Thang is a DIY Sega Genesis / Mega Drive console project for the
 [Sipeed Tang Nano 20K](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-20K/Nano-20K.html).**
-That small board contains an FPGA: programmable hardware that Gen Thang
-configures to recreate the console's processors, graphics and sound. It is not
-an emulator application you run on a PC or Raspberry Pi.
+A typical emulator recreates a console in software. Gen Thang does it in
+hardware instead, using an FPGA chip configured to work like the original console.
 
 Copy your own game ROMs to a microSD card (also called a TF card), choose a game
 from the on-screen menu, and play. The standard build sends video and audio over
