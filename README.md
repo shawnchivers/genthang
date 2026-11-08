@@ -11,17 +11,33 @@
 
 # Gen Thang
 
-Gen Thang turns a [Sipeed Tang Nano 20K](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-20K/Nano-20K.html)
-FPGA board into a self-contained Sega Mega Drive / Genesis console. Games load from
-a FAT32 or exFAT TF card through an on-screen menu, and video and audio leave the
-board over 720p HDMI. No computer is needed once the FPGA image has been programmed.
+**Gen Thang is a DIY Sega Genesis / Mega Drive console project for the
+[Sipeed Tang Nano 20K](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-20K/Nano-20K.html).**
+That small board contains an FPGA: programmable hardware that Gen Thang
+configures to recreate the console's processors, graphics and sound. It is not
+an emulator application you run on a PC or Raspberry Pi.
+
+Copy your own game ROMs to a microSD card (also called a TF card), choose a game
+from the on-screen menu, and play. The standard build sends video and audio over
+720p HDMI. You need a computer to program the board initially, but not to play.
+Games are not included.
+
+You can build it as a **TV console with Genesis controllers** or a **handheld
+with built-in buttons and a small screen**. This repository contains the FPGA
+design, menu firmware, build tools and optional PCB and printable-case designs.
+You can use a [prebuilt release image](#choose-a-release-image) without compiling
+the source yourself.
 
 <p align="center">
-  <img src="docs/images/menu-games.png" width="400" alt="Gen Thang game menu">
-  <img src="docs/images/menu-options.png" width="400" alt="Gen Thang options menu during a game">
+  <a href="hardware/modern-3btn-handheld/index.html">
+    <img src="docs/images/modern-3btn-demo.gif" width="640"
+         alt="Light-background mock-up of Streets of Rage 2 on the Gen Thang Modern three-button handheld">
+  </a>
 </p>
-<p align="center"><sub>Menu overlay rendered by the Verilator testbench (see
-<a href="#simulation-and-screenshots">Simulation and screenshots</a>).</sub></p>
+<p align="center"><sub>Three-button handheld mock-up: Streets of Rage 2 frames from
+Gen Thang's Verilator simulation composited onto a 3D render.
+This is not footage from a physical handheld.
+<a href="hardware/modern-3btn-handheld/index.html">Explore the handheld build guide.</a></sub></p>
 
 > **Alpha software.** Gen Thang is under active development and is published as an
 > early alpha. Expect bugs, game-compatibility gaps, missing features and breaking
@@ -35,15 +51,17 @@ board over 720p HDMI. No computer is needed once the FPGA image has been program
 
 ## Contents
 
-- [Features](#features) · [Game gallery](#game-gallery-streets-of-rage-2-sonic-2-and-x-men) · [What you need](#what-you-need) · [Choose a release image](#choose-a-release-image)
-- [Setup](#setup): [flash](#1-flash-the-board) · [TF card](#2-prepare-the-tf-card) · [controllers](#3-connect-a-controller)
-- [Using Gen Thang](#using-gen-thang): [controls](#controls) · [options](#options-menu) · [display options](#display-options) · [save states](#save-states) · [USB upload](#uploading-roms-over-usb-serial) · [core switching](#switching-cores)
-- [Build from source](#build-from-source) · [Simulation and screenshots](#simulation-and-screenshots)
-- [Assembly guides](#assembly-guides)
-- [PCB and printable case](#pcb-and-printable-case)
-  · [DB9 + biomech build guide](hardware/dual-db9-opt-pcb/index.html)
-- [Limitations and troubleshooting](#limitations-and-troubleshooting)
-- [Credits and tooling](#credits-and-tooling) · [Disclaimer](#disclaimer) · [License](#license)
+**First build?** Start with [What you need](#what-you-need), then choose an
+[assembly guide](#assembly-guides) for your controller or handheld arrangement.
+The detailed pin tables and developer sections are references; you do not need
+to read them all to understand the project.
+
+- **See what it does:** [Features](#features) · [Game gallery](#game-gallery-streets-of-rage-2-sonic-2-and-x-men)
+- **Build the hardware:** [Assembly guides](#assembly-guides) · [PCB and printable case](#pcb-and-printable-case) · [DB9 + biomech build guide](hardware/dual-db9-opt-pcb/index.html)
+- **Set up the board:** [What you need](#what-you-need) · [Choose a release image](#choose-a-release-image) · [Flash](#1-flash-the-board) · [Prepare the card](#2-prepare-the-tf-card) · [Connect controllers](#3-connect-a-controller)
+- **Play and use the menu:** [Using Gen Thang](#using-gen-thang) · [Controls](#controls) · [Options](#options-menu) · [Display options](#display-options) · [Save states](#save-states) · [USB upload](#uploading-roms-over-usb-serial) · [Core switching](#switching-cores)
+- **Develop and debug:** [Build from source](#build-from-source) · [Simulation and screenshots](#simulation-and-screenshots) · [Limitations and troubleshooting](#limitations-and-troubleshooting)
+- **About the project:** [Credits and tooling](#credits-and-tooling) · [Disclaimer](#disclaimer) · [License](#license)
 
 ## Features
 
@@ -365,6 +383,13 @@ multi-pin Dupont housings.
 At power-on the menu lists the card's folders and ROMs sorted by name. If the card
 cannot be read the status line says why (no reply, not initialised, not FAT32 /
 exFAT). Picking a ROM streams it into SDRAM (about 7 s for 2 MB) and starts the game.
+
+<p align="center">
+  <img src="docs/images/menu-games.png" width="400" alt="Gen Thang game menu">
+  <img src="docs/images/menu-options.png" width="400" alt="Gen Thang options menu during a game">
+</p>
+<p align="center"><sub>Menu overlay rendered by the Verilator testbench (see
+<a href="#simulation-and-screenshots">Simulation and screenshots</a>).</sub></p>
 
 ### Controls
 
