@@ -152,7 +152,7 @@ and firmware setup. Choose the guide and firmware that match your hardware.
 | Build | Assembly guide | Firmware |
 |---|---|---|
 | Two-player DB9 console with biomechanical case | [Illustrated build guide](https://shawnchivers.github.io/genthang/hardware/dual-db9-opt-pcb/) · [Offline page](hardware/dual-db9-opt-pcb/index.html) | `db9` |
-| Standalone L3 dual-DB9 carrier with stereo line-out | [Colorful build guide and capacitor chooser](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/) · [Offline page](hardware/dual-db9-lineout-pcb/index.html) | [GPIO17 DB9 image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin) |
+| Standalone L3 dual-DB9 carrier with stereo line-out | [Colorful build guide and capacitor chooser](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/) · [Offline page](hardware/dual-db9-lineout-pcb/index.html) | [Official v1.9.3 DB9 image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin) |
 | GenThang Modern 3-button handheld (beta) | [Illustrated build guide](https://shawnchivers.github.io/genthang/hardware/modern-3btn-handheld/) · [Offline page](hardware/modern-3btn-handheld/index.html) | `raw` |
 
 **DB9 bench references:** [O1 soldering and pre-power checks](hardware/dual-db9-opt-pcb/ASSEMBLY.md)
@@ -193,7 +193,7 @@ Its [colorful build guide](https://shawnchivers.github.io/genthang/hardware/dual
 includes a simple capacitor chooser, soldering and electrical
 checks. The author confirms the GPIO17 audio move works and has submitted L3 to
 OSH Park. Use the [L3 order ZIP](hardware/dual-db9-lineout-pcb/dual-db9-lineout-L3-OSHPARK.zip)
-and the [matching GPIO17 image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin).
+and the [official v1.9.3 DB9 image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin).
 L3 is a separate carrier; it does not fit the O1 biomechanical case above.
 
 **OSH Park is the recommended PCB manufacturer for people within the USA.** Use the [OSH Park order ZIP](hardware/dual-db9-opt-pcb/dual-db9-opt-O1-OSHPARK.zip).
@@ -752,26 +752,26 @@ with the audio. Unlike the old GPIO56 output, it is not a configuration pin or a
 on-board amplifier input. Keep the Nano's speaker and LCD connectors empty.
 
 **Carrier compatibility:** these DB9 builds use the
-[L3 line-out carrier](https://github.com/shawnchivers/genthang-hw/tree/fix/lineout-l3-gpio17/dual-db9-lineout-pcb)
+[L3 line-out carrier](https://github.com/shawnchivers/genthang-hw/tree/main/dual-db9-lineout-pcb)
 pinout. Released images through 1.9.2 and L1/L2 carriers use GPIO56 (J5 contact 7)
 for right audio. On an older carrier, use an isolated jumper from **Tang J6.15
 (GPIO17) to PCB J5.7** and do not also connect Tang GPIO56 to that filter. The L3
 PCB wires GPIO17 directly, with no jumper. Both controller pinouts and the raw
 handheld audio pins are unchanged. This pin change is not a guarantee of noise-free audio.
 
-**Pre-release GPIO17/L3 builds (DB9, 720p):**
-- [Combined flash image](builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin):
+**Official v1.9.3 L3 builds (DB9, 720p):**
+- [Combined flash image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin):
   program at address `0x000000` for persistent boot; includes the matching menu
   firmware at `0x500000`.
-- [SRAM bitstream](builds/db9-gpio17/genthang_nano20k_db9_gpio17.fs):
-  temporary FPGA programming only; does not install the menu firmware.
-- [SHA256 checksums](builds/db9-gpio17/SHA256SUMS) and
-  [build provenance and timing results](builds/db9-gpio17/build-info.json).
+- [SRAM bitstream](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9.fs):
+  temporary FPGA programming only; requires matching 1.9.3 menu firmware already
+  installed in SPI flash.
+- [SHA256 checksums](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/SHA256SUMS) and
+  [build provenance and timing results](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/BUILD-INFO.json).
 
-These are the main-based PR builds, not the earlier `168d244` audio-pin test
-image. Those prerelease files have menu version 1.9.2. Official 1.9.3 DB9 images
-also use GPIO17 and are the recommended downloads for the L3 carrier; do not use
-the older standard 1.9.2 DB9 images with that carrier.
+These official images include YM2612 Model 1 ladder audio and replace the
+provisional GPIO17 packages. Use the combined flash image for a complete 1.9.3
+installation; do not use the older standard 1.9.2 DB9 images with the L3 carrier.
 
 On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to
 **a19**, sleeve to **j19**.

@@ -302,13 +302,15 @@
   </section>
 
   <section id="flash">
-    <p class="step-number">Step 5</p><h2>Flash the GPIO17 image, not an old DB9 image</h2>
-    <p>The GPIO17 change is already in GenThang main. The older releases through
+    <p class="step-number">Step 5</p><h2>Flash the official v1.9.3 DB9 image</h2>
+    <p>The standard DB9 image in the
+      <a href="https://github.com/shawnchivers/genthang/releases/tag/v1.9.3">official GenThang v1.9.3 release</a>
+      drives right audio on GPIO17 and replaces the provisional GPIO17 package. The older releases through
       1.9.2 use GPIO56 for right audio and will leave L3's right channel without the
       intended audio signal.</p>
     <ol>
-      <li>Download <a href="https://raw.githubusercontent.com/shawnchivers/genthang/main/builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin" download><code>genthang_nano20k_db9_gpio17_flash.bin</code></a>
-        and <a href="https://raw.githubusercontent.com/shawnchivers/genthang/main/builds/db9-gpio17/SHA256SUMS">its SHA256SUMS</a>.
+      <li>Download <a href="https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin" download><code>genthang_nano20k_db9_flash.bin</code></a>
+        and <a href="https://github.com/shawnchivers/genthang/releases/download/v1.9.3/SHA256SUMS">its SHA256SUMS</a>.
         Keep them in the same folder and verify with
         <code>sha256sum -c SHA256SUMS --ignore-missing</code>. Do not use the raw handheld or bitstream-only image.</li>
       <li>Connect the Nano separately by USB-C. In Gowin Programmer choose

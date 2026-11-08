@@ -34,7 +34,7 @@ not an O1 or historical L1/L2 archive. The
 [standalone package](dual-db9-lineout-pcb/IMPORT.md) includes all ordering and
 assembly files without requiring a sibling repository.
 Read the [L3 test status](dual-db9-lineout-pcb/TEST-STATUS.md) and use the
-[GPIO17 firmware](../builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin).
+[official v1.9.3 DB9 firmware](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin).
 
 ## Working with the designs
 

@@ -61,8 +61,10 @@ With the Nano **removed**:
 
 ## First power-up
 
-1. Flash a matching DB9 image with **right audio on GPIO17 (J6.15)**, then insert
-   the Nano directly into the sockets. No audio jumper is needed on L3.
+1. Flash the official [GenThang v1.9.3 DB9 flash image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin)
+   at address **0x000000**. It includes matching menu firmware and drives
+   **right audio on GPIO17 (J6.15)**. Then insert the Nano directly into the
+   sockets. No audio jumper is needed on L3.
    Released images through 1.9.2 use GPIO56 and do not match this board. See
    [firmware compatibility](README.md#firmware).
 2. With no controller attached, power over USB; measure about 3.3 V between DB9 pins 5

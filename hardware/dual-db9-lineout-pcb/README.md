@@ -122,10 +122,13 @@ Player 1 is entirely on J6 and player 2 entirely on J5. Pin 5 of each DB9 is 3.3
 
 ## Firmware
 
-Use a DB9 build with **`audio_jack_l` on GPIO31 and `audio_jack_r` on GPIO17**.
-This is already on [GenThang main](https://github.com/shawnchivers/genthang/commit/fbf6664c5f6448510bc2a2ebbf7aaf82cb94554c).
-Download the [packaged GPIO17 flash image](https://raw.githubusercontent.com/shawnchivers/genthang/main/builds/db9-gpio17/genthang_nano20k_db9_gpio17_flash.bin)
-and its [checksums](https://raw.githubusercontent.com/shawnchivers/genthang/main/builds/db9-gpio17/SHA256SUMS).
+Use the standard DB9 build from the official
+[GenThang v1.9.3 release](https://github.com/shawnchivers/genthang/releases/tag/v1.9.3),
+with **`audio_jack_l` on GPIO31 and `audio_jack_r` on GPIO17**.
+Download [genthang_nano20k_db9_flash.bin](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin)
+and its [checksums](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/SHA256SUMS).
+Program the complete flash image at address **0x000000**; it includes the matching
+1.9.3 menu firmware and replaces the provisional GPIO17 package.
 Released images through 1.9.2 output right audio on GPIO56 and do not match L3.
 The generator reads the pin assignments, including the two audio pins, from
 `genthang/src/boards/nano20k_db9.cst`; a copy is in
