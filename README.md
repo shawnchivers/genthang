@@ -40,10 +40,9 @@ This is not footage from a physical handheld.
 
 > **Alpha software.** Gen Thang is under active development and is published as an
 > early alpha. Expect bugs, game-compatibility gaps, missing features and breaking
-> changes between releases. The default dual-DB9 build and raw-button variant are
-> built and timing-checked but have not yet been tested on the new canonical wiring. The
-> legacy single-DB9 breadboard image was tested by the author with a wired Genesis
-> pad on its now-deprecated wiring, but only that one setup. Save
+> changes between releases. The controller-fixed 720p dual-DB9 build was flashed,
+> verified and confirmed working by the user. Other release variants are build-
+> and timing-checked, not hardware-tested for this release. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
 > no warranty; you build, wire and flash at your own risk, and wiring mistakes can
 > damage the board or a controller. See [Disclaimer](#disclaimer).
@@ -152,7 +151,7 @@ and firmware setup. Choose the guide and firmware that match your hardware.
 | Build | Assembly guide | Firmware |
 |---|---|---|
 | Two-player DB9 console with biomechanical case | [Illustrated build guide](https://shawnchivers.github.io/genthang/hardware/dual-db9-opt-pcb/) · [Offline page](hardware/dual-db9-opt-pcb/index.html) | `db9` |
-| Standalone L3 dual-DB9 carrier with stereo line-out | [Colorful build guide and capacitor chooser](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/) · [Offline page](hardware/dual-db9-lineout-pcb/index.html) | [Official v1.9.3 DB9 image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin) |
+| Standalone L3 dual-DB9 carrier with stereo line-out | [Colorful build guide and capacitor chooser](https://shawnchivers.github.io/genthang/hardware/dual-db9-lineout-pcb/) · [Offline page](hardware/dual-db9-lineout-pcb/index.html) | [Official v1.9.4 DB9 image](https://github.com/shawnchivers/genthang/releases/download/v1.9.4/genthang_nano20k_db9_flash.bin) |
 | GenThang Modern 3-button handheld (beta) | [Illustrated build guide](https://shawnchivers.github.io/genthang/hardware/modern-3btn-handheld/) · [Offline page](hardware/modern-3btn-handheld/index.html) | `raw` |
 
 **DB9 bench references:** [O1 soldering and pre-power checks](hardware/dual-db9-opt-pcb/ASSEMBLY.md)
@@ -193,7 +192,7 @@ Its [colorful build guide](https://shawnchivers.github.io/genthang/hardware/dual
 includes a simple capacitor chooser, soldering and electrical
 checks. The author confirms the GPIO17 audio move works and has submitted L3 to
 OSH Park. Use the [L3 order ZIP](hardware/dual-db9-lineout-pcb/dual-db9-lineout-L3-OSHPARK.zip)
-and the [official v1.9.3 DB9 image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin).
+and the [official v1.9.4 DB9 image](https://github.com/shawnchivers/genthang/releases/download/v1.9.4/genthang_nano20k_db9_flash.bin).
 L3 is a separate carrier; it does not fit the O1 biomechanical case above.
 
 **OSH Park is the recommended PCB manufacturer for people within the USA.** Use the [OSH Park order ZIP](hardware/dual-db9-opt-pcb/dual-db9-opt-O1-OSHPARK.zip).
@@ -296,6 +295,13 @@ For two wired 3- or 6-button Genesis pads, use
 `genthang_nano20k_db9_flash.bin`. Player 1 is entirely on J6 and player 2 entirely on J5.
 Leave the Nano LCD connector and speaker header empty. Both ports use 3.3 V with
 internal pull-ups; the DB9 pin 5 supply is 3.3 V.
+
+Both ports automatically distinguish three- and six-button controllers and report
+the detected type independently to games; mixed pairs are supported. Six-button
+detection retries with longer TH-idle pauses (up to 19.4 ms) even before its first
+successful handshake, so a pad does not need to be reconnected after startup.
+Both identification phases are checked to avoid treating held three-button
+directions as X/Y/Z/Mode. Raw-button and `raw_3btn` builds keep their existing types.
 
 | DB9 pin (male) | Signal | Player 1 FPGA pin (contact) | Player 2 FPGA pin (contact) |
 |---|---|---|---|
@@ -498,7 +504,7 @@ made from.
 ### Uploading ROMs over USB serial
 
 **Not in the default build or releases.** The serial UART is only built with
-`GT_SERIAL_UPLOAD=1 ./build.sh`. Its fit is not certified with the 1.9.3 ladder
+`GT_SERIAL_UPLOAD=1 ./build.sh`. Its fit is not certified with the 1.9.4 ladder
 configuration; the default DB9 build already has very little logic headroom.
 Without it the menu ignores the serial port; copy ROMs and core images to the card in
 a card reader instead.
@@ -524,7 +530,7 @@ corrected debugger firmware. On Linux your user needs access to the serial devic
 
 ### Switching cores
 
-Official 1.9.3 builds use `GT_NO_CORE_SWITCH=1`, which removes the runtime flash
+Official 1.9.4 builds use `GT_NO_CORE_SWITCH=1`, which removes the runtime flash
 interface and hides this menu entry to make room for ladder audio.
 It also rejects serial core-image uploads; normal ROM loading and firmware bootstrap
 from flash are unchanged. The FPGA reports this omission in core-ID bit 20 and the
@@ -575,13 +581,13 @@ pad (Mode, X, Y and Z are not passed to games), port 2 reads as unplugged, and M
 (held 20 ms) opens the menu instead of Mode+Start. The firmware reads it from bit 18 of
 the core ID register. Output names get a `_3btn` suffix.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
-to leave logic headroom; its fit is not certified for 1.9.3. `GT_PICTURE`
+to leave logic headroom; its fit is not certified for 1.9.4. `GT_PICTURE`
 (`0`/`1`) adds the brightness option to the HDMI scaler; it defaults to
 `1` for `GT_PAD=raw` and `0` for DB9, which cannot fit it. The firmware reads the choice
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
-The 1.9.3 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
+The 1.9.4 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
 JT12's YM2612 Model 1 DAC ladder distortion is enabled, while adaptive blending and
 runtime core switching are omitted. Normal blend OFF/ON and scanlines remain.
 Each flag accepts `0` or `1` for custom builds; changing the feature set requires a
@@ -759,18 +765,18 @@ for right audio. On an older carrier, use an isolated jumper from **Tang J6.15
 PCB wires GPIO17 directly, with no jumper. Both controller pinouts and the raw
 handheld audio pins are unchanged. This pin change is not a guarantee of noise-free audio.
 
-**Official v1.9.3 L3 builds (DB9, 720p):**
-- [Combined flash image](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin):
+**Official v1.9.4 L3 builds (DB9, 720p):**
+- [Combined flash image](https://github.com/shawnchivers/genthang/releases/download/v1.9.4/genthang_nano20k_db9_flash.bin):
   program at address `0x000000` for persistent boot; includes the matching menu
   firmware at `0x500000`.
-- [SRAM bitstream](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9.fs):
-  temporary FPGA programming only; requires matching 1.9.3 menu firmware already
+- [SRAM bitstream](https://github.com/shawnchivers/genthang/releases/download/v1.9.4/genthang_nano20k_db9.fs):
+  temporary FPGA programming only; requires matching 1.9.4 menu firmware already
   installed in SPI flash.
-- [SHA256 checksums](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/SHA256SUMS) and
-  [build provenance and timing results](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/BUILD-INFO.json).
+- [SHA256 checksums](https://github.com/shawnchivers/genthang/releases/download/v1.9.4/SHA256SUMS) and
+  [build provenance and timing results](https://github.com/shawnchivers/genthang/releases/download/v1.9.4/BUILD-INFO.json).
 
 These official images include YM2612 Model 1 ladder audio and replace the
-provisional GPIO17 packages. Use the combined flash image for a complete 1.9.3
+provisional GPIO17 packages. Use the combined flash image for a complete 1.9.4
 installation; do not use the older standard 1.9.2 DB9 images with the L3 carrier.
 
 On the P1 breadboard (above) the jack wires go to free holes: tip to **a18**, ring to

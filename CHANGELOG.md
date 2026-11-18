@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.9.4 - 2026-11-18
+
+- Fixed DB9 three-/six-button identification on both ports. Long-reset six-button
+  pads retry from startup, not only after an earlier successful detection, and the
+  final identification phase rejects false extra buttons on three-button pads.
+  Games now see each connected controller's detected type independently, including
+  mixed three-/six-button pairs. Raw-button build behavior is unchanged.
+- The controller-fixed 720p DB9 build was flashed, verified and confirmed working
+  by the user. Other variants are build- and timing-checked. Release images
+  include matching 1.9.4 menu firmware; ladder audio and the existing release
+  feature set are unchanged.
+
 ## 1.9.3 - 2026-11-07
 
 - **Official ladder-audio builds:** YM2612 Model 1 DAC distortion is enabled for

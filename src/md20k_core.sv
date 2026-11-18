@@ -11,6 +11,7 @@ module md20k_core #(
     parameter FIRMWARE_SIZE = 256*1024,
     parameter SDRAM_PIPELINE = 1,
     parameter P2_SIX_BUTTON = 1,
+    parameter AUTO_PAD_TYPE = 0,       // DB9: report each physical pad's detected type
     parameter PICTURE_OPTS = 0,         // brightness menu (GT_PICTURE builds)
     // 1: single-player 3-button handheld (GT_3BTN). P1 reads as a 3-button pad, player 2's
     // port reads as empty, and Mode alone (debounced) opens the menu (not passed to the game).
@@ -43,6 +44,7 @@ module md20k_core #(
     // Menu: Select+Start (Mode+Start), or Start+A+B+C for 3-button pads.
     input      [11:0] pad,
     input      [11:0] pad2,             // player 2, same layout
+    input       [1:0] pad_six,          // {player 2, player 1}; used only with AUTO_PAD_TYPE
 
     // SDRAM (data bus split; tristate in the top level)
     output      [3:0] sdram_cmd,        // {nCS, nRAS, nCAS, nWE}
@@ -259,7 +261,8 @@ wire [15:0] core_audio_left, core_audio_right;
 assign audio_left  = overlay_s[1] ? 16'd0 : core_audio_left;
 assign audio_right = overlay_s[1] ? 16'd0 : core_audio_right;
 
-system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BUTTON)) megadrive (
+system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BUTTON),
+         .AUTO_PAD_TYPE(AUTO_PAD_TYPE)) megadrive (
     .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on), .SOFT_RESET(reset_btn),
     .LPF_MODE(2'b11), .ENABLE_FM(1'b1), .ENABLE_PSG(1'b1), .DAC_LDATA(core_audio_left), .DAC_RDATA(core_audio_right),
     .LOADING(loading), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
@@ -269,7 +272,8 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BU
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),
     .BORDER(1'b0), .CRAM_DOTS(1'b0), .INTERLACE(interlace), .FIELD(), .RESOLUTION(resolution),
-    .J3BUT(THREE_BUTTON != 0), .JOY_1(joy1), .JOY_2(joy2), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
+    .J3BUT(THREE_BUTTON != 0), .PAD_SIX_BUTTON(pad_six),
+    .JOY_1(joy1), .JOY_2(joy2), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
     .MOUSE(25'd0), .MOUSE_OPT(3'd0), .GUN_OPT(1'b0), .GUN_TYPE(1'b0), .GUN_SENSOR(1'b0), .GUN_A(1'b0),
     .GUN_B(1'b0), .GUN_C(1'b0), .GUN_START(1'b0),
     .SERJOYSTICK_IN(8'd0), .SERJOYSTICK_OUT(), .SER_OPT(2'd0),

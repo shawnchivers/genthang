@@ -82,7 +82,7 @@ genesis-pad:
 
 gen-io:
 	$(VERILATOR) --cc --exe --build -j 4 -O3 -Wno-fatal -Wno-lint -Wno-style --top-module gen_io_minimal \
-		--Mdir obj_gen_io $D/peripherals/gen_io.sv tb_gen_io.cpp -o tb_gen_io
+		-GAUTO_PAD_TYPE=1 --Mdir obj_gen_io $D/peripherals/gen_io.sv tb_gen_io.cpp -o tb_gen_io
 	./obj_gen_io/tb_gen_io
 
 picture-modes:

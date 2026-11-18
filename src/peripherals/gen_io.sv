@@ -304,13 +304,15 @@ endmodule
 
 module gen_io_minimal #(
 	parameter P2_SIX_BUTTON = 1,
-	parameter P2_CONNECTED = 1	// 0: port 2 reads as an empty port (pull-ups)
+	parameter P2_CONNECTED = 1,	// 0: port 2 reads as an empty port (pull-ups)
+	parameter AUTO_PAD_TYPE = 0
 )
 (
 	input            RESET,
 	input            CLK,
 	input            CE,
 	input            J3BUT,
+	input      [1:0] PAD_SIX_BUTTON,
 	input            P1_UP,
 	input            P1_DOWN,
 	input            P1_LEFT,
@@ -389,7 +391,7 @@ pad_io pad1
 	.RESET(RESET),
 	.CLK(CLK),
 	.CE(CE),
-	.J3BUT(J3BUT),
+	.J3BUT(J3BUT || (AUTO_PAD_TYPE && !PAD_SIX_BUTTON[0])),
 	.P_UP(P1_UP),
 	.P_DOWN(P1_DOWN),
 	.P_LEFT(P1_LEFT),
@@ -416,7 +418,7 @@ pad_io pad2
 	.RESET(RESET),
 	.CLK(CLK),
 	.CE(CE),
-	.J3BUT(J3BUT),
+	.J3BUT(J3BUT || (AUTO_PAD_TYPE && !PAD_SIX_BUTTON[1])),
 	.P_UP(P2_UP),
 	.P_DOWN(P2_DOWN),
 	.P_LEFT(P2_LEFT),
@@ -535,20 +537,23 @@ module pad_io
 
 reg TH;
 reg [2:0] JCNT;
+wire extended = JCNT == 3 && !J3BUT;
+wire identify = JCNT == 2 && !J3BUT;
+// Bias the timers so expiry needs only their high bits, without changing their delays.
+localparam [13:0] JTMR_START = 14'h3000 - 14'd11601;
+localparam [8:0] FLTMR_START = 9'd256 - 9'd210;
 
 always @(*) begin
 	DO[7:6] = {1'b0,TH};
-	if(TH && JCNT == 3)        DO[5:0] = {P_C,P_B,P_MODE,P_X,P_Y,P_Z};
-	else if(TH)                DO[5:0] = {P_C,P_B,P_RIGHT,P_LEFT,P_DOWN,P_UP};
-	else if (JCNT < 2)         DO[5:0] = {P_START,P_A,2'b00,P_DOWN,P_UP};
-	else if (JCNT == 2)        DO[5:0] = {P_START,P_A,4'b0000};
-	else if (JCNT == 3)        DO[5:0] = {P_START,P_A,4'b1111};
-	else                       DO[5:0] = {P_START,P_A,2'b00,P_DOWN,P_UP};
+	DO[5:4] = TH ? {P_C,P_B} : {P_START,P_A};
+	if(extended)          DO[3:0] = TH ? {P_MODE,P_X,P_Y,P_Z} : 4'b1111;
+	else if(!TH && identify) DO[3:0] = 4'b0000;
+	else                  DO[3:0] = TH ? {P_RIGHT,P_LEFT,P_DOWN,P_UP} : {2'b00,P_DOWN,P_UP};
 end
 
 always @(posedge RESET or posedge CLK) begin
-	reg [16:0] JTMR;
-	reg  [7:0] FLTMR;
+	reg [13:0] JTMR;
+	reg  [8:0] FLTMR;
 
 	reg THd;
 	reg di;
@@ -557,26 +562,27 @@ always @(posedge RESET or posedge CLK) begin
 		DTACK_N <= 1;
 		TH   <= 1;
 		JCNT <= 0;
-		JTMR <= 0;
-		FLTMR <= 0;
+		JTMR <= JTMR_START;
+		FLTMR <= FLTMR_START;
 		THd <= 1;
 		di <= 1;
 	end
 	else if(CE) begin
 	
-		if(~&FLTMR) FLTMR <= FLTMR + 1'd1;
+		// After the filter expires, floating TH stays high even if the timer wraps.
+		FLTMR <= FLTMR + 1'd1;
 		if(~DIR) begin
 			TH <= di;
-			FLTMR <= 0;
+			FLTMR <= FLTMR_START;
 		end
-		else if(FLTMR == 210) TH <= 1;
+		else if(FLTMR[8]) TH <= 1;
 	
 		THd <= TH;
-		if(JTMR > 11600 || J3BUT) JCNT <= 0;
-		if(~THd & TH && JCNT < 4) JCNT <= JCNT + 1'd1;
+		if((&JTMR[13:12]) || J3BUT) JCNT <= 0;
+		else if(~THd & TH && JCNT < 4) JCNT <= JCNT + 1'd1;
 
-		if(~&JTMR) JTMR <= JTMR + 1'd1;
-		if(THd & ~TH) JTMR <= 0;
+		if(!(&JTMR[13:12])) JTMR <= JTMR + 1'd1;
+		if(THd & ~TH) JTMR <= JTMR_START;
 
 		if(~SEL) DTACK_N <= 1;
 		else if(SEL & DTACK_N) begin

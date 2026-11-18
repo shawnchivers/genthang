@@ -106,6 +106,7 @@ wire [1:0]  resolution;
 wire        transp, interlace;
 wire [15:0] audio_left, audio_right;
 wire [11:0] pad1, pad2;             // {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
+wire [1:0]  pad_six;
 
 assign {O_sdram_cs_n, O_sdram_ras_n, O_sdram_cas_n, O_sdram_wen_n} = sdram_cmd;
 assign O_sdram_cke = 1'b1;
@@ -114,13 +115,14 @@ assign flash_spi_wp_n = 1'b1;
 assign flash_spi_hold_n = 1'b1;
 
 `ifdef GT_PAD_DB9
-genesis_pad #(.FREQ(FREQ)) db9 (.clk(clk_sys), .d(db9_d), .th(db9_th), .btns(pad1));
-genesis_pad #(.FREQ(FREQ)) db9b (.clk(clk_sys), .d(db9b_d), .th(db9b_th), .btns(pad2));
+genesis_pad #(.FREQ(FREQ)) db9 (.clk(clk_sys), .d(db9_d), .th(db9_th), .btns(pad1), .six(pad_six[0]));
+genesis_pad #(.FREQ(FREQ)) db9b (.clk(clk_sys), .d(db9b_d), .th(db9b_th), .btns(pad2), .six(pad_six[1]));
 `elsif GT_PAD_RAW
 reg [11:0] btn_s1, btn_s2;
 always @(posedge clk_sys) {btn_s2, btn_s1} <= {btn_s1, ~btn_n};
 assign pad1 = btn_s2;
 assign pad2 = 12'd0;
+assign pad_six = 2'b11;
 `endif
 
 md20k_core #(.FREQ(FREQ),
@@ -133,6 +135,7 @@ md20k_core #(.FREQ(FREQ),
 `ifdef GT_PAD_RAW
     .P2_SIX_BUTTON(0)
 `else
+    .AUTO_PAD_TYPE(1),
     .P2_SIX_BUTTON(1)
 `endif
 ) core (
@@ -141,7 +144,7 @@ md20k_core #(.FREQ(FREQ),
     .flash_mosi(flash_spi_mosi), .flash_miso(flash_spi_miso),
     .sd_clk(sd_clk), .sd_cmd(sd_cmd), .sd_dat0(sd_dat0), .sd_dat1(sd_dat1), .sd_dat2(sd_dat2),
     .sd_dat3(sd_dat3), .uart_rx(UART_RXD), .uart_tx(UART_TXD),
-    .pad(pad1), .pad2(pad2),
+    .pad(pad1), .pad2(pad2), .pad_six(pad_six),
     .sdram_cmd(sdram_cmd), .sdram_a(O_sdram_addr), .sdram_ba(O_sdram_ba), .sdram_dqm(O_sdram_dqm),
     .sdram_dq_out(sdram_dq_out), .sdram_dq_oe(sdram_dq_oe), .sdram_dq_in(IO_sdram_dq),
     .pause_core(pause_core),
