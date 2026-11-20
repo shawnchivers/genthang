@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Removed the alpha label from the project documentation. The three-button
+  handheld build guide keeps its beta notice.
+
 ## 1.9.5 - 2026-11-20
 
 - **Selectable display builds** (`*_selectable`, `GT_VIDEO=selectable`): the Display

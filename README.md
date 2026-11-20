@@ -38,9 +38,7 @@ Gen Thang's Verilator simulation composited onto a 3D render.
 This is not footage from a physical handheld.
 <a href="hardware/modern-3btn-handheld/index.html">Explore the handheld build guide.</a></sub></p>
 
-> **Alpha software.** Gen Thang is under active development and is published as an
-> early alpha. Expect bugs, game-compatibility gaps, missing features and breaking
-> changes between releases. The v1.9.4 controller-fixed 720p dual-DB9 build was flashed,
+> **Before you build.** The v1.9.4 controller-fixed 720p dual-DB9 build was flashed,
 > verified and confirmed working by the user. The 1.9.5 release images are build-,
 > timing- and simulation-checked but not yet hardware-tested. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
@@ -754,7 +752,7 @@ core output, not captures from the physical board's HDMI port. Hardware performa
 
 ## Limitations and troubleshooting
 
-- Alpha quality: compatibility is not exhaustive and timing is tight. Please report
+- Game compatibility is not exhaustive and timing is tight. Please report
   games that fail along with the image variant and ROM name.
 - ROMs must be raw (not interleaved `.smd`), no larger than 4 MB, and use `.md`,
   `.bin` or `.gen`. No battery-backed saves are written; use save states.
