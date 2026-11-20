@@ -228,6 +228,9 @@ framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)
 `ifdef VIDEO_800X480
     , .LCD800(1)
 `endif
+`ifdef VIDEO_SELECTABLE
+    , .SELECTABLE(1)
+`endif
 `ifdef PICTURE_OPTS
     , .PICTURE_OPTS(1)
 `endif

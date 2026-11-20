@@ -66,13 +66,14 @@ static char cur_rom[1024 + NAME_LEN + 2];
 static int scanlines;               // 0 off, 1 25%, 2 50%
 static int blend;                   // composite blend 0 off, 1 on, 2 adaptive
 static int dvi;                     // video output 0 HDMI, 1 DVI (no HDMI data islands; audio only on the line-out jack)
-static int lcd;                     // 4:3 LCD controller squeezes the full 720p input onto its panel
+static int lcd;                     // 0 TV 720p, 1 4:3 LCD (720p input), 2 TV 1080i
 static int color_mode;              // 0 original, 1 warm, 2 cool, 3 vivid
 static int picture_dim;             // brightness: 0 100%, 1 75%, 2 50%, 3 25%
 static bool has_picture;            // core built with GT_PICTURE (bit 16 of the core ID register)
 static bool mode_menu;              // GT_3BTN core: Mode alone opens the menu (bit 18)
 static bool no_adaptive;            // adaptive blend omitted (bit 19)
 static bool no_core_switch;         // runtime flash access omitted (bit 20)
+static bool has_display_modes;      // menu-selectable 720p/1080i (bit 21)
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -130,7 +131,8 @@ static void help(const char *s) {
 static void apply_options() {
     if (no_adaptive && blend == 2) blend = 1;
     int picture = has_picture ? (picture_dim << 8) : 0;
-    td_reg(1, scanlines | blend << 2 | dvi << 4 | lcd << 5 | picture);
+    int display = (lcd == 1 ? 1 << 5 : 0) | (has_display_modes && lcd == 2 ? 1 << 6 : 0);
+    td_reg(1, scanlines | blend << 2 | dvi << 4 | display | picture);
     ss_reg(0);
 }
 
@@ -147,7 +149,7 @@ static void load_options() {
             while (header < br && c[header] != '\n') header++;
             if (header < br) {
                 if (header >= 3 && c[2] >= '0' && c[2] <= '1') dvi = c[2] - '0';
-                if (header >= 4 && c[3] >= '0' && c[3] <= '1') lcd = c[3] - '0';
+                if (header >= 4 && c[3] >= '0' && c[3] <= '2') lcd = c[3] - '0';
                 if (header >= 5 && c[4] >= '0' && c[4] <= '3') color_mode = c[4] - '0';
                 if (header >= 6 && c[5] >= '0' && c[5] <= '3') picture_dim = c[5] - '0';
                 prefix = br - header - 1;
@@ -835,7 +837,11 @@ static void draw_options(int active) {
         case OPT_SCAN:   strcpy(buf, "Scanlines: "); strcat(buf, sl[scanlines]); break;
         case OPT_BLEND:  strcpy(buf, "Composite blend: "); strcat(buf, bl[blend]); break;
         case OPT_OUTPUT: strcpy(buf, dvi ? "Video output: DVI+LINE OUT" : "Video output: HDMI"); break;
-        case OPT_DISPLAY: strcpy(buf, lcd ? "Display: 4:3 LCD" : "Display: TV"); break;
+        case OPT_DISPLAY:
+            strcpy(buf, has_display_modes ?
+                        (lcd == 1 ? "Display: LCD" : lcd == 2 ? "Display: TV (1080i games)" : "Display: TV (720p)") :
+                        (lcd == 1 ? "Display: 4:3 LCD" : "Display: TV"));
+            break;
         case OPT_COLOR: strcpy(buf, "Color mode: "); strcat(buf, cm[color_mode]); break;
         case OPT_DIM: strcpy(buf, "Brightness: "); strcat(buf, pd[picture_dim]); break;
         }
@@ -948,12 +954,14 @@ static void menu() {
                     save_options();
                     redraw = true;
                     break;
-                case OPT_DISPLAY:
-                    lcd = !lcd;
+                case OPT_DISPLAY: {
+                    int count = has_display_modes ? 3 : 2;
+                    lcd = (lcd + ((k & J_LEFT) ? count - 1 : 1)) % count;
                     apply_options();
                     save_options();
                     redraw = true;
                     break;
+                }
                 case OPT_COLOR:
                     color_mode = (color_mode + ((k & J_LEFT) ? 3 : 1)) % 4;
                     apply_options();
@@ -1048,6 +1056,7 @@ int main() {
     mode_menu = (reg_core_id >> 18) & 1;
     no_adaptive = (reg_core_id >> 19) & 1;
     no_core_switch = (reg_core_id >> 20) & 1;
+    has_display_modes = (reg_core_id >> 21) & 1;
     overlay(1);
     cursor(0, 31);                  // print() from FatFs glue lands off screen
     reg_uart_clkdiv = 234;          // 115200 baud from the 27MHz iosys clock

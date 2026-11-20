@@ -55,11 +55,12 @@ generate
     for(i = 0; i < 5; i++)
     begin: parity_calc
         if (i == 4)
-            assign parity_next[i] = next_ecc(parity[i], header[counter]);
+            assign parity_next[i] = next_ecc(parity[i], packet_data[0]);
         else
         begin
-            assign parity_next[i] = next_ecc(parity[i], sub[i][counter_t2]);
-            assign parity_next_next[i] = next_ecc(parity_next[i], sub[i][counter_t2_p1]);
+            // Reuse the transmitted-bit muxes; these are payload bits while ECC is enabled.
+            assign parity_next[i] = next_ecc(parity[i], packet_data[i+1]);
+            assign parity_next_next[i] = next_ecc(parity_next[i], packet_data[i+5]);
         end
     end
 endgenerate

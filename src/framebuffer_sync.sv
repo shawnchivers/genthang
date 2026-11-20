@@ -7,6 +7,7 @@
 // TV mode centers a 4:3 window; LCD mode fills the input of a 4:3 panel controller.
 // LCD800=1 outputs native 800x480 DVI instead, for bare TFT panels behind a TFP401
 // (which has no scaler): TV = centred 640x480, LCD = full 800 width.
+// SELECTABLE=1 adds 1080i60: one 540-line field per Genesis frame, no full-frame RAM.
 //
 // This is different from framebuffer.sv in that it requires the input video
 // to be synchronized to HDMI. This allows the module use much less BRAM space
@@ -17,6 +18,7 @@ module framebuffer #(
     parameter COLOR_BITS = 4,       // bits per RGB color channel
     parameter BUFFER_LINES = 32,    // power-of-two line ring, must exceed core lead over HDMI
     parameter LCD800 = 0,           // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
+    parameter SELECTABLE = 0,       // 1 = runtime 720p / 1080i, sharing the 74.25MHz clock
     parameter ADAPTIVE_BLEND = 1,   // 0 = composite blend off/on only
     parameter PICTURE_OPTS = 0      // 1 = brightness (video_opt[9:8]) for games, GT_PICTURE builds
 )(
@@ -46,7 +48,7 @@ module framebuffer #(
     output [7:0] overlay_x,
     output [7:0] overlay_y,
     input [14:0] overlay_color,     // BGR5
-    input [9:0] video_opt,          // scanlines [1:0], blend [3:2], DVI [4], LCD [5], color [7:6], dim [9:8]
+    input [9:0] video_opt,          // scanlines [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], dim [9:8]
 
     input [15:0] audio_left,        // audio sample
     input [15:0] audio_right,
@@ -59,14 +61,17 @@ module framebuffer #(
 );
 
 localparam CLKFRQ = LCD800 ? 29700 : 74250;
-localparam SCREEN_W = LCD800 ? 800 : 1280;
-localparam SCREEN_H = LCD800 ? 480 : 720;
-localparam TV_W = SCREEN_H * 4 / 3;             // centred 4:3 window
-localparam TV_BEGIN = (SCREEN_W - TV_W) / 2 - 1;
+reg tv1080 = 1'b0;
+wire [10:0] screen_w = LCD800 ? 11'd800 : SELECTABLE && tv1080 ? 11'd1920 : 11'd1280;
+wire [9:0] screen_h = LCD800 ? 10'd480 : SELECTABLE && tv1080 ? 10'd540 : 10'd720;
+wire [10:0] tv_w = LCD800 ? 11'd640 : SELECTABLE && tv1080 ? 11'd1440 : 11'd960;
+wire [10:0] tv_begin = LCD800 ? 11'd79 : SELECTABLE && tv1080 ? 11'd239 : 11'd159;
+localparam H_BITS = SELECTABLE ? 12 : 11;
 
 // video stuff
-wire [10:0] cx /* xsynthesis syn_keep=1 */;
+wire [H_BITS-1:0] cx /* xsynthesis syn_keep=1 */;
 wire [9:0] cy  /* xsynthesis syn_keep=1 */;
+wire field;
 
 //
 // BRAM frame buffer
@@ -107,7 +112,7 @@ frame_sync sync (
     .pause_core(pause_core)
 );
 always @(posedge clk_pixel) begin
-    if (cy == 0 && cx >= TV_BEGIN + 1)                  // start position of 4:3 frame
+    if (cy == 0 && cx >= tv_begin + 1)                  // start position of 4:3 frame/field
         hdmi_first_line <= 1;
     else
         hdmi_first_line <= 0;
@@ -146,10 +151,10 @@ assign overlay_x = xx;
 assign overlay_y = yy;
 reg lcd = 1'b0;
 // LCD mode starts at cx=2, once yy has advanced for the new line (cy_r lags cy by one
-// cycle), and spans the remaining SCREEN_W-3 pixels.
-wire [10:0] window_width = lcd ? 11'(SCREEN_W - 3) : 11'(TV_W);
-wire [10:0] xbegin = lcd ? 11'd2 : 11'(TV_BEGIN);
-wire [10:0] xend = lcd ? 11'(SCREEN_W - 1) : 11'(TV_BEGIN + TV_W);
+// cycle), and spans the remaining screen_w-3 pixels.
+wire [10:0] window_width = lcd ? screen_w - 11'd3 : tv_w;
+wire [10:0] xbegin = lcd ? 11'd2 : tv_begin;
+wire [10:0] xend = lcd ? screen_w - 11'd1 : tv_begin + tv_w;
 
 // address calculation
 // Assume the video occupies fully on the Y direction, we are upscaling the video by `SCREEN_H/height`.
@@ -162,10 +167,10 @@ always @(posedge clk_pixel) begin
     ycnt_next = ycnt + (overlay ? 224 : height);
 
     active_t = 0;
-    if (cx == xbegin) begin
+    if (cx == H_BITS'(xbegin)) begin
         active_t = 1;
         active <= 1;
-    end else if (cx == xend) begin
+    end else if (cx == H_BITS'(xend)) begin
         active_t = 0;
         active <= 0;
     end
@@ -181,8 +186,8 @@ always @(posedge clk_pixel) begin
     cy_r <= cy;
     if (cy[0] != cy_r[0]) begin         // increment yy at new lines
         ycnt <= ycnt_next;
-        if (ycnt_next >= SCREEN_H) begin
-            ycnt <= ycnt_next - 11'(SCREEN_H);
+        if (ycnt_next >= {1'b0, screen_h}) begin
+            ycnt <= ycnt_next - {1'b0, screen_h};
             yy <= yy + 1;
         end
     end
@@ -204,6 +209,7 @@ end
 // with the one to its left (composite dither blending; adaptive = only where the VDP
 // flags transparency dither). Scanlines dim the lower half of each Genesis line.
 reg [9:0] opt_s1, opt_s2;
+reg ov_s1 = 1'b1, ov_s2 = 1'b1;
 reg il_s1, il_s2;
 reg [$clog2(WIDTH)-1:0] xx_r, xx_px;
 reg [COLOR_WIDTH-1:0] rdata_r, prev_px;
@@ -213,9 +219,11 @@ wire [COLOR_WIDTH-1:0] left_px = xx_r != xx_px ? rdata_r : prev_px;
 always @(posedge clk_pixel) begin
     opt_s1 <= video_opt;
     opt_s2 <= opt_s1;
+    ov_s1 <= overlay;
+    ov_s2 <= ov_s1;
     il_s1 <= interlace;
     il_s2 <= il_s1;
-    scan <= ycnt >= 11'(SCREEN_H / 2) && !il_s2;
+    scan <= ycnt >= {2'b0, screen_h[9:1]} && !il_s2;
     xx_r <= xx;
     xx_px <= xx_r;
     rdata_r <= mem_portB_rdata[COLOR_WIDTH-1:0];
@@ -280,12 +288,17 @@ localparam AUDIO_BIT_WIDTH = 16;
 // whenever data islands are present. Switch only at a frame start.
 reg dvi = 1'b0;
 always @(posedge clk_pixel)
-    if (cx == 0 && cy == 0) begin
+    if (cx == 0 && cy == 0 && !field) begin
         dvi <= LCD800 ? 1'b1 : opt_s2[4];     // a TFP401 is a DVI receiver
         lcd <= opt_s2[5];
+        // 1080i applies only to gameplay: the menu always returns to 720p so an
+        // incompatible display can still be rescued. LCD stays 720p 4:3 throughout.
+        tv1080 <= SELECTABLE && opt_s2[6] && !opt_s2[5] && !ov_s2;
     end
 
 hdmi #( .VIDEO_ID_CODE(VIDEOID), 
+        .SELECTABLE(SELECTABLE),
+        .BIT_WIDTH(H_BITS),
         .DVI_OUTPUT(LCD800),
         .VIDEO_REFRESH_RATE(VIDEO_REFRESH),
         .IT_CONTENT(1),
@@ -298,11 +311,13 @@ hdmi( .clk_pixel_x5(clk_5x_pixel),
         .clk_pixel(clk_pixel), 
         .clk_audio(clk_audio),
         .rgb(rgb), 
-        .reset( /* ~resetn */ ),
+        .reset(1'b0),
         .audio_sample_word(audio_sample_word),
         .dvi_mode(dvi),
+        .interlace_mode(tv1080),
+        .field(field),
         .tmds(tmds), 
-        .tmds_clock(tmdsClk), 
+        .tmds_clock(),
         .cx(cx), 
         .cy(cy),
         .frame_width(),

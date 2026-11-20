@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+## 1.9.5 - 2026-11-20
+
+- **Selectable display builds** (`*_selectable`, `GT_VIDEO=selectable`): the Display
+  option offers **LCD**, **TV (720p)** and **TV (1080i games)**. LCD keeps the
+  existing 720p full-width 4:3 squeeze for panel controllers in both the menu and
+  games. 1080i60 (1920x1080 interlaced, centred 4:3, one 540-line field per Genesis
+  frame) is used only while a game runs; the menu always returns to 720p, so an
+  incompatible display can be rescued with the menu key combination. Both TV modes
+  share the 74.25 MHz pixel clock and the existing line buffer; switches happen at
+  full-frame boundaries, and HDMI audio and the DVI option are unchanged.
+  The firmware reads the capability from core-ID bit 21; fixed-output builds keep
+  their timing and preserve a saved 1080i choice on the card.
+- **HDMI logic savings that make room for it:** packet ECC reuses the transmitted
+  payload-bit multiplexers, and the TMDS encoder stores half-disparity with shared
+  inversion logic. Both are formally proven equivalent to 1.9.4 (packet assembler
+  by Yosys induction; TMDS channels by SAT over every input sequence from reset),
+  so the standard 720p and 800x480 images send identical HDMI symbols. They also
+  free room: the DB9 720p image drops from 20,623 to 20,158 logic slots and from
+  10,367 to 10,255 CLS.
+- New `make -C verilator display-modes` regression covers both fixed profiles, all
+  three selectable modes, half-line 1080i sync, menu-forced 720p, scaling, AVI
+  checksums, packet ECC and TMDS symbols.
+- All seven variants are build- and timing-checked; none of the 1.9.5 images has
+  been hardware-tested yet. The L3 line-out links remain on the hardware-confirmed
+  1.9.4 DB9 image.
+
 ## 1.9.4 - 2026-11-18
 
 - Fixed DB9 three-/six-button identification on both ports. Long-reset six-button

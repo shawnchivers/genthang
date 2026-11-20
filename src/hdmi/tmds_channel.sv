@@ -19,7 +19,8 @@ module tmds_channel
 // See Section 5.4.4.1
 // Below is a direct implementation of Figure 5-7, using the same variable names.
 
-logic signed [4:0] acc = 5'sd0;
+// TMDS disparity is always even, so store half of it.
+logic signed [3:0] acc = 4'sd0;
 
 logic [8:0] q_m;
 logic [9:0] q_out;
@@ -27,75 +28,40 @@ logic [9:0] video_coding;
 assign video_coding = q_out;
 
 logic [3:0] N1D;
-logic signed [4:0] N1q_m07;
-logic signed [4:0] N0q_m07;
+logic [3:0] N1q_m07;
 always_comb
 begin
     N1D = video_data[0] + video_data[1] + video_data[2] + video_data[3] + video_data[4] + video_data[5] + video_data[6] + video_data[7];
-    case(q_m[0] + q_m[1] + q_m[2] + q_m[3] + q_m[4] + q_m[5] + q_m[6] + q_m[7])
-        4'b0000: N1q_m07 = 5'sd0;
-        4'b0001: N1q_m07 = 5'sd1;
-        4'b0010: N1q_m07 = 5'sd2;
-        4'b0011: N1q_m07 = 5'sd3;
-        4'b0100: N1q_m07 = 5'sd4;
-        4'b0101: N1q_m07 = 5'sd5;
-        4'b0110: N1q_m07 = 5'sd6;
-        4'b0111: N1q_m07 = 5'sd7;
-        4'b1000: N1q_m07 = 5'sd8;
-        default: N1q_m07 = 5'sd0;
-    endcase
-    N0q_m07 = 5'sd8 - N1q_m07;
+    N1q_m07 = {3'b0, q_m[0]} + {3'b0, q_m[1]} + {3'b0, q_m[2]} + {3'b0, q_m[3]} +
+               {3'b0, q_m[4]} + {3'b0, q_m[5]} + {3'b0, q_m[6]} + {3'b0, q_m[7]};
 end
 
-logic signed [4:0] acc_add;
+logic signed [3:0] acc_add;
+logic neutral, invert_video;
 
 integer i;
 
 always_comb
 begin
-    if (N1D > 4'd4 || (N1D == 4'd4 && video_data[0] == 1'd0))
-    begin
-        q_m[0] = video_data[0];
-        for(i = 0; i < 7; i++)
-            q_m[i + 1] = q_m[i] ~^ video_data[i + 1];
-        q_m[8] = 1'b0;
-    end
-    else
-    begin
-        q_m[0] = video_data[0];
-        for(i = 0; i < 7; i++)
-            q_m[i + 1] = q_m[i] ^ video_data[i + 1];
-        q_m[8] = 1'b1;
-    end
-    if (acc == 5'sd0 || (N1q_m07 == N0q_m07))
-    begin
-        if (q_m[8])
-        begin
-            acc_add = N1q_m07 - N0q_m07;
-            q_out = {~q_m[8], q_m[8], q_m[7:0]};
-        end
-        else
-        begin
-            acc_add = N0q_m07 - N1q_m07;
-            q_out = {~q_m[8], q_m[8], ~q_m[7:0]};
-        end
-    end
-    else
-    begin
-        if ((acc > 5'sd0 && N1q_m07 > N0q_m07) || (acc < 5'sd0 && N1q_m07 < N0q_m07))
-        begin
-            q_out = {1'b1, q_m[8], ~q_m[7:0]};
-            acc_add = (N0q_m07 - N1q_m07) + (q_m[8] ? 5'sd2 : 5'sd0);
-        end
-        else
-        begin
-            q_out = {1'b0, q_m[8], q_m[7:0]};
-            acc_add = (N1q_m07 - N0q_m07) - (~q_m[8] ? 5'sd2 : 5'sd0);
-        end
+    q_m[8] = !(N1D > 4'd4 || (N1D == 4'd4 && !video_data[0]));
+    q_m[0] = video_data[0];
+    for(i = 0; i < 7; i++)
+        q_m[i + 1] = q_m[i] ^ video_data[i + 1] ^ ~q_m[8];
+
+    neutral = acc == 4'sd0 || N1q_m07 == 4'd4;
+    invert_video = neutral ? ~q_m[8] :
+                   (acc > 4'sd0 && N1q_m07 > 4'd4) || (acc < 4'sd0 && N1q_m07 < 4'd4);
+    q_out = {invert_video, q_m[8], q_m[7:0] ^ {8{invert_video}}};
+    acc_add = invert_video ? 4'd4 - N1q_m07 : N1q_m07 - 4'd4;
+    if (!neutral) begin
+        if (invert_video && q_m[8])
+            acc_add = acc_add + 4'sd1;
+        else if (!invert_video && !q_m[8])
+            acc_add = acc_add - 4'sd1;
     end
 end
 
-always_ff @(posedge clk_pixel) acc <= mode != 3'd1 ? 5'sd0 : acc + acc_add;
+always_ff @(posedge clk_pixel) acc <= mode != 3'd1 ? 4'sd0 : acc + acc_add;
 
 // See Section 5.4.2
 logic [9:0] control_coding;

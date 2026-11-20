@@ -40,9 +40,9 @@ This is not footage from a physical handheld.
 
 > **Alpha software.** Gen Thang is under active development and is published as an
 > early alpha. Expect bugs, game-compatibility gaps, missing features and breaking
-> changes between releases. The controller-fixed 720p dual-DB9 build was flashed,
-> verified and confirmed working by the user. Other release variants are build-
-> and timing-checked, not hardware-tested for this release. Save
+> changes between releases. The v1.9.4 controller-fixed 720p dual-DB9 build was flashed,
+> verified and confirmed working by the user. The 1.9.5 release images are build-,
+> timing- and simulation-checked but not yet hardware-tested. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
 > no warranty; you build, wire and flash at your own risk, and wiring mistakes can
 > damage the board or a controller. See [Disclaimer](#disclaimer).
@@ -225,6 +225,7 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 | `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Handheld pinout, plus the Nano's speaker and a headphone jack; see [direct buttons](#direct-buttons-raw-build) |
 | `genthang_nano20k_raw_3btn_flash.bin` | Single-player three-button handheld | Raw pinout; port 2 reads as unplugged and **Mode** alone opens the menu |
 | `genthang_nano20k_db9_800x480_flash.bin`, `genthang_nano20k_raw_800x480_flash.bin` | Same pads, for an 800x480 TFT on a TFP401 board | Native 800x480 DVI, no HDMI audio; see [display options](#display-options) |
+| `genthang_nano20k_db9_selectable_flash.bin`, `genthang_nano20k_raw_selectable_flash.bin` | Same pads, with a menu-selectable display | **LCD**, **TV (720p)** or **TV (1080i games)**; the menu always stays 720p. See [display options](#display-options) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
 
@@ -418,7 +419,7 @@ The Options page opens first when you call up the menu during a game:
 - **Scanlines**: off, 25 %, 50 %
 - **Composite blend**: off, on
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
-- **Display**: TV (default), or 4:3 LCD
+- **Display**: TV (720p, default), or LCD; optional selectable builds also offer TV (1080i games)
 - **Brightness**: 100 % (default), 75 %, 50 %, 25 % (raw build only)
 
 The running firmware version is shown below the **GEN THANG** title on every menu page.
@@ -436,7 +437,7 @@ same centred 960x720 (4:3) window inside the 1280x720 HDMI frame by default. Two
 post-processing options are applied by the HDMI scaler:
 
 - **Scanlines** dims the lower half of each Genesis line by 25 % or 50 %. It is
-  skipped in interlaced modes.
+  skipped when the Genesis itself uses interlace, independently of the HDMI output mode.
 - **Composite blend** averages each pixel with its left neighbour, which melts the
   dither patterns many games use for transparency and shading the way a composite
   cable does. Version 1.9.3 removes adaptive blending to make room for the YM2612
@@ -460,7 +461,7 @@ picture stage broke audio and game loading on the handheld.)
 display pulses or flickers on mid and dark tones: on an LG 50PN6500 plasma, any HDMI
 data island made the picture pulse regardless of its contents, and DVI was stable.
 
-**Display** chooses **TV** (default, the centred 4:3 window) or **4:3 LCD**.
+**Display** chooses **TV** (720p by default, the centred 4:3 window) or **4:3 LCD**.
 Use LCD mode for a 640x480 panel/controller such as the PCB800850 that squeezes
 the entire 1280x720 input onto its 4:3 panel. It expands the game and menu across
 the full input width (the leftmost 3 pixels stay black), removing the built-in side bars so the controller's
@@ -468,6 +469,38 @@ downscaling restores the intended proportions. On a normal 16:9 TV this mode
 looks stretched; switch back to TV there. HDMI timing stays at 720p60, and no
 extra framebuffer is used. Changes take effect at a frame boundary and are
 saved to `GENTHANG.CFG`; settings from older versions still load with TV mode.
+
+**Optional three-mode build:** `GT_VIDEO=selectable ./build.sh` offers **LCD**,
+**TV (720p)** and **TV (1080i games)** in the same Display menu. LCD retains the 720p
+panel-controller scaling (full-width 4:3 squeeze) described above, in both the menu
+and games; it is not a directly wired LCD output or native 800x480. TV (1080i games) sends
+1920x1080 interlaced HDMI at 60 fields / 30 complete frames per second during gameplay, with a
+centred 1440-pixel-wide 4:3 picture. Each new Genesis frame is scaled into a
+540-line field (bob-style scaling, not a native 1080-line game framebuffer).
+The menu is always shown at 720p, so a display that cannot show 1080i can still be
+rescued: open the menu (Mode+Start, or Start+A+B+C on a 3-button pad) and pick
+another Display mode. Leaving the menu switches to 1080i; opening it returns to 720p.
+The two TV modes share the 74.25 MHz pixel clock and the existing 32-line buffer.
+Mode changes wait for a complete output-frame boundary; HDMI audio and the
+independent DVI option remain available. The TV may briefly blank while relocking
+each time the menu opens or closes in this mode.
+Fixed-output builds ignore a saved 1080i selection while preserving it on the card.
+Release images include it as `genthang_nano20k_db9_selectable_flash.bin` and
+`genthang_nano20k_raw_selectable_flash.bin`; the standard images keep fixed 720p.
+Physical display compatibility still needs hardware testing.
+
+The 1.9.5 selectable release builds pass Gowin placement/routing with zero negative
+setup/hold slack and every clock above its target, using the official feature set
+(ladder audio on; adaptive blend, core switching and serial upload off):
+
+| Variant | Logic slots | CLS | BSRAM | Pixel clock (needs 74.25 MHz) |
+|---|---|---|---|---|
+| `db9_selectable` | 20,601/20,736 (135 spare) | 10,354/10,368 (14 spare) | 43/46 | 79.396 MHz |
+| `raw_selectable` (with brightness) | 20,120/20,736 (616 spare) | 10,249/10,368 (119 spare) | 43/46 | 99.313 MHz |
+
+The same HDMI savings also free room in the fixed-output images: the 1.9.5 DB9 720p
+build uses 20,158 logic slots and 10,255 CLS, against 20,623 and 10,367 in 1.9.4.
+Other feature combinations need their own fit and timing checks.
 
 **Bare TFT panels behind a DVI/HDMI decoder board** (such as the Adafruit TFP401
 with an 800x480 40-pin TFT) have no scaler, so they cannot show 720p at all. Build
@@ -504,7 +537,7 @@ made from.
 ### Uploading ROMs over USB serial
 
 **Not in the default build or releases.** The serial UART is only built with
-`GT_SERIAL_UPLOAD=1 ./build.sh`. Its fit is not certified with the 1.9.4 ladder
+`GT_SERIAL_UPLOAD=1 ./build.sh`. Its fit is not certified with the 1.9.5 ladder
 configuration; the default DB9 build already has very little logic headroom.
 Without it the menu ignores the serial port; copy ROMs and core images to the card in
 a card reader instead.
@@ -530,7 +563,7 @@ corrected debugger firmware. On Linux your user needs access to the serial devic
 
 ### Switching cores
 
-Official 1.9.4 builds use `GT_NO_CORE_SWITCH=1`, which removes the runtime flash
+Official 1.9.5 builds use `GT_NO_CORE_SWITCH=1`, which removes the runtime flash
 interface and hides this menu entry to make room for ladder audio.
 It also rejects serial core-image uploads; normal ROM loading and firmware bootstrap
 from flash are unchanged. The FPGA reports this omission in core-ID bit 20 and the
@@ -566,9 +599,11 @@ cd genthang
 GT_LADDER=0 ./build.sh            # custom clean-output audio build
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
+GT_VIDEO=selectable ./build.sh    # LCD / TV (720p) / TV (1080i) in one image (*_selectable)
 GT_PAD=raw GT_3BTN=1 ./build.sh   # 3-button handheld (*_3btn): no player 2, Mode alone opens the menu
 GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the brightness option
-./release.sh                      # all variants (db9, raw, raw_3btn, *_800x480) + flash images + tarball
+./release.sh                      # all variants (db9, raw, raw_3btn, *_800x480, *_selectable) + flash images + tarball
+VARIANTS="db9_selectable" ./release.sh release-display  # just the DB9 display-selector image
 ```
 
 `GT_PAD` (`db9`, `raw`) selects the supported pad ports in `src/mdtang_top.sv`, through
@@ -581,15 +616,23 @@ pad (Mode, X, Y and Z are not passed to games), port 2 reads as unplugged, and M
 (held 20 ms) opens the menu instead of Mode+Start. The firmware reads it from bit 18 of
 the core ID register. Output names get a `_3btn` suffix.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
-to leave logic headroom; its fit is not certified for 1.9.4. `GT_PICTURE`
+to leave logic headroom; its fit is not certified for 1.9.5. `GT_PICTURE`
 (`0`/`1`) adds the brightness option to the HDMI scaler; it defaults to
 `1` for `GT_PAD=raw` and `0` for DB9, which cannot fit it. The firmware reads the choice
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
-The 1.9.4 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
+The 1.9.5 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
 JT12's YM2612 Model 1 DAC ladder distortion is enabled, while adaptive blending and
 runtime core switching are omitted. Normal blend OFF/ON and scanlines remain.
+`GT_VIDEO=selectable` additionally exposes the three-mode Display selector
+(core ID bit 21, video option bit 6 for 1080i); other builds retain fixed timing.
+HDMI packet ECC reuses the transmitted payload-bit multiplexers, and the TMDS
+encoder stores half-disparity (the full value is always even) and shares its
+inversion logic. These reduce logic use without changing transmitted symbols.
+`make -C verilator display-modes` checks both fixed-output profiles, all three
+selectable modes, half-line field timing, scaling, AVI checksums, packet ECC and
+TMDS symbols against independent references.
 Each flag accepts `0` or `1` for custom builds; changing the feature set requires a
 fresh placement and timing check. `release.sh` explicitly fixes the official
 feature set for every variant regardless of caller environment.

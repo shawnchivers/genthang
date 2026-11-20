@@ -15,7 +15,7 @@ if {$pinout ne "stock"} {
 }
 set video 720p
 if {[info exists ::env(GT_VIDEO)] && $::env(GT_VIDEO) ne ""} { set video $::env(GT_VIDEO) }
-if {[lsearch -exact {720p 800x480} $video] < 0} { error "GT_VIDEO must be 720p or 800x480" }
+if {[lsearch -exact {720p selectable 800x480} $video] < 0} { error "GT_VIDEO must be 720p, selectable or 800x480" }
 
 # Colour mode and brightness menu: on for the raw handheld build, off for DB9 (no room left)
 # Brightness (shares the scanline dimmer): on for raw, off for db9 (no logic to spare)

@@ -116,20 +116,22 @@ endmodule
 
 // HDMI encoding and board buffers are outside this RGB-path test.
 module hdmi #(
-    parameter VIDEO_ID_CODE = 4, DVI_OUTPUT = 0, VIDEO_REFRESH_RATE = 60.0,
+    parameter VIDEO_ID_CODE = 4, DVI_OUTPUT = 0, VIDEO_REFRESH_RATE = 60.0, SELECTABLE = 0, BIT_WIDTH = 11,
     IT_CONTENT = 1, AUDIO_RATE = 48000, AUDIO_BIT_WIDTH = 16, START_X = 0, START_Y = 0
 ) (
-    input clk_pixel_x5, clk_pixel, clk_audio, reset, dvi_mode,
+    input clk_pixel_x5, clk_pixel, clk_audio, reset, dvi_mode, interlace_mode,
     input [23:0] rgb,
     input [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
     output [2:0] tmds,
     output tmds_clock,
+    output field,
     output [10:0] cx,
     output [9:0] cy,
     output [10:0] frame_width,
     output [9:0] frame_height
 );
     assign tmds = 0;
+    assign field = 0;
     assign tmds_clock = clk_pixel;
     assign cx = 0;
     assign cy = 0;

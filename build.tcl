@@ -2,6 +2,7 @@
 #   ./build.sh                -> impl/pnr/genthang_nano20k_db9.fs, two Genesis pads
 #   GT_PAD=raw ./build.sh     -> 12 direct buttons, handheld pinout + speaker amp
 #   GT_VIDEO=800x480 ./build.sh -> native 800x480 DVI for a bare TFT on a TFP401 board (*_800x480.fs)
+#   GT_VIDEO=selectable ./build.sh -> menu-selectable LCD / TV 720p / TV 1080i (*_selectable.fs)
 #   GT_PICTURE=0|1            -> colour mode / brightness menu (default: 1 for raw, 0 for db9)
 
 set_device GW2AR-LV18QN88C8/I7 -device_version C
@@ -28,6 +29,7 @@ foreach feature {GT_LADDER GT_NO_ADAPTIVE GT_NO_CORE_SWITCH} {
     puts "$feature=[set [string tolower $feature]]"
 }
 if {$video eq "800x480"} { puts $f "`define VIDEO_800X480" }
+if {$video eq "selectable"} { puts $f "`define VIDEO_SELECTABLE" }
 if {$picture} { puts $f "`define PICTURE_OPTS" }
 # GT_3BTN=1: single-player 3-button handheld; no player 2, Mode alone opens the menu
 if {$three_btn} { puts $f "`define GT_3BTN" }

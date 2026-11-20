@@ -5,8 +5,9 @@ module hdmi
 #(
     // Defaults to 640x480 which should be supported by almost if not all HDMI sinks.
     // See README.md or CEA-861-D for enumeration of video id codes.
-    // Pixel repetition, interlaced scans and other special output modes are not implemented (yet).
+    // Optional 1080i60 uses field-local cy, with 540 active lines in each field.
     parameter int VIDEO_ID_CODE = 1,
+    parameter bit SELECTABLE = 1'b0,
 
     // The IT content bit indicates that image samples are generated in an ad-hoc
     // manner (e.g. directly from values in a framebuffer, as by a PC video
@@ -21,7 +22,7 @@ module hdmi
 
     // Defaults to minimum bit lengths required to represent positions.
     // Modify these parameters if you have alternate desired bit lengths.
-    parameter int BIT_WIDTH = VIDEO_ID_CODE < 4 ? 10 : VIDEO_ID_CODE == 4 ? 11 : 12,
+    parameter int BIT_WIDTH = SELECTABLE ? 12 : VIDEO_ID_CODE < 4 ? 10 : VIDEO_ID_CODE == 4 ? 11 : 12,
     parameter int BIT_HEIGHT = VIDEO_ID_CODE == 16 ? 11: 10,
 
     // A true HDMI signal sends auxiliary data (i.e. audio, preambles) which prevents it from being parsed by DVI signal sinks.
@@ -71,6 +72,8 @@ module hdmi
     input logic [23:0] rgb,
     input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
     input logic dvi_mode, // runtime DVI: no guard bands, preambles or data islands, so no audio
+    input logic interlace_mode, // SELECTABLE: switch VIC 4 (720p60) to VIC 5 (1080i60)
+    output logic field = 1'b0,
 
     // These outputs go to your HDMI port
     output logic [2:0] tmds,
@@ -98,6 +101,7 @@ logic vsync;
 logic [BIT_WIDTH-1:0] hsync_pulse_start, hsync_pulse_size;
 logic [BIT_HEIGHT-1:0] vsync_pulse_start, vsync_pulse_size;
 logic invert;
+wire interlaced = SELECTABLE && interlace_mode;
 
 // See CEA-861-D for more specifics formats described below.
 generate
@@ -141,13 +145,13 @@ generate
             end
         4:
         begin
-            assign frame_width = 1650;
-            assign frame_height = 750;
-            assign screen_width = 1280;
-            assign screen_height = 720;
-            assign hsync_pulse_start = 110;
-            assign hsync_pulse_size = 40;
-            assign vsync_pulse_start = 5;
+            assign frame_width = interlaced ? 2200 : 1650;
+            assign frame_height = interlaced ? (field ? 563 : 562) : 750;
+            assign screen_width = interlaced ? 1920 : 1280;
+            assign screen_height = interlaced ? 540 : 720;
+            assign hsync_pulse_start = interlaced ? 88 : 110;
+            assign hsync_pulse_size = interlaced ? 44 : 40;
+            assign vsync_pulse_start = interlaced ? 2 : 5;
             assign vsync_pulse_size = 5;
             assign invert = 0;
         end
@@ -202,14 +206,18 @@ generate
     endcase
 endgenerate
 
+// Alternating 562/563-line fields preserve H-sync continuity. Offset the second
+// field's V-sync by half a line, so V-sync edges remain exactly 562.5 lines apart.
+wire [BIT_HEIGHT-1:0] vsync_start_y = screen_height + vsync_pulse_start - 1'b1 + (interlaced && field ? 1'b1 : 1'b0);
+wire [BIT_WIDTH-1:0] vsync_start_x = screen_width + hsync_pulse_start - (interlaced && field ? BIT_WIDTH'(1100) : BIT_WIDTH'(0));
 always_comb begin
     hsync <= invert ^ (cx >= screen_width + hsync_pulse_start && cx < screen_width + hsync_pulse_start + hsync_pulse_size);
     // vsync pulses should begin and end at the start of hsync, so special
     // handling is required for the lines on which vsync starts and ends
-    if (cy == screen_height + vsync_pulse_start - 1)
-        vsync <= invert ^ (cx >= screen_width + hsync_pulse_start);
-    else if (cy == screen_height + vsync_pulse_start + vsync_pulse_size - 1)
-        vsync <= invert ^ (cx < screen_width + hsync_pulse_start);
+    if (cy == vsync_start_y)
+        vsync <= invert ^ (cx >= vsync_start_x);
+    else if (cy == vsync_start_y + vsync_pulse_size)
+        vsync <= invert ^ (cx < vsync_start_x);
     else
         vsync <= invert ^ (cy >= screen_height + vsync_pulse_start && cy < screen_height + vsync_pulse_start + vsync_pulse_size);
 end
@@ -232,11 +240,16 @@ begin
     begin
         cx <= BIT_WIDTH'(START_X);
         cy <= BIT_HEIGHT'(START_Y);
+        field <= 1'b0;
     end
     else
     begin
         cx <= cx == frame_width-1'b1 ? BIT_WIDTH'(0) : cx + 1'b1;
         cy <= cx == frame_width-1'b1 ? cy == frame_height-1'b1 ? BIT_HEIGHT'(0) : cy + 1'b1 : cy;
+        if (!interlaced)
+            field <= 1'b0;
+        else if (cx == frame_width-1'b1 && cy == frame_height-1'b1)
+            field <= ~field;
     end
 end
 
@@ -279,7 +292,8 @@ generate
         logic [4:0] num_packets_alongside;
         always_comb
         begin
-            max_num_packets_alongside = (frame_width - screen_width  /* VD period */ - 2 /* V guard */ - 8 /* V preamble */ - 4 /* Min V control period */ - 2 /* DI trailing guard */ - 2 /* DI leading guard */ - 8 /* DI premable */ - 4 /* Min DI control period */) / 32;
+            max_num_packets_alongside = SELECTABLE ? (interlaced ? 7 : 10) :
+                (frame_width - screen_width  /* VD period */ - 2 /* V guard */ - 8 /* V preamble */ - 4 /* Min V control period */ - 2 /* DI trailing guard */ - 2 /* DI leading guard */ - 8 /* DI premable */ - 4 /* Min DI control period */) / 32;
             if (max_num_packets_alongside > 18)
                 num_packets_alongside = 5'd18;
             else
@@ -321,6 +335,7 @@ generate
         logic [4:0] packet_pixel_counter;
         packet_picker #(
             .VIDEO_ID_CODE(VIDEO_ID_CODE),
+            .SELECTABLE(SELECTABLE),
             .VIDEO_RATE(VIDEO_RATE),
             .IT_CONTENT(IT_CONTENT),
             .AUDIO_RATE(AUDIO_RATE),
@@ -328,7 +343,7 @@ generate
             .VENDOR_NAME(VENDOR_NAME),
             .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION),
             .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)
-        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(sub));
+        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .interlace_mode(interlaced), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(sub));
         logic [8:0] packet_data;
         packet_assembler packet_assembler (.clk_pixel(clk_pixel), .reset(reset), .data_island_period(data_island_period), .header(header), .sub(sub), .packet_data(packet_data), .counter(packet_pixel_counter));
 

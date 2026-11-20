@@ -38,7 +38,7 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 # the board DUT keeps the iosys UART so the firmware's debug log reaches the console
 DUT_VFLAGS = +define+SERIAL_UPLOAD
 
-.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings
+.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes
 
 hex: rom8.hex fw8.hex sd.img
 rom8.hex: mkhex.py
@@ -97,6 +97,12 @@ picture-settings:
 		-Wno-int-to-pointer-cast ../tests/test_picture_settings.c -o obj_picture_settings/test_picture_settings
 	./obj_picture_settings/test_picture_settings
 
+display-modes:
+	$(VERILATOR) --binary --timing -j 4 -Wno-fatal -Wno-TIMESCALEMOD -Wno-BLKANDNBLK \
+		--top-module display_modes_tb --Mdir obj_display_modes \
+		../tests/display_modes_tb.sv $D/framebuffer_sync.sv $D/frame_sync.sv $D/hdmi/*.sv
+	./obj_display_modes/Vdisplay_modes_tb
+
 run-ref: ref run/ref
 	cd run/ref && ../../$(REF_MDIR)/tb_ref $(ARGS)
 
@@ -106,3 +112,4 @@ run-dut: dut run/dut
 clean:
 	rm -rf obj_ref obj_dut obj_ref_* obj_dut_* obj_refdbg obj_dutdbg obj_ymclk obj_textdisp obj_genesis_pad obj_gen_io run rom8.hex rom16.hex rom32.hex \
 		obj_picture_modes obj_picture_settings fw8.hex sd.img
+	rm -rf obj_display_modes

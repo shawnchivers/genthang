@@ -80,10 +80,11 @@ static void load_config(const char *value) {
 int main(void) {
     const char *rom = "/games/Test game.md";
     has_picture = true;
+    has_display_modes = true;
     for (int scan = 0; scan < 3; scan++)
     for (int bl = 0; bl < 3; bl++)
     for (int output = 0; output < 2; output++)
-    for (int display = 0; display < 2; display++)
+    for (int display = 0; display < 3; display++)
     for (int mode = 0; mode < 4; mode++)
     for (int dimming = 0; dimming < 4; dimming++) {
         scanlines = scan;
@@ -102,8 +103,38 @@ int main(void) {
         assert(color_mode == mode && picture_dim == dimming);
         assert(strcmp(cur_rom, rom) == 0);
         assert(applied_video == (unsigned)(scan | bl << 2 | output << 4 |
-                                          display << 5 | dimming << 8));
+                                          (display == 1 ? 1 << 5 : display == 2 ? 1 << 6 : 0) | dimming << 8));
     }
+
+    for (int display = 0; display < 3; display++) {
+        static const char *const labels[] = {"Display: TV (720p)", "Display: LCD", "Display: TV (1080i games)"};
+        lcd = display;
+        draw_options(0);
+        display_write();
+        for (int i = 0; i < nopt; i++)
+            if (opt_items[i] == OPT_DISPLAY)
+                assert(strncmp(screen[LIST_ROW + i] + 3, labels[display], strlen(labels[display])) == 0);
+    }
+    // A card moved to a fixed-output build keeps the saved selection, but never
+    // enables an unsupported timing or mistakes 1080i for LCD scaling.
+    has_display_modes = false;
+    has_picture = false;
+    load_config("000200\n/a.md\n");
+    display_write();
+    assert(lcd == 2 && applied_video == 0);
+    draw_options(0);
+    display_write();
+    for (int i = 0; i < nopt; i++)
+        if (opt_items[i] == OPT_DISPLAY)
+            assert(strncmp(screen[LIST_ROW + i] + 3, "Display: TV", 11) == 0);
+    save_options();
+    assert(config[3] == '2');
+    has_display_modes = true;
+    load_options();
+    display_write();
+    assert(lcd == 2 && applied_video == (1 << 6));
+    has_display_modes = false;
+    has_picture = true;
 
     load_config("21\n/a.md\n");
     assert(scanlines == 2 && blend == 1 && !dvi && !lcd && !color_mode && !picture_dim);
