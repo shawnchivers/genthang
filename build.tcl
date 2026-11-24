@@ -2,7 +2,7 @@
 #   ./build.sh                -> impl/pnr/genthang_nano20k_db9.fs, two Genesis pads
 #   GT_PAD=raw ./build.sh     -> 12 direct buttons, handheld pinout + speaker amp
 #   GT_VIDEO=800x480 ./build.sh -> native 800x480 DVI for a bare TFT on a TFP401 board (*_800x480.fs)
-#   GT_VIDEO=selectable ./build.sh -> menu-selectable LCD / TV 720p / TV 1080i (*_selectable.fs)
+#   GT_VIDEO=selectable ./build.sh -> LCD / TV 720p / TV 1080i / TV 480p (*_selectable.fs)
 #   GT_PICTURE=0|1            -> colour mode / brightness menu (default: 1 for raw, 0 for db9)
 
 set_device GW2AR-LV18QN88C8/I7 -device_version C

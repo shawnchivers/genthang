@@ -23,6 +23,7 @@ module auxiliary_video_information_info_frame
 )
 (
     input logic interlace_mode,
+    input logic mode_480p,
     output logic [23:0] header,
     output logic [55:0] sub [3:0]
 );
@@ -40,11 +41,25 @@ assign header = {{3'b0, LENGTH}, VERSION, {1'b1, TYPE}};
 // PB21-27 = sub3
 logic [7:0] packet_bytes [27:0];
 
-assign packet_bytes[0] = 8'd1 + ~(header[23:16] + header[15:8] + header[7:0] + packet_bytes[13] + packet_bytes[12] + packet_bytes[11] + packet_bytes[10] + packet_bytes[9] + packet_bytes[8] + packet_bytes[7] + packet_bytes[6] + packet_bytes[5] + packet_bytes[4] + packet_bytes[3] + packet_bytes[2] + packet_bytes[1]);
+function automatic [7:0] mode_checksum(input [1:0] aspect, input [6:0] vic);
+    mode_checksum = 8'(-(8'h82 + 2 + 13 +
+        int'({1'b0, VIDEO_FORMAT, ACTIVE_FORMAT_INFO_PRESENT, BAR_INFO, SCAN_INFO}) +
+        int'({COLORIMETRY, aspect, ACTIVE_FORMAT_ASPECT_RATIO}) +
+        int'({IT_CONTENT, EXTENDED_COLORIMETRY, RGB_QUANTIZATION_RANGE, NON_UNIFORM_PICTURE_SCALING}) +
+        int'(vic) + int'({YCC_QUANTIZATION_RANGE, CONTENT_TYPE, PIXEL_REPETITION}) +
+        (BAR_INFO != 0 ? 1020 : 0)));
+endfunction
+
+// Each supported mode has a constant checksum; avoid runtime 8-bit adders.
+assign packet_bytes[0] = SELECTABLE ?
+    (mode_480p ? mode_checksum(2'b01, 7'd2) :
+     interlace_mode ? mode_checksum(PICTURE_ASPECT_RATIO, 7'd5) :
+                      mode_checksum(PICTURE_ASPECT_RATIO, 7'(VIDEO_ID_CODE))) :
+    8'd1 + ~(header[23:16] + header[15:8] + header[7:0] + packet_bytes[13] + packet_bytes[12] + packet_bytes[11] + packet_bytes[10] + packet_bytes[9] + packet_bytes[8] + packet_bytes[7] + packet_bytes[6] + packet_bytes[5] + packet_bytes[4] + packet_bytes[3] + packet_bytes[2] + packet_bytes[1]);
 assign packet_bytes[1] = {1'b0, VIDEO_FORMAT, ACTIVE_FORMAT_INFO_PRESENT, BAR_INFO, SCAN_INFO};
-assign packet_bytes[2] = {COLORIMETRY, PICTURE_ASPECT_RATIO, ACTIVE_FORMAT_ASPECT_RATIO};
+assign packet_bytes[2] = {COLORIMETRY, (SELECTABLE && mode_480p ? 2'b01 : PICTURE_ASPECT_RATIO), ACTIVE_FORMAT_ASPECT_RATIO};
 assign packet_bytes[3] = {IT_CONTENT, EXTENDED_COLORIMETRY, RGB_QUANTIZATION_RANGE, NON_UNIFORM_PICTURE_SCALING};
-assign packet_bytes[4] = SELECTABLE && interlace_mode ? 8'd5 : {1'b0, 7'(VIDEO_ID_CODE)};
+assign packet_bytes[4] = SELECTABLE && mode_480p ? 8'd2 : SELECTABLE && interlace_mode ? 8'd5 : {1'b0, 7'(VIDEO_ID_CODE)};
 assign packet_bytes[5] = {YCC_QUANTIZATION_RANGE, CONTENT_TYPE, PIXEL_REPETITION};
 
 genvar i;

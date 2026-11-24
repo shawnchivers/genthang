@@ -55,7 +55,7 @@ module iosys_picorv32 #(
     input [7:0] overlay_x,          // 0-255
     input [7:0] overlay_y,          // 0-223
     output [14:0] overlay_color,    // BGR5
-    output reg [9:0] video_opt,     // scanlines [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], dim [9:8]
+    output reg [9:0] video_opt,     // scanlines [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], 480p [7], dim [9:8]
     output reg [3:0] ss_ctrl,       // save state: [0] window/hooks on, [1] 68K NMI, [2] Z80 freeze; [3] game reset
     input [11:0] joy1,              // joystick 1: (R L X A RT LT DN UP START SELECT Y B)
     input [11:0] joy2,              // joystick 2
@@ -223,7 +223,7 @@ assign mem_rdata = ram_ready ? ram_rdata :
         simpleuart_reg_dat_sel ? simpleuart_reg_dat_do : 
         time_reg_sel ? {8'd0, time_reg} :
         cycle_reg_sel ? 32'd0 :
-        id_reg_sel ? {10'b0, DISPLAY_MODES != 0, CORE_SWITCH == 0, ADAPTIVE_BLEND == 0, MENU_MODE_ONLY != 0, 1'b0, PICTURE_OPTS != 0, CORE_ID} :
+        id_reg_sel ? {9'b0, DISPLAY_MODES != 0, DISPLAY_MODES != 0, CORE_SWITCH == 0, ADAPTIVE_BLEND == 0, MENU_MODE_ONLY != 0, 1'b0, PICTURE_OPTS != 0, CORE_ID} :
         (simplespimaster_reg_byte_sel | simplespimaster_reg_word_sel) ? simplespimaster_reg_do : 
         spiflash_reg_byte_sel ? spiflash_reg_do :
         32'h 0000_0000;

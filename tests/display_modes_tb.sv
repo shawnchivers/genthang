@@ -6,13 +6,15 @@ module display_modes_tb;
     reg [10:0] source_width = 320;
     reg [9:0] source_height = 224;
     reg overlay = 0;
-    wire ecc_done, tmds_done, fixed_done, native_done;
+    reg video_reset = 0;
+    wire ecc_done, tmds_done, fixed_done, native_done, audio_done;
     packet_ecc_check ecc_check(.clk(clk), .done(ecc_done));
     tmds_encoding_check tmds_check(.clk(clk), .done(tmds_done));
+    audio_packet_check audio_check(.clk(clk), .done(audio_done));
     fixed_video_check fixed_check(.clk(clk), .done(fixed_done));
     fixed_video_check #(.LCD800(1)) native_check(.clk(clk), .done(native_done));
     framebuffer #(.SELECTABLE(1), .ADAPTIVE_BLEND(0)) dut (
-        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
+        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk), .video_reset(video_reset),
         .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(source_width), .height(source_height),
         .overlay(overlay), .overlay_color(15'd0), .video_opt(options),
@@ -22,14 +24,15 @@ module display_modes_tb;
     );
 
     int ticks = 0, last_vsync = -1, vsync_on = -1, last_hsync = -1;
-    bit old_vsync = 0, old_hsync = 0, old_mode = 0;
+    bit old_vsync = 0, old_hsync = 0;
+    bit [1:0] old_mode = 0;
     bit checking = 0;
     always @(negedge clk) begin
         ticks++;
-        if (dut.tv1080 != old_mode) begin
+        if ({dut.tv480, dut.tv1080} != old_mode) begin
             if (dut.cx != 1 || dut.cy != 0 || dut.field)
                 $fatal(1, "Timing changed outside a full-frame boundary");
-            old_mode = dut.tv1080;
+            old_mode = {dut.tv480, dut.tv1080};
         end
         if (checking) begin
             if (dut.hdmi.hsync && !old_hsync) begin
@@ -54,16 +57,52 @@ module display_modes_tb;
         do @(negedge clk); while (dut.cx != 0 || dut.cy != 0);
     endtask
 
+    task automatic relock;
+        // Model the reference-clock synchronizer and the stopped/restarted PLL.
+        repeat (6) @(negedge clk);
+        video_reset = 1;
+        repeat (2) @(negedge clk);
+        repeat (10) begin
+            @(negedge clk);
+            if (dut.cx != 0 || dut.cy != 0 || dut.field || dut.active || dut.clk_audio)
+                $fatal(1, "Video/audio did not reset while the PLL relocked");
+        end
+        video_reset = 0;
+        boundary();
+    endtask
+
     task automatic check_field(input int w, h, total_w, total_h, window_w, start_x, vic);
-        int pixels = 0, active_pixels = 0, hsync_pixels = 0, sum;
-        int sw, sh;
+        int pixels = 0, active_pixels = 0, hsync_pixels = 0, vsync_pixels = 0, sum;
+        int sw, sh, hfront, hpulse, packets, vfront, vpulse, vy, vx;
+        bit expected_vsync;
+        bit [4:0] expected_regions;
         sw = overlay ? 256 : int'(source_width);
         sh = overlay ? 224 : int'(source_height);
+        hfront = vic == 2 ? 16 : vic == 5 ? 88 : 110;
+        hpulse = vic == 2 ? 62 : vic == 5 ? 44 : 40;
+        packets = vic == 2 ? 3 : vic == 5 ? 7 : 10;
+        vfront = vic == 2 ? 9 : vic == 5 ? 2 : 5;
+        vpulse = vic == 2 ? 6 : 5;
         do begin
             if (dut.hdmi.frame_width != total_w || dut.hdmi.frame_height != total_h ||
                 dut.hdmi.screen_width != w || dut.hdmi.screen_height != h)
                 $fatal(1, "Wrong raster dimensions");
-            if (dut.hdmi.hsync) hsync_pixels++;
+            if (dut.hdmi.hsync != ((vic == 2) ^ (dut.cx >= w + hfront && dut.cx < w + hfront + hpulse)))
+                $fatal(1, "Wrong H-sync position or polarity");
+            vy = h + vfront - 1 + (vic == 5 && dut.field ? 1 : 0);
+            vx = w + hfront - (vic == 5 && dut.field ? 1100 : 0);
+            expected_vsync = dut.cy == vy ? dut.cx >= vx : dut.cy == vy + vpulse ? dut.cx < vx :
+                             dut.cy >= h + vfront && dut.cy < h + vfront + vpulse;
+            if (dut.hdmi.vsync != ((vic == 2) ^ expected_vsync))
+                $fatal(1, "Wrong V-sync position or polarity");
+            if (dut.hdmi.true_hdmi_output.data_island_period_instantaneous !=
+                (dut.cx >= w + 14 && dut.cx < w + 14 + packets * 32))
+                $fatal(1, "Wrong HDMI data-island region");
+            if (dut.hdmi.true_hdmi_output.packet_enable !=
+                (dut.cx >= w + 14 && dut.cx < w + 14 + packets * 32 && (int'(dut.cx) - w - 14) % 32 == 0))
+                $fatal(1, "Wrong HDMI packet alignment");
+            if (dut.hdmi.hsync != (vic == 2)) hsync_pixels++;
+            if (dut.hdmi.vsync != (vic == 2)) vsync_pixels++;
             if (dut.cx < w && dut.cy < h) active_pixels++;
             if (dut.cy < h && dut.cx == start_x + 8) begin
                 if (dut.yy != int'(dut.cy) * sh / h ||
@@ -78,14 +117,38 @@ module display_modes_tb;
                 for (int b = 0; b < 14; b++)
                     sum += int'(dut.hdmi.true_hdmi_output.packet_picker.auxiliary_video_information_info_frame.packet_bytes[b]);
                 if ((sum & 255) != 0) $fatal(1, "Invalid AVI checksum");
+                if (vic == 2 &&
+                    dut.hdmi.true_hdmi_output.packet_picker.auxiliary_video_information_info_frame.packet_bytes[2][5:4] != 1)
+                    $fatal(1, "480p must advertise 4:3 non-square pixels");
             end
+            if (vic == 2 && dut.hdmi.true_hdmi_output.num_packets_alongside != 3)
+                $fatal(1, "480p data islands do not fit its horizontal blanking");
+            expected_regions = {
+                dut.cx >= total_w - 2 && dut.cx < total_w && (dut.cy == total_h - 1 || dut.cy < h - 1),
+                dut.cx >= total_w - 10 && dut.cx < total_w - 2 && (dut.cy == total_h - 1 || dut.cy < h - 1),
+                (dut.cx >= w + 12 && dut.cx < w + 14) ||
+                    (dut.cx >= w + 14 + packets * 32 && dut.cx < w + 16 + packets * 32),
+                dut.cx >= w + 4 && dut.cx < w + 12,
+                dut.cx < w && dut.cy < h
+            };
             pixels++;
             @(negedge clk);
+            if ({dut.hdmi.true_hdmi_output.video_guard, dut.hdmi.true_hdmi_output.video_preamble,
+                 dut.hdmi.true_hdmi_output.data_island_guard, dut.hdmi.true_hdmi_output.data_island_preamble,
+                 dut.hdmi.video_data_period} != expected_regions)
+                $fatal(1, "HDMI guard, preamble or video period differs from raster reference");
         end while (dut.cx != 0 || dut.cy != 0);
         if (pixels != total_w * total_h || active_pixels != w * h)
             $fatal(1, "Wrong field duration or active pixel count");
-        if (hsync_pixels != total_h * (vic == 5 ? 44 : 40))
+        if (hsync_pixels != total_h * (vic == 2 ? 62 : vic == 5 ? 44 : 40))
             $fatal(1, "Wrong H-sync pulse width");
+        if (vic == 2) begin
+            if (vsync_pixels != 6 * total_w)
+                $fatal(1, "480p V-sync must last six lines");
+            if (dut.hdmi.true_hdmi_output.packet_picker.audio_clock_regeneration_packet.cycle_time_stamp != 26976)
+                $fatal(1, "480p audio CTS %0d does not match the 27MHz sampling divider",
+                       dut.hdmi.true_hdmi_output.packet_picker.audio_clock_regeneration_packet.cycle_time_stamp);
+        end
     endtask
 
     initial begin
@@ -136,6 +199,38 @@ module display_modes_tb;
         wait (!dut.lcd);
         boundary();
         check_field(1280, 720, 1650, 750, 960, 159, 4);
+        // 480p uses a different pixel clock, but still only changes at a frame
+        // boundary and always returns to a 720p menu.
+        repeat (1000) @(negedge clk);
+        options = 10'h080;
+        wait (dut.tv480);
+        relock();
+        check_field(720, 480, 858, 525, 717, 2, 2);
+        source_width = 320;
+        source_height = 224;
+        check_field(720, 480, 858, 525, 717, 2, 2);
+        repeat (1000) @(negedge clk);
+        overlay = 1;
+        wait (!dut.tv480);
+        relock();
+        check_field(1280, 720, 1650, 750, 960, 159, 4);
+        overlay = 0;
+        wait (dut.tv480);
+        relock();
+        check_field(720, 480, 858, 525, 717, 2, 2);
+        options = 10'h090;
+        wait (dut.dvi);
+        boundary();
+        repeat (5000) begin
+            @(negedge clk);
+            if (dut.hdmi.mode > 1) $fatal(1, "480p DVI emitted a data island or guard band");
+        end
+        overlay = 1;
+        options = 10'h0A0;
+        wait (!dut.tv480 && dut.lcd);
+        relock();
+        check_field(1280, 720, 1650, 750, 1277, 2, 4);
+        overlay = 0;
         // The DVI option remains independent of the display mode.
         options = 10'h050;
         wait (dut.tv1080 && dut.dvi);
@@ -146,9 +241,10 @@ module display_modes_tb;
             @(negedge clk);
             if (dut.hdmi.mode > 1) $fatal(1, "DVI emitted a data island or guard band");
         end
-        $display("Display modes: raster, half-line interlace, scaling, AVI, boundary switching and DVI passed");
+        $display("Display modes: 720p/1080i/480p raster, scaling, AVI, audio CTS, recovery menu and DVI passed");
         if (!ecc_done) $fatal(1, "Packet ECC check did not finish");
         if (!tmds_done) $fatal(1, "TMDS encoding check did not finish");
+        if (!audio_done) $fatal(1, "Audio packet check did not finish");
         if (!fixed_done || !native_done) $fatal(1, "Fixed-output checks did not finish");
         $finish;
     end
@@ -158,10 +254,59 @@ module display_modes_tb;
     end
 endmodule
 
+module audio_packet_check(input clk, output reg done = 0);
+    reg reset = 1, sample_clock = 0;
+    reg [15:0] samples [1:0];
+    wire [23:0] header;
+    wire [55:0] sub [3:0];
+    reg [4:0] pixel = 0;
+    int expected_sample = 0;
+    always @(posedge clk) pixel <= pixel + 1'b1;
+    packet_picker #(.VIDEO_ID_CODE(4), .SELECTABLE(1), .VIDEO_RATE(74.25E6),
+                    .AUDIO_BIT_WIDTH(16), .AUDIO_RATE(48000)) dut (
+        .clk_pixel(clk), .clk_audio(sample_clock), .reset(reset),
+        .interlace_mode(1'b0), .mode_480p(1'b1), .video_field_end(1'b0),
+        .packet_enable(pixel == 0), .packet_pixel_counter(pixel),
+        .audio_sample_word(samples), .header(header), .sub(sub)
+    );
+    function automatic [15:0] left_sample(input int n);
+        return 16'(n * 937 + 16'h1234);
+    endfunction
+    function automatic [15:0] right_sample(input int n);
+        return 16'(n * 347 - 16'h4321);
+    endfunction
+    always @(negedge clk)
+        if (!reset && pixel == 1 && header[7:0] == 2) begin
+            if (header[11:8] != 4'hF) $fatal(1, "Audio packet omitted a sample");
+            for (int s = 0; s < 4; s++) begin
+                if (sub[s][23:0] != {left_sample(expected_sample + s), 8'd0} ||
+                    sub[s][47:24] != {right_sample(expected_sample + s), 8'd0})
+                    $fatal(1, "Audio payload/channel/order mismatch at sample %0d", expected_sample + s);
+            end
+            expected_sample += 4;
+        end
+    initial begin
+        repeat (4) @(negedge clk);
+        reset = 0;
+        for (int n = 0; n < 128; n++) begin
+            samples[0] = left_sample(n);
+            samples[1] = right_sample(n);
+            sample_clock = 1;
+            repeat (10) @(negedge clk);
+            sample_clock = 0;
+            repeat (552) @(negedge clk);
+        end
+        repeat (128) @(negedge clk);
+        if (expected_sample != 128) $fatal(1, "Audio samples were lost or duplicated");
+        done = 1;
+        $display("HDMI audio: 128 stereo samples retain exact payload, channel and order");
+    end
+endmodule
+
 module fixed_video_check #(parameter LCD800 = 0)(input clk, output reg done = 0);
     reg [9:0] options = 10'h040;
     framebuffer #(.LCD800(LCD800), .ADAPTIVE_BLEND(0)) dut (
-        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
+        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk), .video_reset(1'b0),
         .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(11'd320), .height(10'd224),
         .overlay(1'b0), .overlay_color(15'd0), .video_opt(options),
@@ -179,7 +324,7 @@ module fixed_video_check #(parameter LCD800 = 0)(input clk, output reg done = 0)
             do @(negedge clk); while (dut.cx != 0 || dut.cy != 0);
             pixels = 0;
             do begin
-                if (dut.tv1080 || dut.field || dut.hdmi.frame_width != FW ||
+                if (dut.tv1080 || dut.tv480 || dut.field || dut.hdmi.frame_width != FW ||
                     dut.hdmi.frame_height != FH || dut.hdmi.screen_width != W || dut.hdmi.screen_height != H)
                     $fatal(1, "Fixed-output raster changed (LCD800=%0d)", LCD800);
                 if (dut.cx == 100 && dut.cy == 100 &&

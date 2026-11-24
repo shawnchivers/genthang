@@ -77,6 +77,7 @@ localparam FREQ = 54_000_000;
 
 // Clocks -------------------------------------------------------------------------------
 wire clk_sys, clk_z80, hclk, hclk5, pll_sys_lock, pll_hdmi_lock;
+wire tv480, video_reset;
 
 gowin_pll_sys pll_sys (
     .clkin(sys_clk), .clkout(clk_sys), .clkoutp(O_sdram_clk), .clkoutd(clk_z80), .lock(pll_sys_lock)
@@ -84,14 +85,26 @@ gowin_pll_sys pll_sys (
 
 `ifdef VIDEO_800X480
 gowin_pll_hdmi #(.IDIV(1), .FBDIV(10), .ODIV(4)) pll_hdmi (
+`elsif VIDEO_SELECTABLE
+gowin_pll_hdmi #(.SELECTABLE(1)) pll_hdmi (
 `else
 gowin_pll_hdmi pll_hdmi (
 `endif
-   .clkin(sys_clk), .clkout(hclk5), .lock(pll_hdmi_lock));
+   .clkin(sys_clk), .clkout(hclk5), .lock(pll_hdmi_lock), .mode_480p(tv480));
 
 CLKDIV #(.DIV_MODE(5)) hdmi_div5 (
     .CLKOUT(hclk), .HCLKIN(hclk5), .RESETN(pll_hdmi_lock), .CALIB(1'b0)
 );
+
+`ifdef VIDEO_SELECTABLE
+reg [2:0] video_ready = 3'b000;
+always @(posedge hclk or negedge pll_hdmi_lock)
+    if (!pll_hdmi_lock) video_ready <= 3'b000;
+    else video_ready <= {video_ready[1:0], 1'b1};
+assign video_reset = !video_ready[2];
+`else
+assign video_reset = 1'b0;
+`endif
 
 // Core ----------------------------------------------------------------------------------
 wire [3:0]  sdram_cmd;
@@ -235,13 +248,13 @@ framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)
     , .PICTURE_OPTS(1)
 `endif
 ) fb (
-    .clk(clk_sys), .resetn(md_on), .clk_pixel(hclk), .clk_5x_pixel(hclk5),
+    .clk(clk_sys), .resetn(md_on), .clk_pixel(hclk), .clk_5x_pixel(hclk5), .video_reset(video_reset),
     .ce_pix(ce_pix & hsync_seen), .r(red), .g(green), .b(blue), .transp(transp), .interlace(interlace), .x(x), .y(y),
     .width(resolution[0] ? 11'd320 : 11'd256), .height(resolution[1] ? 10'd240 : 10'd224),
     .audio_left(audio_left), .audio_right(audio_right),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
     .video_opt(video_opt),
-    .pause_core(pause_core),
+    .pause_core(pause_core), .tv480(tv480),
     .tmds_clk_n(tmds_clk_n), .tmds_clk_p(tmds_clk_p), .tmds_d_n(tmds_d_n), .tmds_d_p(tmds_d_p)
 );
 

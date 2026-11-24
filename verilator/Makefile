@@ -12,6 +12,8 @@ FIRMWARE ?= ../firmware/firmware.bin
 MTOOLS ?=
 D = ../src
 VERILATOR ?= verilator
+IVERILOG ?= iverilog
+VVP ?= vvp
 REF_MDIR ?= obj_ref
 DUT_MDIR ?= obj_dut
 CDEFS ?=
@@ -38,7 +40,7 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 # the board DUT keeps the iosys UART so the firmware's debug log reaches the console
 DUT_VFLAGS = +define+SERIAL_UPLOAD
 
-.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes
+.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes hdmi-clock
 
 hex: rom8.hex fw8.hex sd.img
 rom8.hex: mkhex.py
@@ -102,6 +104,14 @@ display-modes:
 		--top-module display_modes_tb --Mdir obj_display_modes \
 		../tests/display_modes_tb.sv $D/framebuffer_sync.sv $D/frame_sync.sv $D/hdmi/*.sv
 	./obj_display_modes/Vdisplay_modes_tb
+
+hdmi-clock:
+	@test -n "$(GOWIN_HOME)" || { echo "set GOWIN_HOME to the Gowin EDA install directory"; exit 1; }
+	mkdir -p obj_display_modes
+	$(IVERILOG) -g2012 -s hdmi_clock_tb -o obj_display_modes/hdmi_clock \
+		../tests/hdmi_clock_tb.sv $D/nano20k/gowin_pll_hdmi.v \
+		$(GOWIN_HOME)/IDE/simlib/gw2a/prim_sim.v
+	$(VVP) obj_display_modes/hdmi_clock
 
 run-ref: ref run/ref
 	cd run/ref && ../../$(REF_MDIR)/tb_ref $(ARGS)
