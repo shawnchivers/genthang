@@ -18,7 +18,6 @@ module packet_picker
     input logic clk_audio,
     input logic reset,
     input logic interlace_mode,
-    input logic mode_480p,
     input logic video_field_end,
     input logic packet_enable,
     input logic [4:0] packet_pixel_counter,
@@ -28,30 +27,28 @@ module packet_picker
 );
 
 // Connect the current packet type's data to the output.
-localparam [2:0] TYPE_NULL = 0, TYPE_CLOCK = 1, TYPE_AUDIO = 2,
-                 TYPE_AVI = 3, TYPE_SOURCE = 4, TYPE_AUDIO_INFO = 5;
-logic [2:0] packet_type = TYPE_NULL;
+logic [7:0] packet_type = 8'd0;
 logic [23:0] headers [255:0];
 logic [55:0] subs [255:0] [3:0];
 always_comb begin
     case (packet_type)
-        TYPE_CLOCK: begin
+        8'h01: begin
             header = headers[1];
             sub = subs[1];
         end
-        TYPE_AUDIO: begin
+        8'h02: begin
             header = headers[2];
             sub = subs[2];
         end
-        TYPE_AVI: begin
+        8'h82: begin
             header = headers[130];
             sub = subs[130];
         end
-        TYPE_SOURCE: begin
+        8'h83: begin
             header = headers[131];
             sub = subs[131];
         end
-        TYPE_AUDIO_INFO: begin
+        8'h84: begin
             header = headers[132];
             sub = subs[132];
         end
@@ -76,7 +73,7 @@ assign subs[0][3] = 56'dX;
 
 // Audio Clock Regeneration Packet
 logic clk_audio_counter_wrap;
-audio_clock_regeneration_packet #(.VIDEO_RATE(VIDEO_RATE), .AUDIO_RATE(AUDIO_RATE)) audio_clock_regeneration_packet (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .clk_audio_counter_wrap(clk_audio_counter_wrap), .header(headers[1]), .sub(subs[1]));
+audio_clock_regeneration_packet #(.VIDEO_RATE(VIDEO_RATE), .AUDIO_RATE(AUDIO_RATE)) audio_clock_regeneration_packet (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .clk_audio_counter_wrap(clk_audio_counter_wrap), .header(headers[1]), .sub(subs[1]));
 
 // Audio Sample packet
 localparam bit [3:0] SAMPLING_FREQUENCY = AUDIO_RATE == 32000 ? 4'b0011
@@ -110,6 +107,14 @@ always_ff @(posedge clk_pixel)
 logic sample_buffer_current = 1'b0;
 logic [1:0] samples_remaining = 2'd0;
 logic [23:0] audio_sample_word_buffer [1:0] [3:0] [1:0];
+logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word_transfer_mux [1:0];
+always_comb
+begin
+    if (audio_sample_word_transfer_control_synchronizer_chain[0] ^ audio_sample_word_transfer_control_synchronizer_chain[1])
+        audio_sample_word_transfer_mux = audio_sample_word_transfer;
+    else
+        audio_sample_word_transfer_mux = '{audio_sample_word_buffer[sample_buffer_current][samples_remaining][1][23:(24-AUDIO_BIT_WIDTH)], audio_sample_word_buffer[sample_buffer_current][samples_remaining][0][23:(24-AUDIO_BIT_WIDTH)]};
+end
 
 logic sample_buffer_used = 1'b0;
 logic sample_buffer_ready = 1'b0;
@@ -121,8 +126,8 @@ begin
 
     if (audio_sample_word_transfer_control_synchronizer_chain[0] ^ audio_sample_word_transfer_control_synchronizer_chain[1])
     begin
-        audio_sample_word_buffer[sample_buffer_current][samples_remaining][0] <= 24'(audio_sample_word_transfer[0])<<(24-AUDIO_BIT_WIDTH);
-        audio_sample_word_buffer[sample_buffer_current][samples_remaining][1] <= 24'(audio_sample_word_transfer[1])<<(24-AUDIO_BIT_WIDTH);
+        audio_sample_word_buffer[sample_buffer_current][samples_remaining][0] <=  24'(audio_sample_word_transfer_mux[0])<<(24-AUDIO_BIT_WIDTH);
+        audio_sample_word_buffer[sample_buffer_current][samples_remaining][1] <=  24'(audio_sample_word_transfer_mux[1])<<(24-AUDIO_BIT_WIDTH);
         if (samples_remaining == 2'd3)
         begin
             samples_remaining <= 2'd0;
@@ -145,7 +150,7 @@ begin
     begin
         frame_counter <= 8'd0;
     end
-    else if (packet_pixel_counter == 5'd31 && packet_type == TYPE_AUDIO) // Keep track of current IEC 60958 frame
+    else if (packet_pixel_counter == 5'd31 && packet_type == 8'h02) // Keep track of current IEC 60958 frame
     begin
         frame_counter = frame_counter + 8'd4;
         if (frame_counter >= 8'd192)
@@ -160,7 +165,7 @@ auxiliary_video_information_info_frame #(
     .SELECTABLE(SELECTABLE),
     .IT_CONTENT(IT_CONTENT),
     .RGB_QUANTIZATION_RANGE(2'b10)      // full range: pixels are 0-255
-) auxiliary_video_information_info_frame(.interlace_mode(interlace_mode), .mode_480p(mode_480p), .header(headers[130]), .sub(subs[130]));
+) auxiliary_video_information_info_frame(.interlace_mode(interlace_mode), .header(headers[130]), .sub(subs[130]));
 
 
 source_product_description_info_frame #(.VENDOR_NAME(VENDOR_NAME), .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION), .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)) source_product_description_info_frame(.header(headers[131]), .sub(subs[131]));
@@ -184,39 +189,39 @@ begin
         audio_info_frame_sent <= 1'b0;
         auxiliary_video_information_info_frame_sent <= 1'b0;
         source_product_description_info_frame_sent <= 1'b0;
-        packet_type <= 3'bxxx;
+        packet_type <= 8'dx;
     end
     else if (packet_enable)
     begin
         if (last_clk_audio_counter_wrap ^ clk_audio_counter_wrap)
         begin
-            packet_type <= TYPE_CLOCK;
+            packet_type <= 8'd1;
             last_clk_audio_counter_wrap <= clk_audio_counter_wrap;
         end
         else if (sample_buffer_ready)
         begin
-            packet_type <= TYPE_AUDIO;
+            packet_type <= 8'd2;
             audio_sample_word_packet <= audio_sample_word_buffer[!sample_buffer_current];
             audio_sample_word_present_packet <= 4'b1111;
             sample_buffer_used <= 1'b1;
         end
         else if (!audio_info_frame_sent)
         begin
-            packet_type <= TYPE_AUDIO_INFO;
+            packet_type <= 8'h84;
             audio_info_frame_sent <= 1'b1;
         end
         else if (!auxiliary_video_information_info_frame_sent)
         begin
-            packet_type <= TYPE_AVI;
+            packet_type <= 8'h82;
             auxiliary_video_information_info_frame_sent <= 1'b1;
         end
         else if (!source_product_description_info_frame_sent)
         begin
-            packet_type <= TYPE_SOURCE;
+            packet_type <= 8'h83;
             source_product_description_info_frame_sent <= 1'b1;
         end
         else
-            packet_type <= TYPE_NULL;
+            packet_type <= 8'd0;
     end
 end
 

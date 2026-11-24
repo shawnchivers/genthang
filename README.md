@@ -453,8 +453,8 @@ can be lost. The setting is saved to `GENTHANG.CFG` and kept, unused, when the c
 moves to a DB9 board. (1.9.0 also had a Color mode; it was removed in 1.9.1 because that
 picture stage broke audio and game loading on the handheld.)
 
-**Video output** chooses HDMI (default, with audio) or DVI. DVI sends the selected
-video timing (720p60 by default) without HDMI data islands, so the display gets no audio; use the
+**Video output** chooses HDMI (default, with audio) or DVI. DVI sends the same
+720p60 picture without HDMI data islands, so the display gets no audio; use the
 [line-out jack](#line-out-jack-db9-and-raw-builds) for sound. Use it if a
 display pulses or flickers on mid and dark tones: on an LG 50PN6500 plasma, any HDMI
 data island made the picture pulse regardless of its contents, and DVI was stable.
@@ -468,42 +468,24 @@ looks stretched; switch back to TV there. HDMI timing stays at 720p60, and no
 extra framebuffer is used. Changes take effect at a frame boundary and are
 saved to `GENTHANG.CFG`; settings from older versions still load with TV mode.
 
-**Optional selectable build:** `GT_VIDEO=selectable ./build.sh` offers **LCD**,
-**TV (720p)**, **TV (1080i games)** and **TV (480p games)** in the same Display menu.
-480p is new in the source build; the published 1.9.5 images have the first three modes.
-LCD retains the 720p
+**Optional three-mode build:** `GT_VIDEO=selectable ./build.sh` offers **LCD**,
+**TV (720p)** and **TV (1080i games)** in the same Display menu. LCD retains the 720p
 panel-controller scaling (full-width 4:3 squeeze) described above, in both the menu
 and games; it is not a directly wired LCD output or native 800x480. TV (1080i games) sends
 1920x1080 interlaced HDMI at 60 fields / 30 complete frames per second during gameplay, with a
 centred 1440-pixel-wide 4:3 picture. Each new Genesis frame is scaled into a
 540-line field (bob-style scaling, not a native 1080-line game framebuffer).
-TV (480p games) sends standard 720x480 progressive HDMI at 59.94 Hz (CTA VIC 2),
-with the HDMI aspect flag set to 4:3. These are non-square video pixels: the TV
-should display the full raster as 4:3, not as 720:480 or stretched 16:9. As in LCD
-mode, three pixels at the left edge remain black for the scaler pipeline. Both
-256- and 320-pixel game widths and 224/240-line heights use the existing line buffer;
-no full-frame buffering is added. Frame locking follows the 59.94 Hz output
-(about 0.1% slower than the 60 Hz modes).
-The menu is always shown at 720p, so a display that cannot show an alternate TV timing can still be
+The menu is always shown at 720p, so a display that cannot show 1080i can still be
 rescued: open the menu (Mode+Start, or Start+A+B+C on a 3-button pad) and pick
-another Display mode. Leaving the menu switches to the selected game timing;
-opening it returns to 720p. 720p and 1080i share the 74.25 MHz pixel clock;
-480p resets and relocks the HDMI PLL at 27 MHz, holding the video and audio
-counters in reset until the clock is stable. All modes share the existing 32-line buffer.
+another Display mode. Leaving the menu switches to 1080i; opening it returns to 720p.
+The two TV modes share the 74.25 MHz pixel clock and the existing 32-line buffer.
 Mode changes wait for a complete output-frame boundary; HDMI audio and the
 independent DVI option remain available. The TV may briefly blank while relocking
 each time the menu opens or closes in this mode.
-Fixed-output builds ignore saved alternate TV timings while preserving them on the card.
-The new firmware also detects older selectable bitstreams and does not offer 480p on them.
+Fixed-output builds ignore a saved 1080i selection while preserving it on the card.
 Release images include it as `genthang_nano20k_db9_selectable_flash.bin` and
 `genthang_nano20k_raw_selectable_flash.bin`; the standard images keep fixed 720p.
 Physical display compatibility still needs hardware testing.
-
-Lower resolution does not guarantee lower input lag: LCD mode itself still sends
-720p, so a difference in feel can come from the panel/controller's processing.
-Use the TV's Game/PC mode and disable motion interpolation. 480p provides a
-standard low-resolution signal to try; 240p is not included because many HDMI
-TVs reject it or handle it inconsistently.
 
 The 1.9.5 selectable release builds pass Gowin placement/routing with zero negative
 setup/hold slack and every clock above its target, using the official feature set
@@ -513,12 +495,6 @@ setup/hold slack and every clock above its target, using the official feature se
 |---|---|---|---|---|
 | `db9_selectable` | 20,601/20,736 (135 spare) | 10,354/10,368 (14 spare) | 43/46 | 79.396 MHz |
 | `raw_selectable` (with brightness) | 20,120/20,736 (616 spare) | 10,249/10,368 (119 spare) | 43/46 | 99.313 MHz |
-
-**Four-mode DB9 selectable build (unreleased):** passes placement and routing
-with zero negative setup/hold slack: 20,559/20,736 logic slots, 10,362/10,368 CLS
-(only six spare), 43/46 BSRAM and 93.349 MHz pixel-clock Fmax against the
-74.25 MHz target. 480p has been checked on one HDMI TV; compatibility with
-other displays is unmeasured. The four-mode raw build has not had its own fit check.
 
 The same HDMI savings also free room in the fixed-output images: the 1.9.5 DB9 720p
 build uses 20,158 logic slots and 10,255 CLS, against 20,623 and 10,367 in 1.9.4.
@@ -621,7 +597,7 @@ cd genthang
 GT_LADDER=0 ./build.sh            # custom clean-output audio build
 GT_PAD=raw ./build.sh             # twelve direct buttons + Nano speaker (handheld pinout)
 GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP401 board
-GT_VIDEO=selectable ./build.sh    # LCD / TV (720p) / TV (1080i) / TV (480p) (*_selectable)
+GT_VIDEO=selectable ./build.sh    # LCD / TV (720p) / TV (1080i) in one image (*_selectable)
 GT_PAD=raw GT_3BTN=1 ./build.sh   # 3-button handheld (*_3btn): no player 2, Mode alone opens the menu
 GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the brightness option
 ./release.sh                      # all variants (db9, raw, raw_3btn, *_800x480, *_selectable) + flash images + tarball
@@ -647,20 +623,14 @@ distributed RAM at the cost of a slightly slower menu CPU.
 The 1.9.5 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
 JT12's YM2612 Model 1 DAC ladder distortion is enabled, while adaptive blending and
 runtime core switching are omitted. Normal blend OFF/ON and scanlines remain.
-`GT_VIDEO=selectable` additionally exposes the four-mode Display selector
-(core ID bit 21 for 1080i, bit 22 for 480p; video option bits 6 and 7 respectively);
-other builds retain fixed timing.
+`GT_VIDEO=selectable` additionally exposes the three-mode Display selector
+(core ID bit 21, video option bit 6 for 1080i); other builds retain fixed timing.
 HDMI packet ECC reuses the transmitted payload-bit multiplexers, and the TMDS
 encoder stores half-disparity (the full value is always even) and shares its
 inversion logic. These reduce logic use without changing transmitted symbols.
-The four-mode build additionally uses complete timing constants and precomputed
-AVI checksums, compact internal packet-type codes and no unused audio-buffer
-feedback mux. These are HDMI-area fit changes, not Genesis CPU/VDP timing changes.
-`make -C verilator display-modes` checks both fixed-output profiles, all four
+`make -C verilator display-modes` checks both fixed-output profiles, all three
 selectable modes, half-line field timing, scaling, AVI checksums, packet ECC and
 TMDS symbols against independent references.
-`GOWIN_HOME=/path/to/Gowin make -C verilator hdmi-clock` uses Icarus Verilog and
-the vendor PLL model to measure both serializer clocks and check reset/relock.
 Each flag accepts `0` or `1` for custom builds; changing the feature set requires a
 fresh placement and timing check. `release.sh` explicitly fixes the official
 feature set for every variant regardless of caller environment.

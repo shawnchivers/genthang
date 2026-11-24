@@ -10,7 +10,6 @@ module audio_clock_regeneration_packet
 (
     input logic clk_pixel,
     input logic clk_audio,
-    input logic reset,
     output logic clk_audio_counter_wrap = 0,
     output logic [23:0] header,
     output logic [55:0] sub [3:0]
@@ -29,11 +28,7 @@ logic clk_audio_old;
 always_ff @(posedge clk_pixel)
 begin
     clk_audio_old <= clk_audio;
-    if (reset) begin
-        clk_audio_old <= 0;
-        clk_audio_counter <= 0;
-        internal_clk_audio_counter_wrap <= 0;
-    end else if (clk_audio & ~clk_audio_old) begin
+    if (clk_audio & ~clk_audio_old) begin
         if (clk_audio_counter == CLK_AUDIO_COUNTER_END)
         begin
             clk_audio_counter <= CLK_AUDIO_COUNTER_WIDTH'(0);
@@ -46,8 +41,7 @@ end
 
 logic [1:0] clk_audio_counter_wrap_synchronizer_chain = 2'd0;
 always_ff @(posedge clk_pixel)
-    if (reset) clk_audio_counter_wrap_synchronizer_chain <= 0;
-    else clk_audio_counter_wrap_synchronizer_chain <= {internal_clk_audio_counter_wrap, clk_audio_counter_wrap_synchronizer_chain[1]};
+    clk_audio_counter_wrap_synchronizer_chain <= {internal_clk_audio_counter_wrap, clk_audio_counter_wrap_synchronizer_chain[1]};
 
 localparam bit [19:0] CYCLE_TIME_STAMP_COUNTER_IDEAL = 20'(int'(VIDEO_RATE * real'(N) / 128 / AUDIO_RATE));
 localparam int CYCLE_TIME_STAMP_COUNTER_WIDTH = $clog2(20'(int'(real'(CYCLE_TIME_STAMP_COUNTER_IDEAL) * 1.1))); // Account for 10% deviation in audio clock
@@ -56,11 +50,7 @@ logic [19:0] cycle_time_stamp = 20'd0;
 logic [CYCLE_TIME_STAMP_COUNTER_WIDTH-1:0] cycle_time_stamp_counter = CYCLE_TIME_STAMP_COUNTER_WIDTH'(0);
 always_ff @(posedge clk_pixel)
 begin
-    if (reset) begin
-        cycle_time_stamp_counter <= 0;
-        cycle_time_stamp <= 0;
-        clk_audio_counter_wrap <= 0;
-    end else if (clk_audio_counter_wrap_synchronizer_chain[1] ^ clk_audio_counter_wrap_synchronizer_chain[0])
+    if (clk_audio_counter_wrap_synchronizer_chain[1] ^ clk_audio_counter_wrap_synchronizer_chain[0])
     begin
         cycle_time_stamp_counter <= CYCLE_TIME_STAMP_COUNTER_WIDTH'(0);
         cycle_time_stamp <= {(20-CYCLE_TIME_STAMP_COUNTER_WIDTH)'(0), cycle_time_stamp_counter + CYCLE_TIME_STAMP_COUNTER_WIDTH'(1)};

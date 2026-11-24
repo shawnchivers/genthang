@@ -5,7 +5,7 @@
 #   SHA256SUMS, genthang-v<VERSION>.tar.gz
 # Variants: db9 (default) and raw, each also as <pad>_800x480 (GT_VIDEO=800x480, native
 # 800x480 DVI for bare TFT panels on a TFP401 board). Raw has its own handheld pinout.
-# plus db9_selectable and raw_selectable (LCD / TV 720p / TV 1080i games / TV 480p games).
+# plus db9_selectable and raw_selectable (GT_VIDEO=selectable: LCD / TV 720p / TV 1080i games).
 # usage: ./release.sh [outdir]      VARIANTS="db9" ./release.sh   for a subset
 #        PACKAGE_ONLY=1 ./release.sh   re-pack the tarball from the images already in outdir
 # A variant that misses its clock targets or leaves negative slack fails the release.

@@ -7,9 +7,8 @@ module picture_modes_tb;
     reg [14:0] overlay_color = 0;
     reg [12:0] sample = 0;
     reg [11:0] left_sample = 0;
-    reg left_flagged = 0;
     framebuffer #(.PICTURE_OPTS(1)) dut (
-        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk), .video_reset(1'b0),
+        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
         .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(11'd320), .height(10'd224),
         .overlay(overlay), .overlay_color(overlay_color), .video_opt(options),
@@ -19,7 +18,7 @@ module picture_modes_tb;
     );
     // GT_PICTURE=0 (DB9) build: colour mode and brightness bits must have no effect
     framebuffer #(.PICTURE_OPTS(0)) plain (
-        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk), .video_reset(1'b0),
+        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
         .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(11'd320), .height(10'd224),
         .overlay(overlay), .overlay_color(overlay_color), .video_opt(options),
@@ -28,7 +27,7 @@ module picture_modes_tb;
         .tmds_clk_n(), .tmds_clk_p(), .tmds_d_n(), .tmds_d_p()
     );
     framebuffer #(.PICTURE_OPTS(0), .ADAPTIVE_BLEND(0)) trimmed (
-        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk), .video_reset(1'b0),
+        .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
         .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(11'd320), .height(10'd224),
         .overlay(overlay), .overlay_color(overlay_color), .video_opt(options),
@@ -57,7 +56,6 @@ module picture_modes_tb;
         force dut.active = active_test;   force plain.active = active_test;
         force dut.mem_portB_rdata = sample; force plain.mem_portB_rdata = sample;
         force dut.left_px = left_sample;  force plain.left_px = left_sample;
-        force dut.left_flag = 1'(left_flagged); force plain.left_flag = 1'(left_flagged);
         force dut.scan = scan_test;       force plain.scan = scan_test;
         force trimmed.active = active_test;
         force trimmed.mem_portB_rdata = sample[11:0];
@@ -80,10 +78,7 @@ module picture_modes_tb;
         for (int blend = 0; blend < 3; blend++)
         for (int scan = 0; scan < 3; scan++)
         for (int row = 0; row < 2; row++)
-        for (int flags = 0; flags < 4; flags++) begin
-            integer flagged;
-            flagged = flags & 1;
-            left_flagged = flags >> 1;
+        for (int flagged = 0; flagged < 2; flagged++) begin
             options = 10'((bright << 8) | (3 << 6) | (blend << 2) | scan);  // colour bits ignored
             scan_test = row;
             overlay = 0;
@@ -93,7 +88,7 @@ module picture_modes_tb;
                 integer do_blend;
                 sample = {1'(flagged), 12'(pixel)};
                 left_sample = 12'(pixel * 5 + 'h3a1);
-                do_blend = blend == 1 || (blend == 2 && (flagged || left_flagged));  // pair-wise
+                do_blend = blend == 1 || (blend == 2 && flagged);
                 for (int ch = 0; ch < 3; ch++) begin
                     want[ch*8 +: 8] = game_channel(sample[ch*4 +: 4], left_sample[ch*4 +: 4], do_blend, row, scan, bright);
                     want_plain[ch*8 +: 8] = game_channel(sample[ch*4 +: 4], left_sample[ch*4 +: 4], do_blend, row, scan, 0);
@@ -124,7 +119,7 @@ module hdmi #(
     parameter VIDEO_ID_CODE = 4, DVI_OUTPUT = 0, VIDEO_REFRESH_RATE = 60.0, SELECTABLE = 0, BIT_WIDTH = 11,
     IT_CONTENT = 1, AUDIO_RATE = 48000, AUDIO_BIT_WIDTH = 16, START_X = 0, START_Y = 0
 ) (
-    input clk_pixel_x5, clk_pixel, clk_audio, reset, dvi_mode, interlace_mode, mode_480p,
+    input clk_pixel_x5, clk_pixel, clk_audio, reset, dvi_mode, interlace_mode,
     input [23:0] rgb,
     input [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
     output [2:0] tmds,

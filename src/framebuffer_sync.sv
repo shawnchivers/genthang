@@ -7,7 +7,7 @@
 // TV mode centers a 4:3 window; LCD mode fills the input of a 4:3 panel controller.
 // LCD800=1 outputs native 800x480 DVI instead, for bare TFT panels behind a TFP401
 // (which has no scaler): TV = centred 640x480, LCD = full 800 width.
-// SELECTABLE=1 adds 480p59.94 and 1080i60 gameplay, with a 720p recovery menu.
+// SELECTABLE=1 adds 1080i60: one 540-line field per Genesis frame, no full-frame RAM.
 //
 // This is different from framebuffer.sv in that it requires the input video
 // to be synchronized to HDMI. This allows the module use much less BRAM space
@@ -18,7 +18,7 @@ module framebuffer #(
     parameter COLOR_BITS = 4,       // bits per RGB color channel
     parameter BUFFER_LINES = 32,    // power-of-two line ring, must exceed core lead over HDMI
     parameter LCD800 = 0,           // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
-    parameter SELECTABLE = 0,       // 1 = runtime 720p / 1080i / 480p
+    parameter SELECTABLE = 0,       // 1 = runtime 720p / 1080i, sharing the 74.25MHz clock
     parameter ADAPTIVE_BLEND = 1,   // 0 = composite blend off/on only
     parameter PICTURE_OPTS = 0      // 1 = brightness (video_opt[9:8]) for games, GT_PICTURE builds
 )(
@@ -26,7 +26,6 @@ module framebuffer #(
 	input resetn,
 	input clk_pixel,                // 74.25Mhz pixel clock (29.7MHz with LCD800)
 	input clk_5x_pixel,             // 5x pixel clock
-    input video_reset,              // pixel-domain reset while the HDMI PLL relocks
 
     // video signals
     input ce_pix,                   // pixel strobe
@@ -43,14 +42,13 @@ module framebuffer #(
     output pause_core,              // sync mechanism: input video should be a bit faster (e.g. 0.x%)
                                     // than HDMI. It should wait after line 0 is rendered
                                     // and wait for sync_line1 to continue rendering.
-    output reg tv480 = 1'b0,         // latched request for the 27MHz pixel clock
 
     // overlay from iosys
     input overlay,
     output [7:0] overlay_x,
     output [7:0] overlay_y,
     input [14:0] overlay_color,     // BGR5
-    input [9:0] video_opt,          // scanlines [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], 480p [7], dim [9:8]
+    input [9:0] video_opt,          // scanlines [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], dim [9:8]
 
     input [15:0] audio_left,        // audio sample
     input [15:0] audio_right,
@@ -64,8 +62,8 @@ module framebuffer #(
 
 localparam CLKFRQ = LCD800 ? 29700 : 74250;
 reg tv1080 = 1'b0;
-wire [10:0] screen_w = LCD800 ? 11'd800 : SELECTABLE && tv480 ? 11'd720 : SELECTABLE && tv1080 ? 11'd1920 : 11'd1280;
-wire [9:0] screen_h = LCD800 || SELECTABLE && tv480 ? 10'd480 : SELECTABLE && tv1080 ? 10'd540 : 10'd720;
+wire [10:0] screen_w = LCD800 ? 11'd800 : SELECTABLE && tv1080 ? 11'd1920 : 11'd1280;
+wire [9:0] screen_h = LCD800 ? 10'd480 : SELECTABLE && tv1080 ? 10'd540 : 10'd720;
 wire [10:0] tv_w = LCD800 ? 11'd640 : SELECTABLE && tv1080 ? 11'd1440 : 11'd960;
 wire [10:0] tv_begin = LCD800 ? 11'd79 : SELECTABLE && tv1080 ? 11'd239 : 11'd159;
 localparam H_BITS = SELECTABLE ? 12 : 11;
@@ -114,8 +112,7 @@ frame_sync sync (
     .pause_core(pause_core)
 );
 always @(posedge clk_pixel) begin
-    if (!video_reset && cy == 0 && cx >= (SELECTABLE && tv480 ? 11'd3 :
-                                        LCD800 ? 11'd80 : SELECTABLE && tv1080 ? 11'd240 : 11'd160))
+    if (cy == 0 && cx >= tv_begin + 1)                  // start position of 4:3 frame/field
         hdmi_first_line <= 1;
     else
         hdmi_first_line <= 0;
@@ -128,11 +125,8 @@ logic [$clog2(AUDIO_CLK_DELAY)-1:0] audio_divider;
 logic clk_audio;
 
 always @(posedge clk_pixel) begin
-    if (video_reset) begin
-        audio_divider <= 0;
-        clk_audio <= 0;
-    end else if (audio_divider != (SELECTABLE && tv480 ? 281 : AUDIO_CLK_DELAY) - 1)
-        audio_divider <= audio_divider + 1'b1;
+    if (audio_divider != AUDIO_CLK_DELAY - 1) 
+        audio_divider++;
     else begin 
         clk_audio <= ~clk_audio; 
         audio_divider <= 0; 
@@ -158,11 +152,9 @@ assign overlay_y = yy;
 reg lcd = 1'b0;
 // LCD mode starts at cx=2, once yy has advanced for the new line (cy_r lags cy by one
 // cycle), and spans the remaining screen_w-3 pixels.
-wire full_width = lcd || SELECTABLE && tv480;
-wire [10:0] window_width = full_width ? (LCD800 ? 11'd797 : SELECTABLE && tv480 ? 11'd717 : 11'd1277) : tv_w;
-wire [10:0] xbegin = full_width ? 11'd2 : tv_begin;
-wire [10:0] xend = full_width ? (LCD800 ? 11'd799 : SELECTABLE && tv480 ? 11'd719 : 11'd1279) :
-                               LCD800 ? 11'd719 : SELECTABLE && tv1080 ? 11'd1679 : 11'd1119;
+wire [10:0] window_width = lcd ? screen_w - 11'd3 : tv_w;
+wire [10:0] xbegin = lcd ? 11'd2 : tv_begin;
+wire [10:0] xend = lcd ? screen_w - 11'd1 : tv_begin + tv_w;
 
 // address calculation
 // Assume the video occupies fully on the Y direction, we are upscaling the video by `SCREEN_H/height`.
@@ -201,7 +193,6 @@ always @(posedge clk_pixel) begin
     end
 
     if (cx == 0) begin
-        active <= 0;
         xx <= 0;
         xcnt <= 0;
     end
@@ -225,15 +216,6 @@ reg [COLOR_WIDTH-1:0] rdata_r, prev_px;
 reg scan;
 // rdata holds Genesis pixel xx_r; it just moved to a new pixel when xx_r != xx_px
 wire [COLOR_WIDTH-1:0] left_px = xx_r != xx_px ? rdata_r : prev_px;
-// Adaptive blend flag of the left neighbour: blending a pair when either pixel is flagged
-// keeps dithered sprites over dithered planes from blending every other pixel (shimmer).
-reg rflag_r, prev_flag;
-wire cur_flag = ADAPTIVE_BLEND != 0 && mem_portB_rdata[MEM_WIDTH-1];
-wire left_flag = xx_r != xx_px ? rflag_r : prev_flag;
-always @(posedge clk_pixel) begin
-    rflag_r <= cur_flag;
-    prev_flag <= active ? left_flag : cur_flag;
-end
 always @(posedge clk_pixel) begin
     opt_s1 <= video_opt;
     opt_s2 <= opt_s1;
@@ -277,7 +259,7 @@ wire [1:0] dim = !PICTURE_OPTS ? (scan ? opt_s2[1:0] : 2'd0)    // exactly the p
 wire do_blend;
 generate
     if (ADAPTIVE_BLEND) begin
-        assign do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && (cur_flag || left_flag));
+        assign do_blend = opt_s2[3:2] == 2'd1 || (opt_s2[3:2] == 2'd2 && mem_portB_rdata[COLOR_WIDTH]);
     end else begin
         assign do_blend = opt_s2[2];
     end
@@ -309,10 +291,9 @@ always @(posedge clk_pixel)
     if (cx == 0 && cy == 0 && !field) begin
         dvi <= LCD800 ? 1'b1 : opt_s2[4];     // a TFP401 is a DVI receiver
         lcd <= opt_s2[5];
-        // Alternate TV timings apply only to gameplay: the menu returns to 720p so an
+        // 1080i applies only to gameplay: the menu always returns to 720p so an
         // incompatible display can still be rescued. LCD stays 720p 4:3 throughout.
-        tv1080 <= SELECTABLE && opt_s2[6] && !opt_s2[7] && !opt_s2[5] && !ov_s2;
-        tv480 <= SELECTABLE && opt_s2[7] && !opt_s2[5] && !ov_s2;
+        tv1080 <= SELECTABLE && opt_s2[6] && !opt_s2[5] && !ov_s2;
     end
 
 hdmi #( .VIDEO_ID_CODE(VIDEOID), 
@@ -330,11 +311,10 @@ hdmi( .clk_pixel_x5(clk_5x_pixel),
         .clk_pixel(clk_pixel), 
         .clk_audio(clk_audio),
         .rgb(rgb), 
-        .reset(video_reset),
+        .reset(1'b0),
         .audio_sample_word(audio_sample_word),
         .dvi_mode(dvi),
         .interlace_mode(tv1080),
-        .mode_480p(tv480),
         .field(field),
         .tmds(tmds), 
         .tmds_clock(),

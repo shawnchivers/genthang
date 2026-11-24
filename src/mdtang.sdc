@@ -7,7 +7,7 @@ create_clock -name hclk5  -period 2.6936 -waveform {0 1.347} [get_nets {hclk5}] 
 create_generated_clock -name hclk -source [get_nets {hclk5}] -master_clock hclk5 -divide_by 5 [get_nets {hclk}]  // 74.25MHz 720p pixel
 
 // core -> HDMI crosses through the framebuffer's dual-clock RAM and synchronizers
-set_clock_groups -asynchronous -group [get_clocks {sys_clk clk_sys clk_z80}] -group [get_clocks {hclk hclk5}]
+set_clock_groups -asynchronous -group [get_clocks {clk_sys clk_z80}] -group [get_clocks {hclk hclk5}]
 
 // Z80 to M68K, 2 clk_sys cycles
 set_multicycle_path 4 -end -setup -from [get_clocks {clk_z80}] -to [get_clocks {clk_sys}]

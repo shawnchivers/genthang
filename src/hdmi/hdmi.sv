@@ -73,7 +73,6 @@ module hdmi
     input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
     input logic dvi_mode, // runtime DVI: no guard bands, preambles or data islands, so no audio
     input logic interlace_mode, // SELECTABLE: switch VIC 4 (720p60) to VIC 5 (1080i60)
-    input logic mode_480p,      // SELECTABLE: VIC 2 at 27MHz (480p59.94)
     output logic field = 1'b0,
 
     // These outputs go to your HDMI port
@@ -103,7 +102,6 @@ logic [BIT_WIDTH-1:0] hsync_pulse_start, hsync_pulse_size;
 logic [BIT_HEIGHT-1:0] vsync_pulse_start, vsync_pulse_size;
 logic invert;
 wire interlaced = SELECTABLE && interlace_mode;
-wire lowres = SELECTABLE && mode_480p;
 
 // See CEA-861-D for more specifics formats described below.
 generate
@@ -147,15 +145,15 @@ generate
             end
         4:
         begin
-            assign frame_width = lowres ? 858 : interlaced ? 2200 : 1650;
-            assign frame_height = lowres ? 525 : interlaced ? (field ? 563 : 562) : 750;
-            assign screen_width = lowres ? 720 : interlaced ? 1920 : 1280;
-            assign screen_height = lowres ? 480 : interlaced ? 540 : 720;
-            assign hsync_pulse_start = lowres ? 16 : interlaced ? 88 : 110;
-            assign hsync_pulse_size = lowres ? 62 : interlaced ? 44 : 40;
-            assign vsync_pulse_start = lowres ? 9 : interlaced ? 2 : 5;
-            assign vsync_pulse_size = lowres ? 6 : 5;
-            assign invert = lowres;
+            assign frame_width = interlaced ? 2200 : 1650;
+            assign frame_height = interlaced ? (field ? 563 : 562) : 750;
+            assign screen_width = interlaced ? 1920 : 1280;
+            assign screen_height = interlaced ? 540 : 720;
+            assign hsync_pulse_start = interlaced ? 88 : 110;
+            assign hsync_pulse_size = interlaced ? 44 : 40;
+            assign vsync_pulse_start = interlaced ? 2 : 5;
+            assign vsync_pulse_size = 5;
+            assign invert = 0;
         end
         16, 34:
         begin
@@ -210,37 +208,18 @@ endgenerate
 
 // Alternating 562/563-line fields preserve H-sync continuity. Offset the second
 // field's V-sync by half a line, so V-sync edges remain exactly 562.5 lines apart.
-// Select complete timing constants rather than adding/subtracting runtime
-// dimensions: the three-mode arithmetic otherwise exceeds the Nano 20K's fit.
-wire [BIT_HEIGHT-1:0] vsync_start_y = SELECTABLE ?
-    (lowres ? 10'd488 : interlaced ? (field ? 10'd542 : 10'd541) : 10'd724) :
-    screen_height + vsync_pulse_start - 1'b1;
-wire [BIT_HEIGHT-1:0] vsync_end_y = SELECTABLE ?
-    (lowres ? 10'd494 : interlaced ? (field ? 10'd547 : 10'd546) : 10'd729) :
-    vsync_start_y + vsync_pulse_size;
-wire [BIT_WIDTH-1:0] vsync_start_x = SELECTABLE ?
-    (lowres ? 12'd736 : interlaced ? (field ? 12'd908 : 12'd2008) : 12'd1390) :
-    screen_width + hsync_pulse_start;
-wire [BIT_WIDTH-1:0] hsync_end_x = SELECTABLE ?
-    (lowres ? 12'd798 : interlaced ? 12'd2052 : 12'd1430) :
-    screen_width + hsync_pulse_start + hsync_pulse_size;
-wire [BIT_WIDTH-1:0] hsync_start_x = SELECTABLE ?
-    (lowres ? 12'd736 : interlaced ? 12'd2008 : 12'd1390) :
-    screen_width + hsync_pulse_start;
-wire line_end = SELECTABLE ? (lowres ? cx == 858-1 : interlaced ? cx == 2200-1 : cx == 1650-1) :
-                            cx == frame_width-1'b1;
-wire frame_end = SELECTABLE ? (lowres ? cy == 525-1 : interlaced ? (field ? cy == 563-1 : cy == 562-1) : cy == 750-1) :
-                             cy == frame_height-1'b1;
+wire [BIT_HEIGHT-1:0] vsync_start_y = screen_height + vsync_pulse_start - 1'b1 + (interlaced && field ? 1'b1 : 1'b0);
+wire [BIT_WIDTH-1:0] vsync_start_x = screen_width + hsync_pulse_start - (interlaced && field ? BIT_WIDTH'(1100) : BIT_WIDTH'(0));
 always_comb begin
-    hsync <= invert ^ (cx >= hsync_start_x && cx < hsync_end_x);
+    hsync <= invert ^ (cx >= screen_width + hsync_pulse_start && cx < screen_width + hsync_pulse_start + hsync_pulse_size);
     // vsync pulses should begin and end at the start of hsync, so special
     // handling is required for the lines on which vsync starts and ends
     if (cy == vsync_start_y)
         vsync <= invert ^ (cx >= vsync_start_x);
-    else if (cy == vsync_end_y)
+    else if (cy == vsync_start_y + vsync_pulse_size)
         vsync <= invert ^ (cx < vsync_start_x);
     else
-        vsync <= invert ^ (cy > vsync_start_y && cy < vsync_end_y);
+        vsync <= invert ^ (cy >= screen_height + vsync_pulse_start && cy < screen_height + vsync_pulse_start + vsync_pulse_size);
 end
 
 localparam real VIDEO_RATE = (VIDEO_ID_CODE == 0 ? 29.7E6
@@ -265,11 +244,11 @@ begin
     end
     else
     begin
-        cx <= line_end ? BIT_WIDTH'(0) : cx + 1'b1;
-        cy <= line_end ? frame_end ? BIT_HEIGHT'(0) : cy + 1'b1 : cy;
+        cx <= cx == frame_width-1'b1 ? BIT_WIDTH'(0) : cx + 1'b1;
+        cy <= cx == frame_width-1'b1 ? cy == frame_height-1'b1 ? BIT_HEIGHT'(0) : cy + 1'b1 : cy;
         if (!interlaced)
             field <= 1'b0;
-        else if (line_end && frame_end)
+        else if (cx == frame_width-1'b1 && cy == frame_height-1'b1)
             field <= ~field;
     end
 end
@@ -294,10 +273,6 @@ generate
     begin: true_hdmi_output
         logic video_guard = 1;
         logic video_preamble = 0;
-        wire [BIT_WIDTH-1:0] guard_start = SELECTABLE ?
-            (lowres ? 12'd856 : interlaced ? 12'd2198 : 12'd1648) : frame_width - 2;
-        wire [BIT_WIDTH-1:0] preamble_start = SELECTABLE ?
-            (lowres ? 12'd848 : interlaced ? 12'd2190 : 12'd1640) : frame_width - 10;
         always_ff @(posedge clk_pixel)
         begin
             if (reset)
@@ -307,8 +282,8 @@ generate
             end
             else
             begin
-                video_guard <= cx >= guard_start && cx < frame_width && (frame_end || cy < screen_height - 1 /* no VG at end of last line */);
-                video_preamble <= cx >= preamble_start && cx < guard_start && (frame_end || cy < screen_height - 1 /* no VP at end of last line */);
+                video_guard <= cx >= frame_width - 2 && cx < frame_width && (cy == frame_height - 1 || cy < screen_height - 1 /* no VG at end of last line */);
+                video_preamble <= cx >= frame_width - 10 && cx < frame_width - 2 && (cy == frame_height - 1 || cy < screen_height - 1 /* no VP at end of last line */);
             end
         end
 
@@ -317,7 +292,7 @@ generate
         logic [4:0] num_packets_alongside;
         always_comb
         begin
-            max_num_packets_alongside = SELECTABLE ? (lowres ? 3 : interlaced ? 7 : 10) :
+            max_num_packets_alongside = SELECTABLE ? (interlaced ? 7 : 10) :
                 (frame_width - screen_width  /* VD period */ - 2 /* V guard */ - 8 /* V preamble */ - 4 /* Min V control period */ - 2 /* DI trailing guard */ - 2 /* DI leading guard */ - 8 /* DI premable */ - 4 /* Min DI control period */) / 32;
             if (max_num_packets_alongside > 18)
                 num_packets_alongside = 5'd18;
@@ -326,20 +301,9 @@ generate
         end
 
         logic data_island_period_instantaneous;
-        wire [BIT_WIDTH-1:0] island_start = SELECTABLE ?
-            (lowres ? 12'd734 : interlaced ? 12'd1934 : 12'd1294) : screen_width + 14;
-        wire [BIT_WIDTH-1:0] island_end = SELECTABLE ?
-            (lowres ? 12'd830 : interlaced ? 12'd2158 : 12'd1614) : screen_width + 14 + num_packets_alongside * 32;
-        wire [BIT_WIDTH-1:0] island_guard_start = SELECTABLE ?
-            (lowres ? 12'd732 : interlaced ? 12'd1932 : 12'd1292) : screen_width + 12;
-        wire [BIT_WIDTH-1:0] island_guard_end = SELECTABLE ?
-            (lowres ? 12'd832 : interlaced ? 12'd2160 : 12'd1616) : screen_width + 16 + num_packets_alongside * 32;
-        wire [BIT_WIDTH-1:0] island_preamble_start = SELECTABLE ?
-            (lowres ? 12'd724 : interlaced ? 12'd1924 : 12'd1284) : screen_width + 4;
-        assign data_island_period_instantaneous = num_packets_alongside > 0 && cx >= island_start && cx < island_end;
+        assign data_island_period_instantaneous = num_packets_alongside > 0 && cx >= screen_width + 14 && cx < screen_width + 14 + num_packets_alongside * 32;
         logic packet_enable;
-        assign packet_enable = data_island_period_instantaneous &&
-            (SELECTABLE ? cx[4:0] == (lowres ? 5'd30 : 5'd14) : 5'(cx + screen_width + 18) == 5'd0);
+        assign packet_enable = data_island_period_instantaneous && 5'(cx + screen_width + 18) == 5'd0;
 
         logic data_island_guard = 0;
         logic data_island_preamble = 0;
@@ -355,10 +319,10 @@ generate
             else
             begin
                 data_island_guard <= num_packets_alongside > 0 && (
-                    (cx >= island_guard_start && cx < island_start) /* leading guard */ ||
-                    (cx >= island_end && cx < island_guard_end) /* trailing guard */
+                    (cx >= screen_width + 12 && cx < screen_width + 14) /* leading guard */ || 
+                    (cx >= screen_width + 14 + num_packets_alongside * 32 && cx < screen_width + 14 + num_packets_alongside * 32 + 2) /* trailing guard */
                 );
-                data_island_preamble <= num_packets_alongside > 0 && cx >= island_preamble_start && cx < island_guard_start;
+                data_island_preamble <= num_packets_alongside > 0 && cx >= screen_width + 4 && cx < screen_width + 12;
                 data_island_period <= data_island_period_instantaneous;
             end
         end
@@ -379,28 +343,38 @@ generate
             .VENDOR_NAME(VENDOR_NAME),
             .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION),
             .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)
-        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .interlace_mode(interlaced), .mode_480p(lowres), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(sub));
+        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .interlace_mode(interlaced), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(sub));
         logic [8:0] packet_data;
         packet_assembler packet_assembler (.clk_pixel(clk_pixel), .reset(reset), .data_island_period(data_island_period), .header(header), .sub(sub), .packet_data(packet_data), .counter(packet_pixel_counter));
 
 
         always_ff @(posedge clk_pixel)
         begin
-            // Payload registers are ignored during reset (mode = video guard).
-            // Keep them running instead of adding reset muxes to every data bit.
-            video_data <= rgb;
-            data_island_data[11:4] <= packet_data[8:1];
-            data_island_data[3] <= cx != 0;
-            data_island_data[2] <= packet_data[0];
-            data_island_data[1:0] <= {vsync, hsync};
-            control_data <= dvi_mode ? {4'b0000, {vsync, hsync}} :
-                {{1'b0, data_island_preamble}, {1'b0, video_preamble || data_island_preamble}, {vsync, hsync}};
             if (reset)
+            begin
                 mode <= 3'd2;
-            else if (dvi_mode)
-                mode <= video_data_period ? 3'd1 : 3'd0;
+                video_data <= 24'd0;
+                control_data = 6'd0;
+                data_island_data <= 12'd0;
+            end
             else
-                mode <= data_island_guard ? 3'd4 : data_island_period ? 3'd3 : video_guard ? 3'd2 : video_data_period ? 3'd1 : 3'd0;
+            begin
+                if (dvi_mode)
+                begin
+                    mode <= video_data_period ? 3'd1 : 3'd0;
+                    control_data <= {4'b0000, {vsync, hsync}};
+                end
+                else
+                begin
+                    mode <= data_island_guard ? 3'd4 : data_island_period ? 3'd3 : video_guard ? 3'd2 : video_data_period ? 3'd1 : 3'd0;
+                    control_data <= {{1'b0, data_island_preamble}, {1'b0, video_preamble || data_island_preamble}, {vsync, hsync}}; // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
+                end
+                video_data <= rgb;
+                data_island_data[11:4] <= packet_data[8:1];
+                data_island_data[3] <= cx != 0;
+                data_island_data[2] <= packet_data[0];
+                data_island_data[1:0] <= {vsync, hsync};
+            end
         end
     end
     else // DVI_OUTPUT = 1

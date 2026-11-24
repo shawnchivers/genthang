@@ -2,20 +2,6 @@
 
 ## Unreleased
 
-- Selectable builds add **TV (480p games)**: standard 720x480 at 59.94 Hz with
-  4:3 HDMI aspect signalling, audio and the existing line buffer. The HDMI PLL
-  resets/relocks at the 27 MHz pixel clock; the menu still returns to 720p for
-  recovery. Fixed-output and older three-mode builds ignore a saved 480p choice
-  while preserving it on the card. TV latency depends on the display; 240p is
-  not included because HDMI TV support is inconsistent.
-- HDMI fit work selects complete timing constants, precomputes each selectable
-  mode's AVI checksum, compacts internal packet-type codes and removes an unused
-  audio-buffer feedback mux. Regression checks cover exact sync/guard/preamble
-  placement, AVI checksums, stereo PCM payloads, audio CTS and PLL relocking.
-- Adaptive blend (builds with `GT_NO_ADAPTIVE=0`) now blends a pixel pair when
-  either pixel is flagged as dithered. Previously a dithered sprite over a
-  dithered plane blended only every other pixel, so the result shimmered as
-  either layer moved.
 - Removed the alpha label from the project documentation. The three-button
   handheld build guide keeps its beta notice.
 
