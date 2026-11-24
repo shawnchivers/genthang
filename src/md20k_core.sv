@@ -114,6 +114,7 @@ wire [3:0]  rv_wstrb;
 reg         rv_ready_z;
 wire [31:0] rv_dout;                    // held by the SDRAM controller until the next RV read
 wire        rom_loading_z, rom_req_z, rom_sram_reg_z;
+wire [6:0]  rom_quirks_z;
 wire [31:0] rom_word;
 reg         rom_ack;
 wire [3:0]  ss_ctrl_z;
@@ -123,7 +124,7 @@ iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .PICTURE_OPTS(PICTURE_OPTS), .MEN
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
     .video_opt(video_opt), .ss_ctrl(ss_ctrl_z),
     .joy1(pad), .joy2(THREE_BUTTON ? 12'd0 : pad2),
-    .rom_loading(rom_loading_z), .rom_sram_reg(rom_sram_reg_z), .core_ready(md_on), .rom_word(rom_word), .rom_req(rom_req_z), .rom_ack(rom_ack),
+    .rom_loading(rom_loading_z), .rom_sram_reg(rom_sram_reg_z), .rom_quirks(rom_quirks_z), .core_ready(md_on), .rom_word(rom_word), .rom_req(rom_req_z), .rom_ack(rom_ack),
     .rv_valid(rv_valid), .rv_ready(rv_ready_z), .rv_addr(rv_addr), .rv_wdata(rv_wdata),
     .rv_wstrb(rv_wstrb), .rv_rdata(rv_dout), .ram_busy(~sdram_ready),
     .flash_spi_cs_n(flash_cs_n), .flash_spi_miso(flash_miso), .flash_spi_mosi(flash_mosi),
@@ -193,6 +194,13 @@ assign loading = loading_s[1];
 // the end of loading. Only then does $A130F1 switch SRAM. Quasi-static, so two flops suffice.
 reg  [1:0]  sram_reg_s = 2'b00;
 always @(posedge clk_sys) sram_reg_s <= {sram_reg_s[0], rom_sram_reg_z};
+// Per-cartridge quirks from the firmware's serial table; static while the game runs.
+// [0] FM busy  [1] no RAM  [2] SRAM  [3] SRAM00  [4] EEPROM stub  [5] SCHAN  [6] fast FIFO
+reg  [6:0]  quirks_s1 = 7'd0, quirks = 7'd0;
+always @(posedge clk_sys) begin
+    quirks_s1 <= rom_quirks_z;
+    quirks <= quirks_s1;
+end
 
 always @(posedge clk_sys) begin
     rom_req_s <= {rom_req_s[0], rom_req_z};
@@ -265,9 +273,9 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BU
          .AUTO_PAD_TYPE(AUTO_PAD_TYPE)) megadrive (
     .MCLK(clk_sys), .CLK_Z80(clk_z80), .RESET_N(md_on), .SOFT_RESET(reset_btn),
     .LPF_MODE(2'b11), .ENABLE_FM(1'b1), .ENABLE_PSG(1'b1), .DAC_LDATA(core_audio_left), .DAC_RDATA(core_audio_right),
-    .LOADING(loading), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(1'b0), .SRAM_QUIRK(1'b0), .SRAM00_QUIRK(1'b0),
-    .EEPROM_QUIRK(1'b0), .NORAM_QUIRK(1'b0), .PIER_QUIRK(1'b0), .SVP_QUIRK(1'b0), .FMBUSY_QUIRK(1'b0),
-    .SCHAN_QUIRK(1'b0), .SRAM_REG(sram_reg_s[1]), .TURBO(2'b00),
+    .LOADING(loading), .PAL(1'b0), .EXPORT(1'b1), .FAST_FIFO(quirks[6]), .SRAM_QUIRK(quirks[2]), .SRAM00_QUIRK(quirks[3]),
+    .EEPROM_QUIRK(quirks[4]), .NORAM_QUIRK(quirks[1]), .PIER_QUIRK(1'b0), .SVP_QUIRK(1'b0), .FMBUSY_QUIRK(quirks[0]),
+    .SCHAN_QUIRK(quirks[5]), .SRAM_REG(sram_reg_s[1]), .TURBO(2'b00),
     .GG_RESET(1'b0), .GG_EN(1'b0), .GG_CODE(129'd0), .GG_AVAILABLE(),
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),

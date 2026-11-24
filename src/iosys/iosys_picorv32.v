@@ -63,6 +63,7 @@ module iosys_picorv32 #(
     // ROM loading interface
     output reg rom_loading,         // 0-to-1 loading starts, 1-to-0 loading is finished
     output reg rom_sram_reg,        // bit 8 of the finishing write: the ROM declares backup RAM ($A130F1 maps it)
+    output reg [6:0] rom_quirks,    // bits 15:9 of the finishing write: per-cartridge quirks (firmware ID table)
     input      core_ready,          // game CPU has left reset after loading
     output reg [31:0] rom_word,     // 4 file bytes, first byte in [7:0]
     output reg rom_req,             // toggles for each rom_word; the next one waits for rom_ack
@@ -338,15 +339,18 @@ always @(posedge clk) begin
     if (~resetn) begin
         rom_loading <= 0;
         rom_sram_reg <= 0;
+        rom_quirks <= 0;
     end else if (romload_reg_ctrl_sel && mem_wstrb) begin
         // control register
         if (mem_wdata[7:0] == 8'd1) begin
             rom_loading <= 1;
             rom_sram_reg <= 0;
+            rom_quirks <= 0;
         end
         if (mem_wdata[7:0] == 8'd0) begin
             rom_loading <= 0;
             rom_sram_reg <= mem_wdata[8];
+            rom_quirks <= mem_wdata[15:9];
         end
     end    
 end

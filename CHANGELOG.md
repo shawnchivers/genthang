@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Per-cartridge quirks from Genesis_MiSTer / MegaDrive_MiSTer are now enabled by
+  matching the serial at `$183` during loading: FM busy (Hellfire, Twin Hawk, Tecmo
+  World Cup), Puggsy's RAM check, SRAM-mapped saves (NBA Jam TE, NFL Quarterback
+  Club, College Slam, Frank Thomas), Sonic 1 Remastered, Clue's FIFO timing, Game no
+  Kanzume and an EEPROM read stub. Pier Solar and SVP remain unsupported.
 - Removed the alpha label from the project documentation. The three-button
   handheld build guide keeps its beta notice.
 

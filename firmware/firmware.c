@@ -360,6 +360,30 @@ static void draw_list(int page, int active) {
 }
 
 // ---- ROM loading -------------------------------------------------------------------
+// Per-cartridge quirks, matched on the 8-byte serial at $183 like Genesis_MiSTer /
+// MegaDrive_MiSTer. Bits match core_ctrl's finishing write >> 9 (see md20k_core.sv).
+enum { Q_FMBUSY = 1, Q_NORAM = 2, Q_SRAM = 4, Q_SRAM00 = 8, Q_EEPROM = 16, Q_SCHAN = 32, Q_FIFO = 64 };
+static const struct { char id[9]; unsigned char q; } quirk_ids[] = {
+    {"T-081276", Q_SRAM},   {"T-81406 ", Q_SRAM},   {"T-081586", Q_SRAM},     // NFL QBC, NBA Jam TE, NFL QBC '96
+    {"T-81576 ", Q_SRAM},   {"T-81476 ", Q_SRAM},                             // College Slam, Frank Thomas
+    {"MK-1215 ", Q_EEPROM}, {"G-4060  ", Q_EEPROM}, {"00001211", Q_EEPROM},   // Holyfield, Wonder Boy, Sports Talk
+    {"MK-1228 ", Q_EEPROM}, {"G-5538  ", Q_EEPROM}, {"00004076", Q_EEPROM},   // Greatest Heavyweights, Dodge Danpei
+    {"T-12046 ", Q_EEPROM}, {"T-12053 ", Q_EEPROM}, {"G-4524  ", Q_EEPROM},   // Wily Wars, Rockman, Ninja Burai
+    {"T-113016", Q_NORAM},                                                     // Puggsy
+    {"T-89016 ", Q_FIFO},                                                      // Clue
+    {"T-35036 ", Q_FMBUSY}, {"T-25073 ", Q_FMBUSY}, {"MK-1137-", Q_FMBUSY},   // Hellfire US/JP/EU
+    {"G-4034  ", Q_FMBUSY}, {"T-44016 ", Q_FMBUSY}, {"T-44023 ", Q_FMBUSY},   // Twin Hawk, Tecmo World Cup
+    {"T-68?\?\?-", Q_SCHAN},                                                     // Game no Kanzume Otokuyou
+    {" GM 0000", Q_SRAM00},                                                    // Sonic 1 Remastered
+};
+
+static unsigned cart_quirks(const char *serial) {
+    for (unsigned i = 0; i < sizeof quirk_ids / sizeof quirk_ids[0]; i++)
+        if (memcmp(serial, quirk_ids[i].id, 8) == 0)
+            return quirk_ids[i].q;
+    return 0;
+}
+
 static int load_rom(const char *path, uint32_t size) {
     FIL f;
     char msg[40], num[12];
@@ -376,6 +400,7 @@ static int load_rom(const char *path, uint32_t size) {
     td_reg(0, 31);
     core_ctrl(1);                   // loading: holds the Genesis in reset
     bool sram_reg = false;
+    unsigned quirks = 0;
     do {
         if (f_read(&f, load_buf, sizeof load_buf, &br) != FR_OK)
             break;
@@ -385,6 +410,8 @@ static int load_rom(const char *path, uint32_t size) {
             if (h >= total && h + 1 < total + br && load_buf[h - total] == 'R' &&
                 load_buf[h - total + 1] == 'A')
                 sram_reg = true;
+        if (total == 0 && br >= 0x18B)
+            quirks = cart_quirks(load_buf + 0x183);
         if (br & 3) {               // pad the last word
             memset(load_buf + br, 0xFF, 4 - (br & 3));
             br = (br + 3) & ~3u;
@@ -402,8 +429,9 @@ static int load_rom(const char *path, uint32_t size) {
         }
     } while (br == sizeof load_buf);
     f_close(&f);
-    core_ctrl(sram_reg ? 0x100 : 0); // done: starts the game; bit 8 enables the SRAM switch
-    uart_printf("loaded %s: %d bytes\n", path, total);
+    // done: starts the game; bit 8 enables the SRAM switch, bits 15:9 the cartridge quirks
+    core_ctrl((sram_reg ? 0x100 : 0) | quirks << 9);
+    uart_printf("loaded %s: %d bytes, quirks %x\n", path, total, quirks);
     return 0;
 }
 

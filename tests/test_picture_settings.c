@@ -28,8 +28,21 @@ static bool short_write;
 
 int sd_init(void) { return 0; }
 
+// ROM loading: "/rom.md" reads rom_image instead of the config file
+static char rom_image[2048];
+static uint32_t last_ctrl;
+void core_ctrl(uint32_t ctrl) { last_ctrl = ctrl; }
+void core_data(uint32_t data) { (void)data; }
+int uart_printf(const char *fmt, ...) { (void)fmt; return 0; }
+
 FRESULT f_open(FIL *fp, const TCHAR *path, BYTE mode) {
     (void)fp;
+    if (strcmp(path, "/rom.md") == 0) {
+        memcpy(config, rom_image, sizeof rom_image);
+        config_size = sizeof rom_image;
+        config_pos = 0;
+        return FR_OK;
+    }
     assert(strcmp(path, CFG_PATH) == 0);
     config_pos = 0;
     if (mode & FA_CREATE_ALWAYS) config_size = 0;
@@ -224,10 +237,31 @@ int main(void) {
     no_adaptive = no_core_switch = false;
     has_picture = true;
 
+    // Cartridge quirks: serial at $183 selects bits 15:9 of the finishing load write
+    {
+        static const struct { const char *serial; unsigned bits; } cases[] = {
+            {"T-35036 ", Q_FMBUSY}, {"G-4034  ", Q_FMBUSY}, {"T-44016 ", Q_FMBUSY},
+            {"T-113016", Q_NORAM},  {"T-81406 ", Q_SRAM},   {"T-081276", Q_SRAM},
+            {" GM 0000", Q_SRAM00}, {"T-12046 ", Q_EEPROM}, {"T-68?\?\?-", Q_SCHAN},
+            {"T-89016 ", Q_FIFO},   {"MK-1079 ", 0},        {"T-3503  ", 0},
+        };
+        for (unsigned i = 0; i < sizeof cases / sizeof cases[0]; i++) {
+            memset(rom_image, 0, sizeof rom_image);
+            memcpy(rom_image + 0x180, "GM ", 3);
+            memcpy(rom_image + 0x183, cases[i].serial, 8);
+            rom_image[0x1B0] = (i & 1) ? 'R' : 0;   // backup RAM flag stays independent
+            rom_image[0x1B1] = (i & 1) ? 'A' : 0;
+            assert(load_rom("/rom.md", sizeof rom_image) == 0);
+            assert(last_ctrl == ((i & 1 ? 0x100u : 0) | cases[i].bits << 9));
+        }
+        assert(Q_FIFO << 9 == 1u << 15);           // all quirks fit bits 15:9
+    }
+    config_size = 0;
+
     short_write = true;
     save_options();
     display_write();
     assert(strncmp(screen[STATUS_ROW] + 1, "Cannot save settings", 20) == 0);
-    puts("Picture settings: round trips, legacy files, register packing, menu and non-picture builds passed");
+    puts("Picture settings: round trips, legacy files, register packing, menu, non-picture builds and cartridge quirks passed");
     return 0;
 }
