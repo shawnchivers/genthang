@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The YM2612 now clears its registers, key-on and envelope state when its reset
+  (the Z80 reset line) is held, like the real chip. Before, a playing note could ring
+  on through a reset because those shift registers had no reset.
 - Frame locking now pauses the 68K/VDP for 14 MCLK about once per line instead of
   one ~73 us block per frame (the remaining halt is ~5 us). Z80 sample fetches from
   ROM through the bank window no longer stall for most of a line once per frame.

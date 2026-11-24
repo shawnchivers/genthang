@@ -40,10 +40,14 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
 - [ ] Compare `perf68k` wait states in `make ref` and `make dut`
 - [ ] Decide on fixes from the numbers
 
-## 4. YM2612 state on soft reset
+## 4. YM2612 state on reset (done in RTL, needs listen test)
 
-- [ ] Sim: key on, soft reset, check FM is silent
-- [ ] Reset jt12 shift registers on soft reset if needed
+- [x] `make -C verilator jt12-reset`: a sustained note survived a /IC reset at full
+      level (registers, key-on and envelopes are all in non-resetting shift registers)
+- [x] `jt12_sh_rst` shifts the reset value in while `rst` is held; the note now stops
+- [x] FPGA fit and timing (DB9: 20,541/20,736 logic, 10,353/10,368 CLS, 44/46 BSRAM;
+      tight, clk_sys 64.0 MHz)
+- [ ] Hardware check: reset during music, Z80 driver reloads (`builds/ym-reset/`, local)
 
 ## Later
 

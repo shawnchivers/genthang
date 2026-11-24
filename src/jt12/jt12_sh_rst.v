@@ -40,10 +40,14 @@ initial
 	end
 endgenerate
 
+// Gen Thang: while rst is held, shift rstval in instead of din. The divider keeps
+// clk_en running in reset, so after `stages` enables the whole register is cleared
+// (the YM2612 needs /IC held far longer) without losing shift-register inference.
 generate
 	for (i=0; i < width; i=i+1) begin: bit_shifter
+		wire din_rst = rstval ? (din[i] | rst) : (din[i] & ~rst);
 		always @(posedge clk) if(clk_en) begin
-			bits[i] <= {bits[i][stages-2:0], din[i]};
+			bits[i] <= {bits[i][stages-2:0], din_rst};
 		end
 		assign drop[i] = bits[i][stages-1];
 	end
