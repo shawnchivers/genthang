@@ -19,6 +19,7 @@ __pycache__/
 /verilator/rom32.hex
 /verilator/rom8.hex
 /verilator/run/
+/verilator/roms/
 /verilator/sd.img
 /verilator/ss.img
 .vscode/

@@ -38,7 +38,7 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 # the board DUT keeps the iosys UART so the firmware's debug log reaches the console
 DUT_VFLAGS = +define+SERIAL_UPLOAD
 
-.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes frame-sync jt12-reset
+.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes frame-sync jt12-reset test-roms
 
 hex: rom8.hex fw8.hex sd.img
 rom8.hex: mkhex.py
@@ -114,6 +114,14 @@ jt12-reset:
 		$(wildcard $D/jt12/*.v $D/jt12/adpcm/*.v $D/jt12/mixer/*.v)
 	./obj_jt12_reset/Vjt12_reset_tb
 
+# ROM-free test programs (tests/roms/*.s); needs m68k binutils (M68K = tool prefix)
+M68K ?= m68k-linux-gnu-
+test-roms: $(patsubst ../tests/roms/%.s,roms/%.bin,$(wildcard ../tests/roms/*.s))
+roms/%.bin: ../tests/roms/%.s
+	mkdir -p roms
+	$(M68K)as -m68000 --register-prefix-optional $< -o roms/$*.o
+	$(M68K)ld -Ttext=0 -e start --oformat=binary roms/$*.o -o $@
+
 run-ref: ref run/ref
 	cd run/ref && ../../$(REF_MDIR)/tb_ref $(ARGS)
 
@@ -123,4 +131,4 @@ run-dut: dut run/dut
 clean:
 	rm -rf obj_ref obj_dut obj_ref_* obj_dut_* obj_refdbg obj_dutdbg obj_ymclk obj_textdisp obj_genesis_pad obj_gen_io run rom8.hex rom16.hex rom32.hex \
 		obj_picture_modes obj_picture_settings fw8.hex sd.img
-	rm -rf obj_display_modes obj_frame_sync obj_jt12_reset
+	rm -rf obj_display_modes obj_frame_sync obj_jt12_reset roms

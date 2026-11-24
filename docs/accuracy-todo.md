@@ -34,11 +34,24 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
 - [ ] Hardware listen test with sample-heavy games (`builds/spread-pause/`, local)
 - [ ] Optional: `z80_bank` ROM-free test program to measure stalls end to end
 
-## 3. Bus and memory timing measurement
+## 3. Bus and memory timing measurement (done)
 
-- [ ] `bus_timing` and `dma_timing` test programs
-- [ ] Compare `perf68k` wait states in `make ref` and `make dut`
-- [ ] Decide on fixes from the numbers
+- [x] `tests/roms/bus_timing.s`: ROM-free program (ROM/RAM loops, VDP port writes,
+      68K->VRAM DMA, Z80 streaming banked ROM); `make -C verilator test-roms`
+- [x] Compared `perf68k` over 60 steady frames:
+
+      | | ref (ideal memory) | dut (SDRAM) |
+      |---|---|---|
+      | 68K clocks lost to ROM/RAM waits | 0.84% | 0.89% |
+      | lost to VDP DMA | 44.86% | 44.90% |
+      | lost to Z80 bus | 10.04% | 10.23% |
+      | accesses with an extra wait | 0 | 0.5% (3,724 of ~715k) |
+      | ROM / VDP accesses done | 543,986 / 23,016 | 542,823 / 22,879 |
+
+- [x] Conclusion: SDRAM, posted writes and VRAM-in-SDRAM cost about 0.05% of 68K
+      time; no fix needed. The extra waits (one 68K clock on 0.5% of accesses) are the
+      only visible difference.
+- [ ] Later: a `dma_timing` program for VDP status/FIFO timing in H32/H40
 
 ## 4. YM2612 state on reset (done in RTL, needs listen test)
 
