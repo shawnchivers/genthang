@@ -27,9 +27,12 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
 
 ## 2. Z80 bank stall during frame-lock pause (in progress)
 
-- [ ] `z80_bank` ROM-free test program showing the ~73 µs stall
-- [ ] Let Z80 accesses to the 68K bus proceed while the 68K is paused
-- [ ] Re-run test; hardware listen test (PCM drums)
+- [x] Spread the frame-lock pause: 14 MCLK (two 68K cycles) every 3434 MCLK, so the
+      remaining once-per-frame halt drops from ~3960 MCLK (73 us) to ~306 (5.7 us)
+- [x] `make -C verilator frame-sync`: lock holds, no dropped frames, pause lengths
+- [x] FPGA fit and timing (DB9: 20,221 logic, 10,313/10,368 CLS, clk_sys 64.3 MHz)
+- [ ] Hardware listen test with sample-heavy games (`builds/spread-pause/`, local)
+- [ ] Optional: `z80_bank` ROM-free test program to measure stalls end to end
 
 ## 3. Bus and memory timing measurement
 
