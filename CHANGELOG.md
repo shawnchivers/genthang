@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- DB9 builds now report an empty controller port as unplugged, like a real Genesis
+  (the port reads the pull-ups). Before, games always saw a pad on port 2 even with
+  nothing attached. The pad reader already detected presence; it now drives the I/O
+  port, and hot-plugging is picked up at the next scan.
+
 ## 1.9.6 - 2026-11-25
 
 - New `db9_extclk` release image and `GT_EXT_MCLK=1` build option: the Genesis master clock comes from

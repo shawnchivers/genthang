@@ -313,6 +313,7 @@ module gen_io_minimal #(
 	input            CE,
 	input            J3BUT,
 	input      [1:0] PAD_SIX_BUTTON,
+	input      [1:0] PAD_PRESENT,		// AUTO_PAD_TYPE: 0 = nothing on that DB9 port
 	input            P1_UP,
 	input            P1_DOWN,
 	input            P1_LEFT,
@@ -373,8 +374,9 @@ always @(posedge RESET or posedge CLK) begin
 			else begin
 				case (A)
 					0: DO <= {EXPORT, PAL, 1'b1, 5'd0};
-					1: DO <= (control_reg_a & data_reg_a) | (~control_reg_a & pad_a_do);
-					2: DO <= (control_reg_b & data_reg_b) | (~control_reg_b & (P2_CONNECTED ? pad_b_do : 8'h7F));
+					// an empty port (no DB9 pad answering, or no port 2) reads the pull-ups, like hardware
+					1: DO <= (control_reg_a & data_reg_a) | (~control_reg_a & (AUTO_PAD_TYPE && !PAD_PRESENT[0] ? 8'h7F : pad_a_do));
+					2: DO <= (control_reg_b & data_reg_b) | (~control_reg_b & (!P2_CONNECTED || (AUTO_PAD_TYPE && !PAD_PRESENT[1]) ? 8'h7F : pad_b_do));
 					3: DO <= 8'h7F;
 					4: DO <= control_reg_a;
 					5: DO <= control_reg_b;

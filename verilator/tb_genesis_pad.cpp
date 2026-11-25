@@ -124,6 +124,7 @@ int main() {
         int glitches;
         Pad pad{0};
         bool ok = hold(top, pad, 40, 40, 0, glitches);
+        ok &= !top.present;                 // empty port: games must see it unplugged
         for (int kind : {6, 3, 0, 6}) {
             pad = Pad{kind};
             pad.timeout_us = 12000;
@@ -132,8 +133,12 @@ int main() {
             pad.held = UP | DOWN | A | START | X | MODE;
             pad.new_limit();
             ok &= hold(top, pad, 100, 50, expect(kind, pad.held), glitches);
+            if (top.present != (kind != 0)) {
+                printf("present=%d after hot-plug to kind %d\n", top.present, kind);
+                ok = false;
+            }
         }
-        printf("Hot-plug empty / six / three / empty / six: %s\n", ok ? "ok" : "FAIL");
+        printf("Hot-plug empty / six / three / empty / six (buttons and presence): %s\n", ok ? "ok" : "FAIL");
         fails += !ok;
     }
     printf(fails ? "FAILED\n" : "ALL OK\n");

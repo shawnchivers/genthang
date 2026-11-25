@@ -110,6 +110,7 @@ module system #(
 
 	input         J3BUT,
 	input   [1:0] PAD_SIX_BUTTON,	// used only with AUTO_PAD_TYPE; otherwise legacy virtual pads
+	input   [1:0] PAD_PRESENT,		// used only with AUTO_PAD_TYPE: an empty DB9 port reads as unplugged
 	input  [11:0] JOY_1,		// {Z,Y,X,Mode,Start,C,B,A,Up,Down,Left,Right}, active high
 	input  [11:0] JOY_2,
 	input  [11:0] JOY_3,
@@ -565,6 +566,7 @@ gen_io_minimal #(.P2_SIX_BUTTON(P2_SIX_BUTTON), .P2_CONNECTED(P2_CONNECTED),
 	.CE(M68K_CLKEN),
 	.J3BUT(J3BUT),
 	.PAD_SIX_BUTTON(PAD_SIX_BUTTON),
+	.PAD_PRESENT(PAD_PRESENT),
 	.P1_UP(~JOY_1[3]),
 	.P1_DOWN(~JOY_1[2]),
 	.P1_LEFT(~JOY_1[1]),

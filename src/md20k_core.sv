@@ -45,6 +45,7 @@ module md20k_core #(
     input      [11:0] pad,
     input      [11:0] pad2,             // player 2, same layout
     input       [1:0] pad_six,          // {player 2, player 1}; used only with AUTO_PAD_TYPE
+    input       [1:0] pad_present,      // {player 2, player 1}; DB9 pad answered; used only with AUTO_PAD_TYPE
 
     // SDRAM (data bus split; tristate in the top level)
     output      [3:0] sdram_cmd,        // {nCS, nRAS, nCAS, nWE}
@@ -280,7 +281,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BU
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),
     .BORDER(1'b0), .CRAM_DOTS(1'b0), .INTERLACE(interlace), .FIELD(), .RESOLUTION(resolution),
-    .J3BUT(THREE_BUTTON != 0), .PAD_SIX_BUTTON(pad_six),
+    .J3BUT(THREE_BUTTON != 0), .PAD_SIX_BUTTON(pad_six), .PAD_PRESENT(pad_present),
     .JOY_1(joy1), .JOY_2(joy2), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
     .MOUSE(25'd0), .MOUSE_OPT(3'd0), .GUN_OPT(1'b0), .GUN_TYPE(1'b0), .GUN_SENSOR(1'b0), .GUN_A(1'b0),
     .GUN_B(1'b0), .GUN_C(1'b0), .GUN_START(1'b0),

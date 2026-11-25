@@ -74,6 +74,7 @@ int main() {
     top.J3BUT = 0;
     top.PAL = 0;
     top.EXPORT = 1;
+    top.PAD_PRESENT = 3;
 
     // Asymmetric active-low inputs distinguish the normal and extended phases.
     top.P1_UP = top.P1_DOWN = top.P1_LEFT = top.P1_RIGHT = 1;
@@ -138,6 +139,25 @@ int main() {
     check_read(top, 1, 0x56, "floating TH after filter expiry");
     idle(top, 512);
     check_read(top, 1, 0x56, "floating TH after filter timer wraps");
+
+    // A DB9 port with no pad answering reads the pull-ups like real hardware: games must
+    // not see a controller there. TH (bit 6) still follows the output register.
+    for (int empty = 1; empty <= 2; empty++) {
+        top.PAD_PRESENT = 3 & ~empty;
+        reset(top);
+        write_reg(top, empty + 3, 0x40);
+        write_reg(top, empty, 0x40);
+        check_read(top, empty, 0x7F, "empty port, TH high");
+        write_reg(top, empty, 0x00);
+        idle(top, 4);
+        check_read(top, empty, 0x3F, "empty port, TH low");
+        int other = 3 - empty;              // the other port still has its pad
+        write_reg(top, other + 3, 0x40);
+        write_reg(top, other, 0x00);
+        idle(top, 4);
+        check_read(top, other, other == 1 ? 0x22 : 0x33, "pad on the other port");
+    }
+    top.PAD_PRESENT = 3;
     write_reg(top, 4, 0x40);
     idle(top, 4);
     check_read(top, 1, 0x22, "driving TH after floating");

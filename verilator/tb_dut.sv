@@ -45,7 +45,7 @@ md20k_core #(.FIRMWARE_SIZE(FIRMWARE_SIZE)) core (
     .flash_cs_n(flash_cs_n), .flash_sck(flash_sck), .flash_mosi(flash_mosi), .flash_miso(flash_miso),
     .sd_clk(sd_clk), .sd_cmd(sd_cmd), .sd_dat0(sd_dat0), .sd_dat1(), .sd_dat2(), .sd_dat3(),
     .uart_rx(1'b1), .uart_tx(uart_tx),
-    .pad(pad), .pad2(12'd0), .pad_six(2'b11),
+    .pad(pad), .pad2(12'd0), .pad_six(2'b11), .pad_present(2'b11),
     .sdram_cmd(cmd), .sdram_a(sa), .sdram_ba(ba), .sdram_dqm(dqm),
     .sdram_dq_out(dq_out), .sdram_dq_oe(dq_oe), .sdram_dq_in(dq_in),
     .pause_core(pause_core),

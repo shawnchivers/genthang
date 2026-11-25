@@ -16,7 +16,8 @@ module genesis_pad #(
     // active high, pad order {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
     // = Genesis {Z, X, Y, C, Right, Left, Down, Up, Start, Mode, A, B}
     output reg [11:0] btns = 12'd0,
-    output reg        six = 1'b0     // latched, validated 6-button identification
+    output reg        six = 1'b0,    // latched, validated 6-button identification
+    output reg        present = 1'b0 // a pad answered the last scan (D2/D3 low with TH low)
 );
 
 localparam STEP = FREQ / 250_000;   // 4us per TH level
@@ -50,6 +51,7 @@ always @(posedge clk) begin
         4'd1: begin                 // TH=0: Up Down 0 0 A Start
             {btns[3], btns[1]} <= {n[5], n[4]};
             sig <= d_s2[3:2] == 2'b00;
+            present <= d_s2[3:2] == 2'b00;
         end
         4'd5: sig <= sig && d_s2[3:0] == 4'b0000;
         4'd6: extra <= {n[0], n[2], n[1], n[3]};

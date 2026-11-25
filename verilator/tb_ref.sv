@@ -79,7 +79,7 @@ system megadrive (
     .BRAM_A(15'd0), .BRAM_DI(16'd0), .BRAM_DO(), .BRAM_WE(1'b0), .BRAM_CHANGE(),
     .RED(red), .GREEN(green), .BLUE(blue), .VS(), .HS(hsync), .HBL(hblank), .VBL(vblank), .CE_PIX(ce_pix),
     .BORDER(1'b0), .CRAM_DOTS(1'b0), .INTERLACE(), .FIELD(), .RESOLUTION(resolution),
-    .J3BUT(1'b0), .PAD_SIX_BUTTON(2'b11),
+    .J3BUT(1'b0), .PAD_SIX_BUTTON(2'b11), .PAD_PRESENT(2'b11),
     .JOY_1(joy1), .JOY_2(12'd0), .JOY_3(12'd0), .JOY_4(12'd0), .JOY_5(12'd0), .MULTITAP(3'd0),
     .MOUSE(25'd0), .MOUSE_OPT(3'd0), .GUN_OPT(1'b0), .GUN_TYPE(1'b0), .GUN_SENSOR(1'b0), .GUN_A(1'b0),
     .GUN_B(1'b0), .GUN_C(1'b0), .GUN_START(1'b0),
