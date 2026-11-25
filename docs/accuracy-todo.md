@@ -65,6 +65,17 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
       tight, clk_sys 64.0 MHz)
 - [x] Hardware check: no audible difference in normal play (change kept)
 
+## 5. Master clock from the MS5351 (branch `ms5351-clock`)
+
+- [x] `GT_EXT_MCLK=1` build: 53.766 MHz from the MS5351 CLK0 (pin 10) instead of 54 MHz.
+      Frames at 60.004 Hz, so the frame-lock pause is ~1 us instead of ~73 us; sound
+      ~2 cents sharp instead of ~10
+- [x] FPGA fit and timing (DB9: 20,490 logic, 10,331/10,368 CLS, clk_sys 63.6 MHz)
+- [x] Hardware: set with `pll_clk O0=53766K -s` on the BL616 console (integer kHz;
+      reads back 53,766,001 Hz), flashed `builds/extclk/`; boots and plays normally
+- [ ] Decide whether to merge; boards without the MS5351 setting will not start an
+      `_extclk` image, so it stays opt-in
+
 ## Later
 
 - [x] Gowin removed-logic check: NL0002 "swept" instances (fx68k shifter, FM low-pass
