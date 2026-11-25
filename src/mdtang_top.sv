@@ -9,6 +9,9 @@
 
 module mdtang_top (
     input        sys_clk,           // 27MHz crystal
+`ifdef GT_EXT_MCLK
+    input        mclk_in,           // 53.766MHz from the MS5351 CLK0 (set via the BL616: pll_clk O0=53.766M -s)
+`endif
 
     // SPI flash (menu firmware at 0x500000)
     output       flash_spi_cs_n,
@@ -73,13 +76,25 @@ module mdtang_top (
     output [2:0] tmds_d_p
 );
 
+`ifdef GT_EXT_MCLK
+// 53.766MHz: the 896,040-MCLK NTSC frame runs at 60.004Hz, just above the 60.00Hz HDMI
+// frame, so the frame lock only pauses ~1 us per frame (and the sound chips are ~2
+// cents sharp instead of ~10). Small margin for the MS5351's own crystal tolerance.
+localparam FREQ = 53_766_000;
+`else
 localparam FREQ = 54_000_000;
+`endif
 
 // Clocks -------------------------------------------------------------------------------
 wire clk_sys, clk_z80, hclk, hclk5, pll_sys_lock, pll_hdmi_lock;
 
+`ifdef GT_EXT_MCLK
+gowin_pll_sys #(.EXT_MCLK(1)) pll_sys (
+    .clkin(mclk_in),
+`else
 gowin_pll_sys pll_sys (
-    .clkin(sys_clk), .clkout(clk_sys), .clkoutp(O_sdram_clk), .clkoutd(clk_z80), .lock(pll_sys_lock)
+    .clkin(sys_clk),
+`endif .clkout(clk_sys), .clkoutp(O_sdram_clk), .clkoutd(clk_z80), .lock(pll_sys_lock)
 );
 
 `ifdef VIDEO_800X480

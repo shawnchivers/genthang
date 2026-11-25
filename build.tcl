@@ -31,18 +31,37 @@ foreach feature {GT_LADDER GT_NO_ADAPTIVE GT_NO_CORE_SWITCH} {
 if {$video eq "800x480"} { puts $f "`define VIDEO_800X480" }
 if {$video eq "selectable"} { puts $f "`define VIDEO_SELECTABLE" }
 if {$picture} { puts $f "`define PICTURE_OPTS" }
+if {$ext_mclk} { puts $f "`define GT_EXT_MCLK" }
+puts "GT_EXT_MCLK=$ext_mclk"
 # GT_3BTN=1: single-player 3-button handheld; no player 2, Mode alone opens the menu
 if {$three_btn} { puts $f "`define GT_3BTN" }
 close $f
 
 # board layer
-add_file -type cst     $pad_cst
+if {$ext_mclk} {
+    # MS5351 CLK0 on pin 10 becomes the system PLL input
+    set fi [open $pad_cst r]; set cst [read $fi]; close $fi
+    set fo [open src/boards/build_extclk.cst w]
+    puts $fo $cst
+    puts $fo "IO_LOC \"mclk_in\" 10;"
+    puts $fo "IO_PORT \"mclk_in\" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;"
+    close $fo
+    add_file -type cst "src/boards/build_extclk.cst"
+} else {
+    add_file -type cst $pad_cst
+}
 set nosound [expr {[info exists ::env(GT_NO_SOUND)] && $::env(GT_NO_SOUND) eq "1"}]
-if {$nosound || $video ne "720p"} {
+if {$nosound || $video ne "720p" || $ext_mclk} {
     set fi [open src/mdtang.sdc r]; set sdc [read $fi]; close $fi
     if {$video eq "800x480"} {
         # 148.5MHz 5x pixel clock (29.7MHz pixel)
         set sdc [string map {"-period 2.6936 -waveform {0 1.347}" "-period 6.734 -waveform {0 3.367}"} $sdc]
+    }
+    if {$ext_mclk} {
+        # 53.766MHz master clock from the MS5351 (pin 10) instead of 54MHz
+        set sdc [string map {"-period 18.518 -waveform {0 9.26}" "-period 18.599 -waveform {0 9.30}"} $sdc]
+        append sdc "\ncreate_clock -name mclk_in -period 18.599 -waveform {0 9.30} \[get_nets {mclk_in}\]\n"
+        set sdc [string map {"-group [get_clocks {clk_sys clk_z80}]" "-group [get_clocks {clk_sys clk_z80 mclk_in}]"} $sdc]
     }
     set fo [open src/mdtang_build.sdc w]
     foreach line [split $sdc "\n"] {

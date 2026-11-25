@@ -15,7 +15,10 @@
 // 315deg leaves ~2ns hold / ~5ns setup on read capture over the pad-delay range
 // Proven by SNESTang and Gen Thang on this chip (86MHz, 225deg, READ+3).
 // Tune PSDA_SEL if needed.
-module gowin_pll_sys (clkout, clkoutp, clkoutd, lock, clkin);
+//
+// EXT_MCLK=1 (GT_EXT_MCLK): 53.766MHz in from the MS5351 -> x1, VCO 53.766*16 = 860MHz,
+// CLKOUTD 26.883MHz. Same phase shift and outputs.
+module gowin_pll_sys #(parameter EXT_MCLK = 0) (clkout, clkoutp, clkoutd, lock, clkin);
 
 output clkout;         // 54MHz  clk_sys
 output clkoutp;        // 54MHz  O_sdram_clk (315deg shifted)
@@ -45,11 +48,11 @@ rPLL rpll_inst (
     .FDLY({gw_gnd,gw_gnd,gw_gnd,gw_gnd})
 );
 
-defparam rpll_inst.FCLKIN = "27";
+defparam rpll_inst.FCLKIN = EXT_MCLK ? "53.766" : "27";
 defparam rpll_inst.DYN_IDIV_SEL = "false";
 defparam rpll_inst.IDIV_SEL = 0;            // /1
 defparam rpll_inst.DYN_FBDIV_SEL = "false";
-defparam rpll_inst.FBDIV_SEL = 1;           // x2  -> 54MHz
+defparam rpll_inst.FBDIV_SEL = EXT_MCLK ? 0 : 1;   // x1 (external) or x2 -> 54MHz
 defparam rpll_inst.DYN_ODIV_SEL = "false";
 defparam rpll_inst.ODIV_SEL = 16;           // VCO = 54*16 = 864MHz
 defparam rpll_inst.PSDA_SEL = "1110";       // CLKOUTP phase = 315deg (14 * 22.5)

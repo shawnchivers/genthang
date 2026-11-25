@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Experimental `GT_EXT_MCLK=1` build (`*_extclk`): the Genesis master clock comes from
+  the Tang Nano 20K's MS5351 clock generator (FPGA pin 10) at 53.766 MHz instead of
+  54 MHz from the crystal. Frames run at 60.004 Hz, so the frame-lock pause drops to
+  about 1 us and sound is about 2 cents sharp instead of 10. Set the MS5351 once from
+  the BL616 console with `pll_clk O0=53.766M -s` before flashing.
 - `release.sh` no longer builds the selectable 1080i images by default (fixed 720p
   is the default); pass `VARIANTS="db9_selectable raw_selectable"` to build them.
 - The YM2612 now clears its registers, key-on and envelope state when its reset

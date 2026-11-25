@@ -26,3 +26,4 @@ __pycache__/
 *.kate-swp
 *.swp
 src/mdtang_build.sdc
+src/boards/build_extclk.cst
