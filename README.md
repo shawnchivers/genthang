@@ -223,7 +223,7 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 | `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Handheld pinout, plus the Nano's speaker and a headphone jack; see [direct buttons](#direct-buttons-raw-build) |
 | `genthang_nano20k_raw_3btn_flash.bin` | Single-player three-button handheld | Raw pinout; port 2 reads as unplugged and **Mode** alone opens the menu |
 | `genthang_nano20k_db9_800x480_flash.bin`, `genthang_nano20k_raw_800x480_flash.bin` | Same pads, for an 800x480 TFT on a TFP401 board | Native 800x480 DVI, no HDMI audio; see [display options](#display-options) |
-| `genthang_nano20k_db9_selectable_flash.bin`, `genthang_nano20k_raw_selectable_flash.bin` | Same pads, with a menu-selectable display | **LCD**, **TV (720p)** or **TV (1080i games)**; the menu always stays 720p. See [display options](#display-options) |
+| `genthang_nano20k_db9_selectable_flash.bin`, `genthang_nano20k_raw_selectable_flash.bin` | Same pads, with a menu-selectable display (1.9.5 release; later releases build it only on request) | **LCD**, **TV (720p)** or **TV (1080i games)**; the menu always stays 720p. See [display options](#display-options) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
 
@@ -483,8 +483,11 @@ Mode changes wait for a complete output-frame boundary; HDMI audio and the
 independent DVI option remain available. The TV may briefly blank while relocking
 each time the menu opens or closes in this mode.
 Fixed-output builds ignore a saved 1080i selection while preserving it on the card.
-Release images include it as `genthang_nano20k_db9_selectable_flash.bin` and
-`genthang_nano20k_raw_selectable_flash.bin`; the standard images keep fixed 720p.
+Releases after 1.9.5 no longer build it by default; the standard images keep fixed
+720p. Build it with `GT_VIDEO=selectable ./build.sh` or
+`VARIANTS="db9_selectable raw_selectable" ./release.sh`. The 1.9.5 release still
+ships `genthang_nano20k_db9_selectable_flash.bin` and
+`genthang_nano20k_raw_selectable_flash.bin`.
 Physical display compatibility still needs hardware testing.
 
 The 1.9.5 selectable release builds pass Gowin placement/routing with zero negative
@@ -600,7 +603,7 @@ GT_VIDEO=800x480 ./build.sh       # native 800x480 DVI for a bare TFT on a TFP40
 GT_VIDEO=selectable ./build.sh    # LCD / TV (720p) / TV (1080i) in one image (*_selectable)
 GT_PAD=raw GT_3BTN=1 ./build.sh   # 3-button handheld (*_3btn): no player 2, Mode alone opens the menu
 GT_PICTURE=0 GT_PAD=raw ./build.sh  # raw build without the brightness option
-./release.sh                      # all variants (db9, raw, raw_3btn, *_800x480, *_selectable) + flash images + tarball
+./release.sh                      # default variants (db9, raw, raw_3btn, *_800x480) + flash images + tarball
 VARIANTS="db9_selectable" ./release.sh release-display  # just the DB9 display-selector image
 ```
 

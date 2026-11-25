@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `release.sh` no longer builds the selectable 1080i images by default (fixed 720p
+  is the default); pass `VARIANTS="db9_selectable raw_selectable"` to build them.
 - The YM2612 now clears its registers, key-on and envelope state when its reset
   (the Z80 reset line) is held, like the real chip. Before, a playing note could ring
   on through a reset because those shift registers had no reset.

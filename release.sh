@@ -5,7 +5,8 @@
 #   SHA256SUMS, genthang-v<VERSION>.tar.gz
 # Variants: db9 (default) and raw, each also as <pad>_800x480 (GT_VIDEO=800x480, native
 # 800x480 DVI for bare TFT panels on a TFP401 board). Raw has its own handheld pinout.
-# plus db9_selectable and raw_selectable (GT_VIDEO=selectable: LCD / TV 720p / TV 1080i games).
+# Optional (not built by default): db9_selectable and raw_selectable (GT_VIDEO=selectable:
+# LCD / TV 720p / TV 1080i games), e.g. VARIANTS="db9_selectable" ./release.sh
 # usage: ./release.sh [outdir]      VARIANTS="db9" ./release.sh   for a subset
 #        PACKAGE_ONLY=1 ./release.sh   re-pack the tarball from the images already in outdir
 # A variant that misses its clock targets or leaves negative slack fails the release.
@@ -17,7 +18,7 @@ mkdir -p "$OUT"
 if [ -z "${PACKAGE_ONLY:-}" ]; then
 rm -f "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin "$OUT"/SHA256SUMS
 
-for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480 db9_selectable raw_selectable}; do
+for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480}; do
     case $variant in
         raw|db9)        pad=$variant; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         raw_3btn)       pad=raw; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
