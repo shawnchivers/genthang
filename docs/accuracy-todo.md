@@ -25,15 +25,15 @@ Background and evidence for each item: [accuracy-audit.md](accuracy-audit.md).
 
 Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported.
 
-## 2. Z80 bank stall during frame-lock pause (done)
+## 2. Z80 bank stall during frame-lock pause (reverted)
 
-- [x] Spread the frame-lock pause: 14 MCLK (two 68K cycles) every 3434 MCLK, so the
-      remaining once-per-frame halt drops from ~3960 MCLK (73 us) to ~306 (5.7 us)
-- [x] `make -C verilator frame-sync`: lock holds, no dropped frames, pause lengths
-- [x] FPGA fit and timing (DB9: 20,221 logic, 10,313/10,368 CLS, clk_sys 64.3 MHz)
-- [x] Hardware listen test: no audible difference from 1.9.5 (change kept; the
-      stall it removes was too short to hear)
-- [ ] Optional: `z80_bank` ROM-free test program to measure stalls end to end
+- [x] Tried spreading the frame-lock pause: 14 MCLK every 3434 MCLK, so the once-per-frame
+      halt dropped from ~73 us to ~5 us (`a7bf260`)
+- [x] Reverted: on hardware it broke sprites in Streets of Rage 2 (flickering/broken
+      sprites), because the VDP was frozen mid-line during active display. No audible
+      gain was found either.
+- [ ] If revisited: pause only during horizontal blanking (between sprite fetches), and
+      test sprite-heavy games first
 
 ## 3. Bus and memory timing measurement (done)
 
