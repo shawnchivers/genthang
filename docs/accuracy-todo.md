@@ -52,7 +52,9 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
 - [x] Conclusion: SDRAM, posted writes and VRAM-in-SDRAM cost about 0.05% of 68K
       time; no fix needed. The extra waits (one 68K clock on 0.5% of accesses) are the
       only visible difference.
-- [ ] Later: a `dma_timing` program for VDP status/FIFO timing in H32/H40
+- [x] `tests/roms/vdp_timing.s` + `make -C verilator vdp-timing`: 262 lines, V `$EA`->`$E5`,
+      H40 gap `$B7`-`$E3`, DMA 68K->VRAM (blank 20 / active 28 lines), fill 20, copy 20,
+      all within the documented NTSC H40 rates (205/18/204/102 bytes per line)
 
 ## 4. YM2612 state on reset (done)
 
@@ -65,6 +67,10 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
 
 ## Later
 
-- [ ] Gowin removed-logic warnings check
-- [ ] Formal properties for VDP H/V counters
-- [ ] BlastEm diff testing for the self-written programs
+- [x] Gowin removed-logic check: NL0002 "swept" instances (fx68k shifter, FM low-pass
+      filters, HDMI packets, jt12 accumulators) are flattened hierarchy, not removed
+      logic; the undriven inputs (unused RAM ports, ADPCM) match the lint findings.
+      Nothing new removed.
+- [x] VDP H/V counters: covered by the `vdp-timing` simulation check instead of formal
+- [ ] Optional: H32 and FIFO-full timing in `vdp_timing.s`
+- [ ] Optional: BlastEm diff testing for the test programs

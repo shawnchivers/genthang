@@ -108,6 +108,16 @@ ideal_mem #(.ROM_WORDS(2097152)) mem (
     .din(mem_wdata), .be(mem_be), .dout(mem_data)
 );
 
+// Test print port for ROM-free test programs (tests/roms): a 68K word write to $FFFF00
+// is printed as "TESTOUT xxxx". It lands in work RAM, so it is harmless on hardware.
+reg test_ds_r = 1'b1;
+always @(posedge clk_sys) begin
+    test_ds_r <= megadrive.M68K_UDS_N & megadrive.M68K_LDS_N;
+    if (test_ds_r && !(megadrive.M68K_UDS_N & megadrive.M68K_LDS_N) && !megadrive.M68K_RNW &&
+        {megadrive.M68K_A, 1'b0} == 24'hFFFF00)
+        $display("TESTOUT %04x", megadrive.M68K_DO);
+end
+
 perf68k perf (
     .clk(clk_sys), .clken(megadrive.M68K_CLKENp), .as_n(megadrive.M68K_AS_N),
     .a(megadrive.M68K_A), .vblank(vblank),

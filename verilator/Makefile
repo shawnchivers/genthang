@@ -38,7 +38,7 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 # the board DUT keeps the iosys UART so the firmware's debug log reaches the console
 DUT_VFLAGS = +define+SERIAL_UPLOAD
 
-.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes jt12-reset test-roms
+.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes jt12-reset test-roms vdp-timing
 
 hex: rom8.hex fw8.hex sd.img
 rom8.hex: mkhex.py
@@ -116,6 +116,15 @@ roms/%.bin: ../tests/roms/%.s
 	mkdir -p roms
 	$(M68K)as -m68000 --register-prefix-optional $< -o roms/$*.o
 	$(M68K)ld -Ttext=0 -e start --oformat=binary roms/$*.o -o $@
+
+# VDP counter and DMA timing against documented NTSC H40 values (tests/roms/vdp_timing.s).
+# Builds the reference testbench for the test program, so it replaces rom*.hex here.
+vdp-timing: roms/vdp_timing.bin
+	python3 mkhex.py roms/vdp_timing.bin
+	$(VERILATOR) $(VFLAGS) --top-module tb_ref --Mdir $(REF_MDIR) \
+		-CFLAGS '-DTOP_HEADER=\"Vtb_ref.h\" -DTOP_CLASS=Vtb_ref $(CDEFS)' $(REF_SRCS) tb_main.cpp -o tb_ref
+	$(MAKE) run/ref
+	cd run/ref && ../../$(REF_MDIR)/tb_ref -n 20 | python3 ../../../tests/check_vdp_timing.py
 
 run-ref: ref run/ref
 	cd run/ref && ../../$(REF_MDIR)/tb_ref $(ARGS)
