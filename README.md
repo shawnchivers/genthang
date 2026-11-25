@@ -38,8 +38,8 @@ Gen Thang's Verilator simulation composited onto a 3D render.
 This is not footage from a physical handheld.
 <a href="hardware/modern-3btn-handheld/index.html">Explore the handheld build guide.</a></sub></p>
 
-> **Before you build.** The v1.9.4 controller-fixed 720p dual-DB9 build was flashed,
-> verified and confirmed working by the user. The 1.9.5 release images are build-,
+> **Before you build.** The 1.9.6 DB9 images (`db9` and `db9_extclk`) were flashed and
+> confirmed working by the user. The other 1.9.6 release images are build-,
 > timing- and simulation-checked but not yet hardware-tested. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
 > no warranty; you build, wire and flash at your own risk, and wiring mistakes can
@@ -223,11 +223,29 @@ firmware at `0x500000`); the `.fs` files are bitstream-only.
 | `genthang_nano20k_raw_flash.bin` | Twelve direct buttons | Handheld pinout, plus the Nano's speaker and a headphone jack; see [direct buttons](#direct-buttons-raw-build) |
 | `genthang_nano20k_raw_3btn_flash.bin` | Single-player three-button handheld | Raw pinout; port 2 reads as unplugged and **Mode** alone opens the menu |
 | `genthang_nano20k_db9_800x480_flash.bin`, `genthang_nano20k_raw_800x480_flash.bin` | Same pads, for an 800x480 TFT on a TFP401 board | Native 800x480 DVI, no HDMI audio; see [display options](#display-options) |
+| `genthang_nano20k_db9_extclk_flash.bin` | Two Genesis pads on DB9 breakouts | Genesis master clock from the board's MS5351 clock chip (53.766 MHz instead of 54 MHz): closer pitch and a ~1 us frame-lock pause. **Set the clock first**, see [master clock](#optional-master-clock-from-the-ms5351); without it the board shows nothing |
 | `genthang_nano20k_db9_selectable_flash.bin`, `genthang_nano20k_raw_selectable_flash.bin` | Same pads, with a menu-selectable display (1.9.5 release; later releases build it only on request) | **LCD**, **TV (720p)** or **TV (1080i games)**; the menu always stays 720p. See [display options](#display-options) |
 
 The wiring must match the image you flash. A mismatched image reads the wrong pins.
 
 ## Setup
+
+### Optional: master clock from the MS5351
+
+The `db9_extclk` image (or any `GT_EXT_MCLK=1` build) takes the Genesis master clock
+from the Tang Nano 20K's MS5351 clock generator on FPGA pin 10 at 53.766 MHz,
+instead of 54 MHz from the 27 MHz crystal. Frames then run at 60.004 Hz, so the core
+only pauses ~1 us per frame to stay locked to HDMI (instead of ~73 us), and FM/PSG
+audio is about 2 cents sharp instead of 10. The MS5351 outputs are off on a new
+board, so set CLK0 once from the BL616 console before flashing:
+
+1. Open the board's second USB serial port (e.g. `/dev/ttyUSB1`) at 115200 baud.
+2. Press Ctrl+X, Ctrl+C, then Enter to reach the `TangNano20K />` prompt.
+3. Run `pll_clk O0=53766K -s` (the frequency must be an integer; `-s` saves it).
+   `pll_clk` should then list `[ EN]O0: 53766001`.
+
+The setting survives power cycles. An `_extclk` image on a board without it shows
+no picture; flash a normal image or set the clock to recover.
 
 ### 1. Flash the board
 
@@ -623,7 +641,7 @@ to leave logic headroom; its fit is not certified for 1.9.5. `GT_PICTURE`
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
-The 1.9.5 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
+The 1.9.6 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
 JT12's YM2612 Model 1 DAC ladder distortion is enabled, while adaptive blending and
 runtime core switching are omitted. Normal blend OFF/ON and scanlines remain.
 `GT_VIDEO=selectable` additionally exposes the three-mode Display selector

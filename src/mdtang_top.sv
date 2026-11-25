@@ -10,7 +10,7 @@
 module mdtang_top (
     input        sys_clk,           // 27MHz crystal
 `ifdef GT_EXT_MCLK
-    input        mclk_in,           // 53.766MHz from the MS5351 CLK0 (set via the BL616: pll_clk O0=53.766M -s)
+    input        mclk_in,           // 53.766MHz from the MS5351 CLK0 (set via the BL616: pll_clk O0=53766K -s)
 `endif
 
     // SPI flash (menu firmware at 0x500000)

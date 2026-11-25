@@ -5,6 +5,8 @@
 #   SHA256SUMS, genthang-v<VERSION>.tar.gz
 # Variants: db9 (default) and raw, each also as <pad>_800x480 (GT_VIDEO=800x480, native
 # 800x480 DVI for bare TFT panels on a TFP401 board). Raw has its own handheld pinout.
+# db9_extclk (GT_EXT_MCLK=1): Genesis master clock from the MS5351 at 53.766MHz; the board
+# must first run `pll_clk O0=53766K -s` on the BL616 console.
 # Optional (not built by default): db9_selectable and raw_selectable (GT_VIDEO=selectable:
 # LCD / TV 720p / TV 1080i games), e.g. VARIANTS="db9_selectable" ./release.sh
 # usage: ./release.sh [outdir]      VARIANTS="db9" ./release.sh   for a subset
@@ -18,13 +20,14 @@ mkdir -p "$OUT"
 if [ -z "${PACKAGE_ONLY:-}" ]; then
 rm -f "$OUT"/genthang_nano20k_*.fs "$OUT"/genthang_nano20k_*_flash.bin "$OUT"/SHA256SUMS
 
-for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480}; do
+for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480 db9_extclk}; do
     case $variant in
         raw|db9)        pad=$variant; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         raw_3btn)       pad=raw; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         raw_800x480|db9_800x480)
                         pad=${variant%_800x480}; video=800x480; pinout=stock; name=$variant
                         base=genthang_nano20k_$variant ;;
+        db9_extclk)     pad=db9; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         raw_selectable|db9_selectable)
                         pad=${variant%_selectable}; video=selectable; pinout=stock; name=$variant
                         base=genthang_nano20k_$variant ;;
@@ -33,8 +36,9 @@ for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480}; do
     echo "== $variant (GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout)"
     three=0; [ "$variant" = raw_3btn ] && three=1
     picture=0; [ "$pad" = raw ] && picture=1
+    extclk=0; [ "$variant" = db9_extclk ] && extclk=1
     GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout GT_3BTN=$three GT_PICTURE=$picture \
-        GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 GT_SERIAL_UPLOAD=0 GT_NO_SOUND=0 \
+        GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 GT_SERIAL_UPLOAD=0 GT_NO_SOUND=0 GT_EXT_MCLK=$extclk \
         ./build.sh > "$OUT/build_$name.log" 2>&1
     install -m 644 "impl/pnr/$base.rpt.txt" "$OUT/$base.rpt.txt"
     install -m 644 "impl/pnr/${base}_tr_content.html" "$OUT/${base}_tr_content.html"

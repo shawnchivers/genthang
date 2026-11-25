@@ -32,7 +32,7 @@ foreach feature {GT_LADDER GT_NO_ADAPTIVE GT_NO_CORE_SWITCH} {
 
 # GT_EXT_MCLK=1: Genesis master clock from the on-board MS5351 CLK0 (FPGA pin 10) at
 # 53.766 MHz instead of 54 MHz from the 27 MHz crystal. The MS5351 must be set first
-# from the BL616 console: pll_clk O0=53.766M -s
+# from the BL616 console: pll_clk O0=53766K -s
 set ext_mclk 0
 if {[info exists ::env(GT_EXT_MCLK)] && $::env(GT_EXT_MCLK) ne ""} { set ext_mclk $::env(GT_EXT_MCLK) }
 if {[lsearch -exact {0 1} $ext_mclk] < 0} { error "GT_EXT_MCLK must be 0 or 1" }
