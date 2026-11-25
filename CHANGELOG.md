@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.9.7 - 2026-11-25
 
 - DB9 builds now report an empty controller port as unplugged, like a real Genesis
   (the port reads the pull-ups). Before, games always saw a pad on port 2 even with

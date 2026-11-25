@@ -38,8 +38,8 @@ Gen Thang's Verilator simulation composited onto a 3D render.
 This is not footage from a physical handheld.
 <a href="hardware/modern-3btn-handheld/index.html">Explore the handheld build guide.</a></sub></p>
 
-> **Before you build.** The 1.9.6 DB9 images (`db9` and `db9_extclk`) were flashed and
-> confirmed working by the user. The other 1.9.6 release images are build-,
+> **Before you build.** The 1.9.7 `db9_extclk` image and the 1.9.6 `db9` image were
+> flashed and confirmed working by the user. The other 1.9.7 release images are build-,
 > timing- and simulation-checked but not yet hardware-tested. Save
 > states are experimental. Core switching rewrites the board's SPI flash. There is
 > no warranty; you build, wire and flash at your own risk, and wiring mistakes can
@@ -641,7 +641,7 @@ to leave logic headroom; its fit is not certified for 1.9.5. `GT_PICTURE`
 from bit 16 of the core ID register, so one `firmware.bin` serves both. The default build also runs
 the menu's PicoRV32 with a single-read-port register file, which halves its
 distributed RAM at the cost of a slightly slower menu CPU.
-The 1.9.6 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
+The 1.9.7 defaults are `GT_LADDER=1`, `GT_NO_ADAPTIVE=1` and `GT_NO_CORE_SWITCH=1`.
 JT12's YM2612 Model 1 DAC ladder distortion is enabled, while adaptive blending and
 runtime core switching are omitted. Normal blend OFF/ON and scanlines remain.
 `GT_VIDEO=selectable` additionally exposes the three-mode Display selector
