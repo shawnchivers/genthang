@@ -25,13 +25,14 @@ Background and evidence for each item: [accuracy-audit.md](accuracy-audit.md).
 
 Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported.
 
-## 2. Z80 bank stall during frame-lock pause (in progress)
+## 2. Z80 bank stall during frame-lock pause (done)
 
 - [x] Spread the frame-lock pause: 14 MCLK (two 68K cycles) every 3434 MCLK, so the
       remaining once-per-frame halt drops from ~3960 MCLK (73 us) to ~306 (5.7 us)
 - [x] `make -C verilator frame-sync`: lock holds, no dropped frames, pause lengths
 - [x] FPGA fit and timing (DB9: 20,221 logic, 10,313/10,368 CLS, clk_sys 64.3 MHz)
-- [ ] Hardware listen test with sample-heavy games (`builds/spread-pause/`, local)
+- [x] Hardware listen test: no audible difference from 1.9.5 (change kept; the
+      stall it removes was too short to hear)
 - [ ] Optional: `z80_bank` ROM-free test program to measure stalls end to end
 
 ## 3. Bus and memory timing measurement (done)
@@ -53,14 +54,14 @@ Not planned: Pier Solar mapper (needs its EEPROM) and SVP; both stay unsupported
       only visible difference.
 - [ ] Later: a `dma_timing` program for VDP status/FIFO timing in H32/H40
 
-## 4. YM2612 state on reset (done in RTL, needs listen test)
+## 4. YM2612 state on reset (done)
 
 - [x] `make -C verilator jt12-reset`: a sustained note survived a /IC reset at full
       level (registers, key-on and envelopes are all in non-resetting shift registers)
 - [x] `jt12_sh_rst` shifts the reset value in while `rst` is held; the note now stops
 - [x] FPGA fit and timing (DB9: 20,541/20,736 logic, 10,353/10,368 CLS, 44/46 BSRAM;
       tight, clk_sys 64.0 MHz)
-- [ ] Hardware check: reset during music, Z80 driver reloads (`builds/ym-reset/`, local)
+- [x] Hardware check: no audible difference in normal play (change kept)
 
 ## Later
 
