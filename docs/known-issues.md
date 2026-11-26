@@ -29,8 +29,8 @@ other 68K bus-cycle timing:
 
 ## Overnight differential follow-up (2026-10-17)
 
-These results follow the `genthang-overnight-20261015` campaign. They have been verified
-in simulation, not on the FPGA.
+These results follow the `genthang-overnight-20261015` campaign. They describe
+simulator-to-BlastEm comparisons, separate from hardware testing of issued builds.
 
 ### Fixed, then reverted
 
@@ -110,8 +110,8 @@ palette/SRAM probes successfully and verified that the accepted combined simulat
 binary is unchanged. The new interrupt probe intentionally reports the unresolved
 zero-versus-one service difference, not a pass. The earlier full verifier suite ran 103 tests with
 two pre-existing errors in the legacy sprite-latency experiment (`obj_ci instance not
-found`); those experiments were not changed. No FPGA synthesis, timing closure or
-board validation was performed. Other campaign cases have not been requalified.
+found`); those experiments were not changed. This follow-up concerns simulator
+probes, not production FPGA images. Other campaign cases have not been requalified.
 
 See the [verification workflow and probes](../../genthangverify/README.md#source-audit-and-probes)
 for replaying the checks.

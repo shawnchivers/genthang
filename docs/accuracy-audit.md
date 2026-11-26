@@ -1,8 +1,9 @@
 # Static accuracy audit (no game ROMs)
 
 Branch `static-accuracy-analysis`. Everything here comes from reading source, lint and
-diffs against the upstream cores, with no commercial ROMs. Each finding still needs a
-check on hardware or in simulation before anything changes.
+diffs against the upstream cores, with no commercial ROMs. Issued builds have been
+tested on hardware; this audit concerns accuracy relative to an original Genesis,
+not release test status. Each proposed change needs a targeted accuracy check first.
 
 Upstreams compared: [MDTang](https://github.com/nand2mario/mdtang) `903d30c` and
 [Genesis_MiSTer](https://github.com/MiSTer-devel/Genesis_MiSTer) `adc0c42` (its final
@@ -20,7 +21,7 @@ Nuked-MD, a different design, so its VDP/CPU fixes do not apply.
 | 5 | Fast ROM/RAM path and posted 68K writes differ from upstream DTACK timing | bus | Medium | Measure first |
 | 6 | Soft reset does not clear YM2612 shift registers | audio | Medium | Small |
 | 7 | 6-button pad counter saturates at 4 (intentional since 1.4.2) | I/O | Low/medium | n/a |
-| 8 | Smaller items: unused port C/serial registers, power-on HV phase, VDP improvements not verified against hardware | various | Low | n/a |
+| 8 | Smaller items: unused port C/serial registers, power-on HV phase, VDP accuracy relative to original Genesis hardware | various | Low | n/a |
 
 No accuracy fixes from Genesis_MiSTer are missing. Except as noted, jt12, jt89, fx68k
 and T80 match upstream (Gen Thang only changes `X` defaults and the ladder maths).
@@ -52,7 +53,7 @@ Gen Thang vs MDTang changed lines: `system.sv` 458, `vdp.v` 291, `gen_io.sv` 247
   (matches BlastEm).
 - **YM2612**: `jt12_sh_rst` has no reset (from MDTang), so `SOFT_RESET` leaves
   operator/envelope state.
-- **VDP changes beyond upstream** (probably improvements, not verified against hardware):
+- **VDP changes beyond upstream** (accuracy relative to original Genesis hardware needs comparison):
   `REG0[5]` left-column blank, two-slot VRAM writes outside 128K mode, split VRAM copy,
   window-edge scroll fix, hflip sprite pixel-limit clip, power-on HV phase.
   Spot-checked as unchanged: sprite per-line/frame limits, interlace mode 2, VSRAM

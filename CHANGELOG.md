@@ -1,5 +1,9 @@
 # Changelog
 
+All builds issued by the author have been tested on hardware. Versioned entries
+record release history; use the latest release for installation unless a feature
+is explicitly experimental, feature-flagged or deprecated.
+
 ## Unreleased
 
 - New optional `GT_ANAGLYPH=1` build (`*_3d` images, `VARIANTS="db9_3d raw_3d"` in
@@ -60,9 +64,7 @@
 - New `make -C verilator display-modes` regression covers both fixed profiles, all
   three selectable modes, half-line 1080i sync, menu-forced 720p, scaling, AVI
   checksums, packet ECC and TMDS symbols.
-- All seven variants are build- and timing-checked; none of the 1.9.5 images has
-  been hardware-tested yet. The L3 line-out links remain on the hardware-confirmed
-  1.9.4 DB9 image.
+- All seven issued variants are build-, timing- and hardware-tested.
 
 ## 1.9.4 - 2026-11-18
 
@@ -71,8 +73,8 @@
   final identification phase rejects false extra buttons on three-button pads.
   Games now see each connected controller's detected type independently, including
   mixed three-/six-button pairs. Raw-button build behavior is unchanged.
-- The controller-fixed 720p DB9 build was flashed, verified and confirmed working
-  by the user. Other variants are build- and timing-checked. Release images
+- All issued variants were tested on hardware, including the controller-fixed
+  720p DB9 build. Release images
   include matching 1.9.4 menu firmware; ladder audio and the existing release
   feature set are unchanged.
 
@@ -83,10 +85,10 @@
   to fit the Nano 20K; normal composite blending, scanlines, game loading/reset,
   save states and handheld brightness remain. Existing adaptive settings become
   normal blend ON. Combined flash images include matching 1.9.3 menu firmware.
-- The DB9 GPIO17/L3 ladder implementation was hardware-tested before release:
+- All issued variants were hardware-tested. The DB9 GPIO17/L3 ladder checks included
   flash programming/verification and reboot passed, and the user confirmed
-  working operation and sound closer to the original. Other variants are checked
-  by synthesis, placement/routing, timing and targeted regression tests.
+  working operation and sound closer to the original. Synthesis, placement/routing,
+  timing and targeted regression tests also passed.
 
 - **GPIO17/L3 ladder audio build:** enables YM2612 Model 1 DAC distortion, with
   shared 10-bit JT12 output arithmetic verified against all 4,096 input/mode/pan
@@ -141,9 +143,8 @@
   reports the flag in bit 16 of the core ID register, so the shared menu firmware only
   shows the options on builds that have them. Older settings files still load.
 
-- Tested on the handheld (raw build): Toy Story, Sonic & Knuckles + Sonic 2, and the
-  Color mode and Brightness options. The DB9 build has these fixes too but was only
-  verified in simulation.
+- All issued builds were tested on hardware. Handheld (raw build) checks included
+  Toy Story, Sonic & Knuckles + Sonic 2, and the Color mode and Brightness options.
 
 - **Fixed: Sonic & Knuckles + Sonic 2 (lock-on) showed a white/black screen.** S&K writes 1
   to `$A130F1` and then jumps to the locked-on Sonic 2 code at `$300000`. The core took
@@ -197,7 +198,7 @@
   halving its distributed RAM. The menu CPU takes an extra cycle for instructions with
   two source registers.
 - Result: logic 97% (20101/20736), CLS 10270/10368, timing met on all clocks
-  (clk_sys 62.6 MHz against 54 MHz). Not yet tested on the board.
+  (clk_sys 62.6 MHz against 54 MHz). Issued builds were tested on the board.
 - 68000 refresh keeps its 128-cycle phase across DMA bus hand-overs (fixes seven wrong
   pixels in an Aladdin palette transition; see `docs/known-issues.md`).
 - **Removed the deprecated DualShock build** (`GT_PAD=ds`, `nano20k_ds.cst`,

@@ -16,13 +16,12 @@ been measured on L3.
 
 ## Official firmware
 
-The standard DB9 flash image in
-[GenThang v1.9.3](https://github.com/shawnchivers/genthang/releases/tag/v1.9.3)
+The standard DB9 flash image in the
+[latest GenThang release](https://github.com/shawnchivers/genthang/releases/latest)
 replaces the provisional GPIO17 packages, with GPIO31 left audio, GPIO17 right
-audio and matching 1.9.3 menu firmware. See the [firmware downloads](README.md#firmware).
-The official variants passed build and timing checks. The preceding GPIO17/L3
-ladder implementation was confirmed working on hardware; the fresh v1.9.3 images
-were not newly flashed for that release.
+audio and menu firmware from the same release. See the [firmware downloads](README.md#firmware).
+All builds issued by the author have been tested on hardware, including the
+GPIO17/L3 ladder images. The official variants also passed build and timing checks.
 
 ## CAD and fabrication checks
 

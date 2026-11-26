@@ -3,6 +3,9 @@
 Hardware that accompanies the Gen Thang firmware lives here, separate from the
 FPGA sources and the wiring illustrations in `docs/hardware/`.
 
+Use the [latest GenThang release](https://github.com/shawnchivers/genthang/releases/latest)
+for the firmware variant that matches your hardware.
+
 | Design | Files | Physical status |
 |---|---|---|
 | [Dual-DB9 carrier, O1](dual-db9-opt-pcb/README.md) | KiCad PCB and schematic, Gerbers, BOM, assembly and continuity-test guides | Fabricated |
@@ -34,7 +37,7 @@ not an O1 or historical L1/L2 archive. The
 [standalone package](dual-db9-lineout-pcb/IMPORT.md) includes all ordering and
 assembly files without requiring a sibling repository.
 Read the [L3 test status](dual-db9-lineout-pcb/TEST-STATUS.md) and use the
-[official v1.9.3 DB9 firmware](https://github.com/shawnchivers/genthang/releases/download/v1.9.3/genthang_nano20k_db9_flash.bin).
+[latest official DB9 firmware](https://github.com/shawnchivers/genthang/releases/latest/download/genthang_nano20k_db9_flash.bin).
 
 ## Working with the designs
 
