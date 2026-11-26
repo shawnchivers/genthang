@@ -10,10 +10,11 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def select(pad=None, pinout=None):
-    env = {k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_SERIAL_UPLOAD','GT_PICTURE')}
+def select(pad=None, pinout=None, anaglyph=None):
+    env = {k:v for k,v in os.environ.items() if k not in ('GT_PAD','GT_PINOUT','GT_SERIAL_UPLOAD','GT_PICTURE','GT_ANAGLYPH')}
     if pad is not None: env['GT_PAD'] = pad
     if pinout is not None: env['GT_PINOUT'] = pinout
+    if anaglyph is not None: env['GT_ANAGLYPH'] = anaglyph
     return subprocess.run(['tclsh'], cwd=ROOT, env=env, text=True, capture_output=True,
         input='if {[catch {source build_config.tcl} err]} {puts stderr $err; exit 1}\n'
               'puts "$pad|$pinout|$pad_cst|$output_base"\n')
@@ -28,6 +29,15 @@ class PinoutTests(unittest.TestCase):
                 p=pad or 'db9'
                 self.assertEqual(result.stdout.strip(),
                                  f'{p}|stock|src/boards/nano20k_{p}.cst|genthang_nano20k_{p}')
+
+    def test_anaglyph_option(self):
+        for pad in ('db9','raw'):
+            result=select(pad,anaglyph='1')
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertTrue(result.stdout.strip().endswith(f'|genthang_nano20k_{pad}_3d'))
+            result=select(pad,anaglyph='0')
+            self.assertTrue(result.stdout.strip().endswith(f'|genthang_nano20k_{pad}'))
+        self.assertNotEqual(select(anaglyph='yes').returncode,0)
 
     def test_dualshock_build_removed(self):
         self.assertNotEqual(select('ds').returncode,0)

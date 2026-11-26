@@ -106,6 +106,9 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
    input            OBJ_LIMIT_HIGH_EN,	// Enable more sprites and pixels per line
    
    output reg       TRANSP_DETECT,
+   // layer that produced the current pixel, for anaglyph 3D: 0 backdrop/border, 1 plane B low,
+   // 2 plane A low, 3 sprite low, 4 plane B high, 5 plane A high, 6 sprite high
+   output reg [2:0] DEPTH,
    
    //debug
    input            BGA_EN,
@@ -671,6 +674,7 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
                     PIX_NORMAL = 1,
                     PIX_HIGHLIGHT = 2;
    reg [1:0]        PIX_MODE;
+   reg [2:0]        DEPTH_PIPE;
    wire [15:0]      T_COLOR;
    
    reg [3:0]        FF_R;
@@ -2463,6 +2467,7 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
             FF_R <= {4{1'b0}};
             FF_G <= {4{1'b0}};
             FF_B <= {4{1'b0}};
+            DEPTH <= 3'd0;
          end 
       end else
          case (HV_PIXDIV)
@@ -2499,20 +2504,28 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
                         PIX_MODE <= PIX_NORMAL;
                   end 
                   
-                  if (OBJ_COLINFO2_Q[3:0] != 4'b0000 & OBJ_COLINFO2_Q[6] & (SHI == 1'b0 | OBJ_COLINFO2_Q[5:1] != 5'b11111) & SPR_EN)
+                  if (OBJ_COLINFO2_Q[3:0] != 4'b0000 & OBJ_COLINFO2_Q[6] & (SHI == 1'b0 | OBJ_COLINFO2_Q[5:1] != 5'b11111) & SPR_EN) begin
                      col = OBJ_COLINFO2_Q[5:0];
-                  else if (BGA_COLINFO_Q_B[3:0] != 4'b0000 & BGA_COLINFO_Q_B[6] & BGA_EN)
+                     DEPTH_PIPE <= 3'd6;
+                  end else if (BGA_COLINFO_Q_B[3:0] != 4'b0000 & BGA_COLINFO_Q_B[6] & BGA_EN) begin
                      col = BGA_COLINFO_Q_B[5:0];
-                  else if (BGB_COLINFO_Q_B[3:0] != 4'b0000 & BGB_COLINFO_Q_B[6] & BGB_EN)
+                     DEPTH_PIPE <= 3'd5;
+                  end else if (BGB_COLINFO_Q_B[3:0] != 4'b0000 & BGB_COLINFO_Q_B[6] & BGB_EN) begin
                      col = BGB_COLINFO_Q_B[5:0];
-                  else if (OBJ_COLINFO2_Q[3:0] != 4'b0000 & (SHI == 1'b0 | OBJ_COLINFO2_Q[5:1] != 5'b11111) & SPR_EN)
+                     DEPTH_PIPE <= 3'd4;
+                  end else if (OBJ_COLINFO2_Q[3:0] != 4'b0000 & (SHI == 1'b0 | OBJ_COLINFO2_Q[5:1] != 5'b11111) & SPR_EN) begin
                      col = OBJ_COLINFO2_Q[5:0];
-                  else if (BGA_COLINFO_Q_B[3:0] != 4'b0000 & BGA_EN)
+                     DEPTH_PIPE <= 3'd3;
+                  end else if (BGA_COLINFO_Q_B[3:0] != 4'b0000 & BGA_EN) begin
                      col = BGA_COLINFO_Q_B[5:0];
-                  else if (BGB_COLINFO_Q_B[3:0] != 4'b0000 & BGB_EN)
+                     DEPTH_PIPE <= 3'd2;
+                  end else if (BGB_COLINFO_Q_B[3:0] != 4'b0000 & BGB_EN) begin
                      col = BGB_COLINFO_Q_B[5:0];
-                  else
+                     DEPTH_PIPE <= 3'd1;
+                  end else begin
                      col = BGCOL;
+                     DEPTH_PIPE <= 3'd0;
+                  end
                   
                   if (!ADAPTIVE_BLEND)
                      TRANSP_DETECT <= 1'b0;
@@ -2549,6 +2562,7 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
                      // border area and left-column blanking; in shadow/highlight mode the blanked
                      // column shows the shadowed backdrop (BlastEm render_highlight)
                      col = BGCOL;
+                     DEPTH_PIPE <= 3'd0;
                      PIX_MODE <= (REG[0][5] & x < 8 & x < H_DISP_WIDTH & V_ACTIVE_DISP & SHI) ? PIX_SHADOW : PIX_NORMAL;
                   end 
                   
@@ -2556,6 +2570,8 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
                end
             
             4'b0101 :
+               begin
+               DEPTH <= DEPTH_PIPE;
                if ((x >= H_DISP_WIDTH | V_ACTIVE_DISP == 1'b0) & (BORDER_EN == 1'b0 | DBG[8:7] != 2'b00)) begin
                   // disabled border
                   FF_B <= {4{1'b0}};
@@ -2588,6 +2604,7 @@ module vdp #(parameter ADAPTIVE_BLEND = 1)(
                         end
                      default: ;
                   endcase
+               end
             
             default :
                ;

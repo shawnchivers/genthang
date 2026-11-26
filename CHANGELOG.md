@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- New optional `GT_ANAGLYPH=1` build (`*_3d` images, `VARIANTS="db9_3d raw_3d"` in
+  `release.sh`) with a red/cyan anaglyph 3D menu option in place of scanlines (off,
+  color, half). The VDP now reports the layer of every pixel; it is reduced to far
+  (backdrop, low plane B), middle (low plane A) and screen (sprites and high-priority
+  layers) planes, and the framebuffer builds both eye views from a 5-pixel window as
+  lines are written, so no extra BSRAM is used. The firmware reads bit 22 of the core ID
+  register and shows the 3D option only on these builds. Default builds keep scanlines.
+- DB9 720p 3D fits at 99% logic / 100% CLS, raw at 98% / 99%, both with no negative slack.
+
 ## 1.9.7 - 2026-11-25
 
 - DB9 builds now report an empty controller port as unplugged, like a real Genesis

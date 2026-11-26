@@ -70,7 +70,7 @@ to read them all to understand the project.
 - Controller options: two Genesis 3/6-button pads on DB9 breakouts (default), or
   twelve directly wired buttons for handhelds on the same physical GPIO layout.
 - One save-state slot per game, with "Resume saved game" after a power cycle.
-- Scanline and composite-blend display options.
+- Scanline and composite-blend display options; optional red/cyan anaglyph 3D build.
 - Optional ROM and core-image upload over the board's USB serial port (only in
   `GT_SERIAL_UPLOAD=1` builds; the default build leaves it out to fit the FPGA).
 
@@ -432,7 +432,7 @@ is enough. Player 1 drives the menu; player 2 only plays.
 The Options page opens first when you call up the menu during a game:
 
 - **Resume game**, **Save state**, **Load state**, **Reset game**, **Load another game**
-- **Scanlines**: off, 25 %, 50 %
+- **Scanlines**: off, 25 %, 50 % (in `GT_ANAGLYPH=1` builds: **3D (red/cyan)**: off, color, half)
 - **Composite blend**: off, on
 - **Video output**: HDMI, or DVI with audio on the line-out jack only (see [display options](#display-options))
 - **Display**: TV (720p, default), or LCD; optional selectable builds also offer TV (1080i games)
@@ -454,6 +454,18 @@ post-processing options are applied by the HDMI scaler:
 
 - **Scanlines** dims the lower half of each Genesis line by 25 % or 50 %. It is
   skipped when the Genesis itself uses interlace, independently of the HDMI output mode.
+- **3D (red/cyan)**, only in builds made with `GT_ANAGLYPH=1` (see
+  [Build from source](#build-from-source)), takes the place of scanlines and turns the game
+  into an anaglyph for red/cyan glasses (red over the left eye). The VDP reports
+  which layer each pixel came from, reduced to three depth planes: far (backdrop and
+  low-priority plane B), middle (low-priority plane A) and screen (sprites and
+  high-priority layers). As each line is written to the framebuffer, each eye's view
+  shifts the far plane 2 pixels and the middle plane 1 pixel. **Color** takes red from
+  the left eye and green/blue from the right; **Half** uses the left eye's brightness
+  as red, which is easier on the eyes with strongly coloured objects. Pixels hidden
+  behind a layer are not available, so edges where layers separate can show small
+  artifacts, and the window plane is treated as plane A. The setting is stored in the
+  scanline slot, so a saved 25 % / 50 % becomes Color / Half.
 - **Composite blend** averages each pixel with its left neighbour, which melts the
   dither patterns many games use for transparency and shading the way a composite
   cable does. Version 1.9.3 removes adaptive blending to make room for the YM2612
@@ -634,6 +646,11 @@ been removed.
 pad (Mode, X, Y and Z are not passed to games), port 2 reads as unplugged, and Mode alone
 (held 20 ms) opens the menu instead of Mode+Start. The firmware reads it from bit 18 of
 the core ID register. Output names get a `_3btn` suffix.
+`GT_ANAGLYPH=1` replaces the scanline option with red/cyan anaglyph 3D (see
+[display options](#display-options)); output names get a `_3d` suffix and `release.sh`
+builds it with `VARIANTS="db9_3d raw_3d"`. It uses no extra BSRAM: DB9 720p fits at
+99 % logic and 100 % CLS, raw at 98 % / 99 %, both without negative slack. The
+firmware reads it from bit 22 of the core ID register.
 `GT_SERIAL_UPLOAD=1` adds the iosys UART for USB serial uploads. It is off by default
 to leave logic headroom; its fit is not certified for 1.9.5. `GT_PICTURE`
 (`0`/`1`) adds the brightness option to the HDMI scaler; it defaults to
@@ -741,7 +758,7 @@ make dut ROM=/path/to/game.md              # whole board core + firmware + FAT32
 make run-dut ARGS="-T 1700 -O 900"         # boot the menu and dump the overlay (run/dut/overlay_900.ppm)
 make textdisp                              # the menu overlay alone -> run/textdisp/*.ppm
 make genesis-pad gen-io                    # unit tests for the DB9 pad reader and the I/O block
-make picture-modes picture-settings        # RGB pipeline and saved/menu picture settings (no ROM needed)
+make picture-modes anaglyph picture-settings   # RGB pipeline, 3D writes and saved/menu picture settings (no ROM needed)
 make ref ROM=/path/to/game.md && make run-ref ARGS="-n 300 -d 100,200"   # golden model
 ```
 

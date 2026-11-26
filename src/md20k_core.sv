@@ -13,6 +13,7 @@ module md20k_core #(
     parameter P2_SIX_BUTTON = 1,
     parameter AUTO_PAD_TYPE = 0,       // DB9: report each physical pad's detected type
     parameter PICTURE_OPTS = 0,         // brightness menu (GT_PICTURE builds)
+    parameter ANAGLYPH = 0,             // anaglyph 3D menu option instead of scanlines (GT_ANAGLYPH builds)
     // 1: single-player 3-button handheld (GT_3BTN). P1 reads as a 3-button pad, player 2's
     // port reads as empty, and Mode alone (debounced) opens the menu (not passed to the game).
     parameter THREE_BUTTON = 0
@@ -67,6 +68,7 @@ module md20k_core #(
     output            ce_pix,
     output      [1:0] resolution,
     output            transp,
+    output      [2:0] depth,            // layer of the current pixel, for anaglyph 3D
     output            interlace,
     output     [15:0] audio_left,
     output     [15:0] audio_right,
@@ -120,7 +122,7 @@ wire [31:0] rom_word;
 reg         rom_ack;
 wire [3:0]  ss_ctrl_z;
 
-iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .PICTURE_OPTS(PICTURE_OPTS), .MENU_MODE_ONLY(THREE_BUTTON), .FIRMWARE_SIZE(FIRMWARE_SIZE)) iosys (
+iosys_picorv32 #(.FREQ(FREQ / 2), .CORE_ID(4), .PICTURE_OPTS(PICTURE_OPTS), .ANAGLYPH(ANAGLYPH), .MENU_MODE_ONLY(THREE_BUTTON), .FIRMWARE_SIZE(FIRMWARE_SIZE)) iosys (
     .clk(clk_z80), .hclk(hclk), .resetn(~reset),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
     .video_opt(video_opt), .ss_ctrl(ss_ctrl_z),
@@ -292,7 +294,7 @@ system #(.P2_SIX_BUTTON(P2_SIX_BUTTON && !THREE_BUTTON), .P2_CONNECTED(!THREE_BU
     .VRAM_REQ(vram_req), .VRAM_ACK(vram_ack), .VRAM_WE(vram_we), .VRAM_U_N(vram_u_n), .VRAM_L_N(vram_l_n),
     .VRAM_A(vram_a), .VRAM_D(vram_d), .VRAM_Q(vram_q),
     .VRAM32_REQ(vram32_req), .VRAM32_ACK(vram32_ack), .VRAM32_A(vram32_a), .VRAM32_Q(vram32_q),
-    .EN_HIFI_PCM(1'b0), .LADDER(1'b0), .OBJ_LIMIT_HIGH(1'b0), .TRANSP_DETECT(transp),
+    .EN_HIFI_PCM(1'b0), .LADDER(1'b0), .OBJ_LIMIT_HIGH(1'b0), .TRANSP_DETECT(transp), .DEPTH(depth),
     .PAUSE_EN(pause_core | (overlay_s[1] & ~ss_ctrl[0] & ~reset_btn)), .BGA_EN(1'b1), .BGB_EN(1'b1), .SPR_EN(1'b1), .DBG_M68K_A(dbg_m68k_a), .DBG_VBUS_A(),
     .SS_EN(ss_ctrl[0]), .SS_NMI(ss_ctrl[1]), .SS_ZFREEZE(ss_ctrl[2])
 );

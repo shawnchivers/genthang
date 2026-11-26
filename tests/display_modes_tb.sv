@@ -13,7 +13,7 @@ module display_modes_tb;
     fixed_video_check #(.LCD800(1)) native_check(.clk(clk), .done(native_done));
     framebuffer #(.SELECTABLE(1), .ADAPTIVE_BLEND(0)) dut (
         .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
-        .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
+        .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0), .depth(3'd0), .de(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(source_width), .height(source_height),
         .overlay(overlay), .overlay_color(15'd0), .video_opt(options),
         .audio_left(16'd0), .audio_right(16'd0),
@@ -162,7 +162,7 @@ module fixed_video_check #(parameter LCD800 = 0)(input clk, output reg done = 0)
     reg [9:0] options = 10'h040;
     framebuffer #(.LCD800(LCD800), .ADAPTIVE_BLEND(0)) dut (
         .clk(clk), .resetn(1'b1), .clk_pixel(clk), .clk_5x_pixel(clk),
-        .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0),
+        .ce_pix(1'b0), .r(4'd0), .g(4'd0), .b(4'd0), .transp(1'b0), .depth(3'd0), .de(1'b0),
         .interlace(1'b0), .x(9'd0), .y(8'd0), .width(11'd320), .height(10'd224),
         .overlay(1'b0), .overlay_color(15'd0), .video_opt(options),
         .audio_left(16'd0), .audio_right(16'd0),

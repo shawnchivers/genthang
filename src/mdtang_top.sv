@@ -119,6 +119,7 @@ wire [14:0] overlay_color;
 wire [9:0]  video_opt;
 wire [1:0]  resolution;
 wire        transp, interlace;
+wire [2:0]  depth;
 wire [15:0] audio_left, audio_right;
 wire [11:0] pad1, pad2;             // {R, L, X, A, Right, Left, Down, Up, Start, Select, Y, B}
 wire [1:0]  pad_six, pad_present;
@@ -145,6 +146,9 @@ md20k_core #(.FREQ(FREQ),
 `ifdef PICTURE_OPTS
     .PICTURE_OPTS(1),
 `endif
+`ifdef GT_ANAGLYPH
+    .ANAGLYPH(1),
+`endif
 `ifdef GT_3BTN
     .THREE_BUTTON(1),
 `endif
@@ -165,7 +169,7 @@ md20k_core #(.FREQ(FREQ),
     .sdram_dq_out(sdram_dq_out), .sdram_dq_oe(sdram_dq_oe), .sdram_dq_in(IO_sdram_dq),
     .pause_core(pause_core),
     .red(red), .green(green), .blue(blue), .hsync(hsync), .hblank(hblank), .vblank(vblank),
-    .ce_pix(ce_pix), .resolution(resolution), .transp(transp), .interlace(interlace), .audio_left(audio_left), .audio_right(audio_right),
+    .ce_pix(ce_pix), .resolution(resolution), .transp(transp), .depth(depth), .interlace(interlace), .audio_left(audio_left), .audio_right(audio_right),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),
     .video_opt(video_opt),
     .md_on(md_on), .loading(loading), .dbg_m68k_a()
@@ -250,9 +254,17 @@ framebuffer #(.WIDTH(320), .HEIGHT(240), .COLOR_BITS(4), .BUFFER_LINES(32)
 `ifdef PICTURE_OPTS
     , .PICTURE_OPTS(1)
 `endif
+`ifdef GT_ANAGLYPH
+    , .ANAGLYPH(1)
+`endif
 ) fb (
     .clk(clk_sys), .resetn(md_on), .clk_pixel(hclk), .clk_5x_pixel(hclk5),
-    .ce_pix(ce_pix & hsync_seen), .r(red), .g(green), .b(blue), .transp(transp), .interlace(interlace), .x(x), .y(y),
+`ifdef GT_ANAGLYPH
+    .ce_pix(ce_pix), .de(~hblank & ~vblank & hsync_seen),     // the 3D window also needs pixels after the line
+`else
+    .ce_pix(ce_pix & hsync_seen), .de(1'b0),
+`endif
+    .r(red), .g(green), .b(blue), .transp(transp), .depth(depth), .interlace(interlace), .x(x), .y(y),
     .width(resolution[0] ? 11'd320 : 11'd256), .height(resolution[1] ? 10'd240 : 10'd224),
     .audio_left(audio_left), .audio_right(audio_right),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y), .overlay_color(overlay_color),

@@ -166,6 +166,7 @@ module system #(
 	input         OBJ_LIMIT_HIGH,
 
 	output		  TRANSP_DETECT,
+	output  [2:0] DEPTH,            // layer of the current pixel, for anaglyph 3D
 	
 	//debug
 	input         PAUSE_EN,
@@ -521,6 +522,7 @@ vdp #(
 	.VBL(VBL),
 
 	.TRANSP_DETECT(TRANSP_DETECT),
+	.DEPTH(DEPTH),
 	
 	.BGA_EN(BGA_EN),
 	.BGB_EN(BGB_EN),

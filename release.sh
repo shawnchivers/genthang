@@ -8,7 +8,8 @@
 # db9_extclk (GT_EXT_MCLK=1): Genesis master clock from the MS5351 at 53.766MHz; the board
 # must first run `pll_clk O0=53766K -s` on the BL616 console.
 # Optional (not built by default): db9_selectable and raw_selectable (GT_VIDEO=selectable:
-# LCD / TV 720p / TV 1080i games), e.g. VARIANTS="db9_selectable" ./release.sh
+# LCD / TV 720p / TV 1080i games), e.g. VARIANTS="db9_selectable" ./release.sh, and db9_3d and
+# raw_3d (GT_ANAGLYPH=1: red/cyan anaglyph 3D menu option in place of scanlines).
 # usage: ./release.sh [outdir]      VARIANTS="db9" ./release.sh   for a subset
 #        PACKAGE_ONLY=1 ./release.sh   re-pack the tarball from the images already in outdir
 # A variant that misses its clock targets or leaves negative slack fails the release.
@@ -28,6 +29,7 @@ for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480 db9_extclk};
                         pad=${variant%_800x480}; video=800x480; pinout=stock; name=$variant
                         base=genthang_nano20k_$variant ;;
         db9_extclk)     pad=db9; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
+        raw_3d|db9_3d)  pad=${variant%_3d}; video=720p; pinout=stock; name=$variant; base=genthang_nano20k_$variant ;;
         raw_selectable|db9_selectable)
                         pad=${variant%_selectable}; video=selectable; pinout=stock; name=$variant
                         base=genthang_nano20k_$variant ;;
@@ -37,8 +39,9 @@ for variant in ${VARIANTS:-db9 raw raw_3btn db9_800x480 raw_800x480 db9_extclk};
     three=0; [ "$variant" = raw_3btn ] && three=1
     picture=0; [ "$pad" = raw ] && picture=1
     extclk=0; [ "$variant" = db9_extclk ] && extclk=1
+    anaglyph=0; case $variant in *_3d) anaglyph=1 ;; esac
     GT_PAD=$pad GT_VIDEO=$video GT_PINOUT=$pinout GT_3BTN=$three GT_PICTURE=$picture \
-        GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 GT_SERIAL_UPLOAD=0 GT_NO_SOUND=0 GT_EXT_MCLK=$extclk \
+        GT_LADDER=1 GT_NO_ADAPTIVE=1 GT_NO_CORE_SWITCH=1 GT_SERIAL_UPLOAD=0 GT_NO_SOUND=0 GT_EXT_MCLK=$extclk GT_ANAGLYPH=$anaglyph \
         ./build.sh > "$OUT/build_$name.log" 2>&1
     install -m 644 "impl/pnr/$base.rpt.txt" "$OUT/$base.rpt.txt"
     install -m 644 "impl/pnr/${base}_tr_content.html" "$OUT/${base}_tr_content.html"

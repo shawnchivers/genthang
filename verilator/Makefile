@@ -38,7 +38,7 @@ VFLAGS = --cc --exe --build -j 4 -O3 --x-assign fast --x-initial fast --noassert
 # the board DUT keeps the iosys UART so the firmware's debug log reaches the console
 DUT_VFLAGS = +define+SERIAL_UPLOAD
 
-.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes picture-settings display-modes jt12-reset test-roms vdp-timing
+.PHONY: ref dut run-ref run-dut hex clean textdisp genesis-pad gen-io picture-modes anaglyph picture-settings display-modes jt12-reset test-roms vdp-timing
 
 hex: rom8.hex fw8.hex sd.img
 rom8.hex: mkhex.py
@@ -90,6 +90,12 @@ picture-modes:
 		--top-module picture_modes_tb --Mdir obj_picture_modes \
 		../tests/picture_modes_tb.sv $D/framebuffer_sync.sv $D/frame_sync.sv
 	./obj_picture_modes/Vpicture_modes_tb
+
+anaglyph:
+	$(VERILATOR) --binary --timing -j 4 -Wno-fatal -Wno-TIMESCALEMOD \
+		--top-module anaglyph_tb --Mdir obj_anaglyph \
+		../tests/anaglyph_tb.sv $D/framebuffer_sync.sv $D/frame_sync.sv
+	./obj_anaglyph/Vanaglyph_tb
 
 picture-settings:
 	mkdir -p obj_picture_settings

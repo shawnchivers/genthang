@@ -1,6 +1,6 @@
 // Synchronized upscaler to HDMI
 // Based on framebuffer_sync.sv from SNESTang / MDTang (nand2mario, 2024, GPL-3.0);
-// modified for Gen Thang (scanlines, composite blend, Genesis DAC table).
+// modified for Gen Thang (scanlines or anaglyph 3D, composite blend, Genesis DAC table).
 //
 // This module takes RGB pixel input, buffers 16 lines of the video in BRAM, 
 // then upscales and output the video in 720p HDMI format.
@@ -8,6 +8,11 @@
 // LCD800=1 outputs native 800x480 DVI instead, for bare TFT panels behind a TFP401
 // (which has no scaler): TV = centred 640x480, LCD = full 800 width.
 // SELECTABLE=1 adds 1080i60: one 540-line field per Genesis frame, no full-frame RAM.
+//
+// ANAGLYPH=1 (GT_ANAGLYPH builds) replaces scanlines with red/cyan anaglyph 3D (video_opt[1:0]),
+// applied as pixels are written: each eye's view shifts every layer by an amount based on its
+// depth, using a 5-pixel window of the incoming line, and the red channel is taken from the
+// left eye, green/blue from the right. Writes then trail the input by 2 pixels.
 //
 // This is different from framebuffer.sv in that it requires the input video
 // to be synchronized to HDMI. This allows the module use much less BRAM space
@@ -20,7 +25,8 @@ module framebuffer #(
     parameter LCD800 = 0,           // 1 = 800x480 output (29.7MHz pixel clock, DVI only)
     parameter SELECTABLE = 0,       // 1 = runtime 720p / 1080i, sharing the 74.25MHz clock
     parameter ADAPTIVE_BLEND = 1,   // 0 = composite blend off/on only
-    parameter PICTURE_OPTS = 0      // 1 = brightness (video_opt[9:8]) for games, GT_PICTURE builds
+    parameter PICTURE_OPTS = 0,     // 1 = brightness (video_opt[9:8]) for games, GT_PICTURE builds
+    parameter ANAGLYPH = 0          // 1 = anaglyph 3D (video_opt[1:0]) instead of scanlines, GT_ANAGLYPH builds
 )(
 	input clk,                      // megadrive clock
 	input resetn,
@@ -33,6 +39,8 @@ module framebuffer #(
     input [COLOR_BITS-1:0] g,
     input [COLOR_BITS-1:0] b,
     input transp,                   // VDP transparency-dither flag of this pixel (adaptive blend)
+    input [2:0] depth,              // VDP layer of this pixel (ANAGLYPH), see vdp.v DEPTH
+    input de,                       // pixel is inside the picture, not blanking (ANAGLYPH)
     input interlace,                // quasi-static; scanlines are skipped in interlace like MiSTer
     input [$clog2(WIDTH)-1:0] x,    // pixel position
     input [$clog2(HEIGHT)-1:0] y,
@@ -48,7 +56,7 @@ module framebuffer #(
     output [7:0] overlay_x,
     output [7:0] overlay_y,
     input [14:0] overlay_color,     // BGR5
-    input [9:0] video_opt,          // scanlines [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], dim [9:8]
+    input [9:0] video_opt,          // scanlines or 3D [1:0], blend [3:2], DVI [4], LCD [5], 1080i [6], dim [9:8]
 
     input [15:0] audio_left,        // audio sample
     input [15:0] audio_right,
@@ -88,14 +96,78 @@ reg mem_portA_we;
 wire [FB_AWIDTH-1:0] mem_portB_addr;
 reg [MEM_WIDTH-1:0] mem_portB_rdata;
 
-// BRAM port A read/write
-reg ce_pix_r, hblank_r;
-assign mem_portA_addr = y[LINE_BITS-1:0] * WIDTH + x;
-always @(posedge clk) begin
-    ce_pix_r <= ce_pix;
-    if (ce_pix & ~ce_pix_r) 
-        mem[mem_portA_addr] <= MEM_WIDTH'({transp, r, g, b});
+// BRAM port A write
+generate
+if (ANAGLYPH) begin : write_3d
+    // BRAM port A write, through the anaglyph 3D window
+    // The VDP layer is reduced to three depth planes: far (backdrop, plane B low), middle
+    // (plane A low) and screen (sprites and high-priority layers). Each eye sees the far plane
+    // shifted 2 pixels and the middle plane 1 pixel, the left eye at x+s and the right eye at
+    // x-s. win[2] is the pixel being written, win[0..1] are to its left and win[3..4] to its
+    // right; each entry is {plane, transp, r, g, b} and plane 3 marks a position outside the line.
+    localparam [1:0] FAR = 2'd0, MIDDLE = 2'd1, SCREEN = 2'd2, NO_PIXEL = 2'd3;
+    localparam WIN_WIDTH = 2 + MEM_WIDTH;
+    reg [WIN_WIDTH-1:0] win [0:4];
+    reg ce_pix_r;
+    reg [1:0] mode_s1, mode_s2;
+    reg [1:0] flush;                            // pixels still to write after the line ends
+    reg emit;                                   // write win[2] this cycle
+    reg [$clog2(WIDTH)-1:0] wx;                 // position of win[2]
+    reg [LINE_BITS-1:0] wy;
+    wire [1:0] plane = depth <= 3'd1 ? FAR : depth == 3'd2 ? MIDDLE : SCREEN;
+    always @(posedge clk) begin
+        ce_pix_r <= ce_pix;
+        mode_s1 <= video_opt[1:0];
+        mode_s2 <= mode_s1;
+        emit <= 1'b0;
+        if (ce_pix & ~ce_pix_r && (de || flush != 0)) begin
+            for (int i = 0; i < 4; i++) begin
+                win[i][MEM_WIDTH-1:0] <= win[i+1][MEM_WIDTH-1:0];
+                win[i][WIN_WIDTH-1 -: 2] <= de && x == 0 ? NO_PIXEL : win[i+1][WIN_WIDTH-1 -: 2];
+            end
+            win[4] <= {de ? plane : NO_PIXEL, MEM_WIDTH'({transp, r, g, b})};
+            wx <= de && x == 0 ? -2 : wx + 1'd1;  // reaches 0 when pixel 0 is at win[2]
+            emit <= !de || x >= 2;
+            if (de) begin
+                if (x == 0) begin
+                    wy <= y[LINE_BITS-1:0];
+                    flush <= 2'd2;
+                end
+            end else
+                flush <= flush - 1'd1;
+        end
+    end
+
+    wire [1:0] p0 = win[0][WIN_WIDTH-1 -: 2], p1 = win[1][WIN_WIDTH-1 -: 2], p2 = win[2][WIN_WIDTH-1 -: 2],
+               p3 = win[3][WIN_WIDTH-1 -: 2], p4 = win[4][WIN_WIDTH-1 -: 2];
+    wire [COLOR_WIDTH-1:0] c0 = win[0][COLOR_WIDTH-1:0], c1 = win[1][COLOR_WIDTH-1:0], c2 = win[2][COLOR_WIDTH-1:0],
+                           c3 = win[3][COLOR_WIDTH-1:0], c4 = win[4][COLOR_WIDTH-1:0];
+    // Planes are checked from front to back; where a shifted plane uncovers pixels that were
+    // hidden in the original picture, the original pixel is used.
+    wire [COLOR_WIDTH-1:0] left_eye = p2 == SCREEN ? c2 : p3 == MIDDLE ? c3 : p4 == FAR ? c4 : c2;
+    wire [COLOR_WIDTH-1:0] right_eye = p2 == SCREEN ? c2 : p1 == MIDDLE ? c1 : p0 == FAR ? c0 : c2;
+    // Mode 1: full colour (red from the left eye). Mode 2: half colour, the left eye's brightness
+    // as red, which reduces rivalry on strongly coloured objects. Mode 0/3: plain picture.
+    wire [COLOR_BITS+1:0] left_luma = left_eye[COLOR_BITS*2 +: COLOR_BITS] + {left_eye[COLOR_BITS +: COLOR_BITS], 1'b0}
+                                    + left_eye[0 +: COLOR_BITS];
+    wire [COLOR_BITS-1:0] red_3d = mode_s2[1] ? left_luma[COLOR_BITS+1:2] : left_eye[COLOR_BITS*2 +: COLOR_BITS];
+    wire [COLOR_WIDTH-1:0] color_3d = mode_s2[0] ^ mode_s2[1]
+        ? {red_3d, right_eye[COLOR_WIDTH-COLOR_BITS-1:0]} : c2;
+
+    assign mem_portA_addr = wy * WIDTH + wx;
+    always @(posedge clk)
+        if (emit)
+            mem[mem_portA_addr] <= MEM_WIDTH'({win[2][COLOR_WIDTH], color_3d});     // keeps transp when present
+end else begin : write_plain
+    reg ce_pix_r;
+    assign mem_portA_addr = y[LINE_BITS-1:0] * WIDTH + x;
+    always @(posedge clk) begin
+        ce_pix_r <= ce_pix;
+        if (ce_pix & ~ce_pix_r)
+            mem[mem_portA_addr] <= MEM_WIDTH'({transp, r, g, b});
+    end
 end
+endgenerate
 
 // BRAM port B read
 reg [$clog2(WIDTH)-1:0] xx  /* xsynthesis syn_keep=1 */; // scaled-down pixel position
@@ -223,7 +295,7 @@ always @(posedge clk_pixel) begin
     ov_s2 <= ov_s1;
     il_s1 <= interlace;
     il_s2 <= il_s1;
-    scan <= ycnt >= {2'b0, screen_h[9:1]} && !il_s2;
+    scan <= !ANAGLYPH && ycnt >= {2'b0, screen_h[9:1]} && !il_s2;   // 3D builds have no scanlines
     xx_r <= xx;
     xx_px <= xx_r;
     rdata_r <= mem_portB_rdata[COLOR_WIDTH-1:0];

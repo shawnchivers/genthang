@@ -37,9 +37,15 @@ set ext_mclk 0
 if {[info exists ::env(GT_EXT_MCLK)] && $::env(GT_EXT_MCLK) ne ""} { set ext_mclk $::env(GT_EXT_MCLK) }
 if {[lsearch -exact {0 1} $ext_mclk] < 0} { error "GT_EXT_MCLK must be 0 or 1" }
 
+# GT_ANAGLYPH=1: red/cyan anaglyph 3D menu option in place of scanlines
+set anaglyph 0
+if {[info exists ::env(GT_ANAGLYPH)] && $::env(GT_ANAGLYPH) ne ""} { set anaglyph $::env(GT_ANAGLYPH) }
+if {[lsearch -exact {0 1} $anaglyph] < 0} { error "GT_ANAGLYPH must be 0 or 1" }
+
 set pad_cst "src/boards/nano20k_$pad.cst"
 set output_base "genthang_nano20k_$pad"
 set three_btn [expr {[info exists ::env(GT_3BTN)] && $::env(GT_3BTN) eq "1"}]
 if {$three_btn} { append output_base "_3btn" }
 if {$video ne "720p"} { append output_base "_$video" }
 if {$ext_mclk} { append output_base "_extclk" }
+if {$anaglyph} { append output_base "_3d" }

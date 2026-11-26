@@ -63,7 +63,7 @@ static int nfiles;
 static char load_buf[1024];
 static bool game_loaded;
 static char cur_rom[1024 + NAME_LEN + 2];
-static int scanlines;               // 0 off, 1 25%, 2 50%
+static int scanlines;               // 0 off, 1 25%, 2 50%; 3D cores: 0 off, 1 colour, 2 half colour
 static int blend;                   // composite blend 0 off, 1 on, 2 adaptive
 static int dvi;                     // video output 0 HDMI, 1 DVI (no HDMI data islands; audio only on the line-out jack)
 static int lcd;                     // 0 TV 720p, 1 4:3 LCD (720p input), 2 TV 1080i
@@ -73,7 +73,8 @@ static bool has_picture;            // core built with GT_PICTURE (bit 16 of the
 static bool mode_menu;              // GT_3BTN core: Mode alone opens the menu (bit 18)
 static bool no_adaptive;            // adaptive blend omitted (bit 19)
 static bool no_core_switch;         // runtime flash access omitted (bit 20)
-static bool has_display_modes;      // menu-selectable 720p/1080i (bit 21)
+static bool has_display_modes;
+static bool anaglyph;               // red/cyan 3D in place of scanlines (bit 22)      // menu-selectable 720p/1080i (bit 21)
 
 // ---- overlay helpers ---------------------------------------------------------------
 static void put(int col, int row, int c) {
@@ -828,6 +829,7 @@ static int opt_items[OPT_COUNT], nopt;
 
 static void draw_options(int active) {
     static const char *const sl[] = {"OFF", "25%", "50%"};
+    static const char *const a3[] = {"OFF", "COLOR", "HALF"};
     static const char *const bl[] = {"OFF", "ON", "ADAPTIVE"};
     static const char *const cm[] = {"ORIGINAL", "WARM", "COOL", "VIVID"};
     static const char *const pd[] = {"100%", "75%", "50%", "25%"};
@@ -862,7 +864,10 @@ static void draw_options(int active) {
         case OPT_RESET:  strcpy(buf, "Reset game"); break;
         case OPT_GAMES:  strcpy(buf, game_loaded ? "Load another game" : "Back to games"); break;
         case OPT_CORES:  strcpy(buf, "Switch core"); break;
-        case OPT_SCAN:   strcpy(buf, "Scanlines: "); strcat(buf, sl[scanlines]); break;
+        case OPT_SCAN:
+            strcpy(buf, anaglyph ? "3D (red/cyan): " : "Scanlines: ");
+            strcat(buf, (anaglyph ? a3 : sl)[scanlines]);
+            break;
         case OPT_BLEND:  strcpy(buf, "Composite blend: "); strcat(buf, bl[blend]); break;
         case OPT_OUTPUT: strcpy(buf, dvi ? "Video output: DVI+LINE OUT" : "Video output: HDMI"); break;
         case OPT_DISPLAY:
@@ -1085,6 +1090,7 @@ int main() {
     no_adaptive = (reg_core_id >> 19) & 1;
     no_core_switch = (reg_core_id >> 20) & 1;
     has_display_modes = (reg_core_id >> 21) & 1;
+    anaglyph = (reg_core_id >> 22) & 1;
     overlay(1);
     cursor(0, 31);                  // print() from FatFs glue lands off screen
     reg_uart_clkdiv = 234;          // 115200 baud from the 27MHz iosys clock
