@@ -29,8 +29,9 @@ the source yourself.
 
 <p align="center">
   <img src="docs/images/GenThang_L3-7_Assembled.jpg" width="640"
-       alt="Assembled Gen Thang">
+       alt="Assembled Gen Thang L3-7 board">
 </p>
+<p align="center"><sub>Assembled L3-7 board.</sub></p>
 
 <p align="center">
   <a href="hardware/modern-3btn-handheld/index.html">
