@@ -28,6 +28,11 @@ You can use a [prebuilt release image](#choose-a-release-image) without compilin
 the source yourself.
 
 <p align="center">
+  <img src="docs/images/GenThang_L3-7_Assembled.jpg" width="640"
+       alt="Assembled Gen Thang">
+</p>
+
+<p align="center">
   <a href="hardware/modern-3btn-handheld/index.html">
     <img src="docs/images/modern-3btn-demo.gif" width="640"
          alt="Light-background mock-up of Streets of Rage 2 on the Gen Thang Modern three-button handheld">
